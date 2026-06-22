@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+demo/node_modules/
+
+# Build outputs
+frontend/dist/
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+
+# Secrets — never commit these
+demo/.env.hedera
+contracts/.env
+frontend/.env
+frontend/.env.local
+
+# Foundry
+contracts/foundry.lock
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db

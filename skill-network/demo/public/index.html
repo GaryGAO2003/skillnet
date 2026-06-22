@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillNet Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* DAG tree connectors */
+    .dag-children { padding-left: 1.5rem; border-left: 2px solid #e5e7eb; margin-left: 1rem; margin-top: 4px; }
+    .dag-node { position: relative; padding: 3px 0; }
+    .dag-node::before { content:''; position:absolute; left:-1.5rem; top:13px; width:1.25rem; height:2px; background:#e5e7eb; }
+
+    /* Skill card transitions */
+    .skill-card { transition: box-shadow .15s, transform .15s; cursor:pointer; }
+    .skill-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.1); transform:translateY(-1px); }
+
+    /* Balance bar */
+    .bal-bar { transition: width .4s ease; }
+
+    /* Flash new balance */
+    @keyframes highlight { 0%,100%{background:transparent} 40%{background:#fef08a} }
+    .updated { animation: highlight .8s; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-900">
+
+<!-- ── HEADER ────────────────────────────────────────────────────────────── -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 h-13 flex items-center gap-3 py-2">
+    <span class="font-bold text-lg tracking-tight">⚙ SkillNet</span>
+    <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">local demo</span>
+    <div class="flex-1"></div>
+    <span class="text-sm text-gray-500">Acting as:</span>
+    <select id="currentUser" onchange="onUserChange()"
+            class="border border-gray-300 rounded-lg px-2 py-1 text-sm font-medium">
+      <option value="deployer">deployer</option>
+      <option value="alice">alice</option>
+      <option value="bob">bob</option>
+      <option value="carol">carol</option>
+    </select>
+    <div id="user-balance-badge" class="text-xs font-mono bg-gray-100 rounded px-2 py-1 text-gray-600"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="max-w-7xl mx-auto px-4 flex">
+    <button class="tab-btn active" data-tab="marketplace" onclick="switchTab('marketplace')">Marketplace</button>
+    <button class="tab-btn" data-tab="dag" onclick="switchTab('dag')">DAG Explorer</button>
+    <button class="tab-btn" data-tab="compose" onclick="switchTab('compose')">Compose</button>
+    <button class="tab-btn" data-tab="balances" onclick="switchTab('balances')">Balances</button>
+    <button class="tab-btn" data-tab="log" onclick="switchTab('log')">Call Log</button>
+    <button class="tab-btn" data-tab="agents" onclick="switchTab('agents')">⬡ Agents</button>
+  </div>
+</header>
+
+<style>
+  .tab-btn { padding: .6rem 1rem; font-size:.875rem; font-weight:500; border-bottom:2px solid transparent; color:#6b7280; }
+  .tab-btn:hover { color:#374151; }
+  .tab-btn.active { border-color:#6366f1; color:#6366f1; }
+</style>
+
+<main class="max-w-7xl mx-auto px-4 py-6">
+
+  <!-- ── MARKETPLACE ──────────────────────────────────────────────────────── -->
+  <section id="tab-marketplace">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-bold">Skill Marketplace</h2>
+        <p id="skill-count" class="text-sm text-gray-500">…</p>
+      </div>
+      <div class="flex gap-2">
+        <select id="filter-tier" onchange="renderMarketplace()"
+                class="border border-gray-300 rounded-lg px-2 py-1 text-sm">
+          <option value="">All Tiers</option>
+          <option>OPEN</option><option>SHIELDED</option><option>PRIVATE</option>
+        </select>
+        <select id="sort-by" onchange="renderMarketplace()"
+                class="border border-gray-300 rounded-lg px-2 py-1 text-sm">
+          <option value="id">By ID</option>
+          <option value="calls">Most Called</option>
+          <option value="revenue">Most Revenue</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="skills-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-6"></div>
+
+    <!-- Skill detail panel (opens when a card is clicked) -->
+    <div id="skill-detail" class="hidden bg-white border border-indigo-200 rounded-2xl p-6 shadow-md"></div>
+  </section>
+
+  <!-- ── DAG EXPLORER ─────────────────────────────────────────────────────── -->
+  <section id="tab-dag" class="hidden">
+    <h2 class="text-xl font-bold mb-4">DAG Explorer</h2>
+    <div class="flex gap-4 items-end mb-6 flex-wrap">
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Select skill</label>
+        <select id="dag-select" onchange="renderDAGTab()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm min-w-48"></select>
+      </div>
+    </div>
+    <div id="dag-display" class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm min-h-40"></div>
+  </section>
+
+  <!-- ── COMPOSE ──────────────────────────────────────────────────────────── -->
+  <section id="tab-compose" class="hidden max-w-2xl">
+    <h2 class="text-xl font-bold mb-1">Compose a Skill</h2>
+    <p class="text-sm text-gray-500 mb-5">Mint a new skill NFT. Optionally link it to parent skills to form a composition DAG.</p>
+
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-sm">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Name *</label>
+          <input id="c-name" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="My Skill" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Price Per Call (ETH)</label>
+          <input id="c-price" type="number" min="0" step="0.001" value="0"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Description</label>
+        <input id="c-desc" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+               placeholder="What does this skill do?" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Skill Type</label>
+          <select id="c-type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <option>PROMPT_WORKFLOW</option>
+            <option selected>TOOL_ADAPTER</option>
+            <option>AGENT_BEHAVIOR</option>
+            <option>EVAL_PIPELINE</option>
+            <option>LORA_ADAPTER</option>
+            <option>DATASET</option>
+            <option>COMPOSITE_BUNDLE</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Visibility Tier</label>
+          <select id="c-tier" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <option>OPEN</option><option>SHIELDED</option><option>PRIVATE</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dependencies -->
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Parent Dependencies (optional)</label>
+        <div id="parent-checkboxes"
+             class="max-h-44 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-1 text-sm bg-gray-50"></div>
+      </div>
+
+      <!-- Weight inputs (shown when parents selected) -->
+      <div id="weight-section" class="hidden border border-amber-200 bg-amber-50 rounded-lg p-3 space-y-2">
+        <div class="flex justify-between text-xs font-medium text-amber-700">
+          <span>Royalty weights (must sum to 100)</span>
+          <span id="weight-sum" class="font-mono">0 / 100</span>
+        </div>
+        <div id="weight-rows" class="space-y-1.5"></div>
+      </div>
+
+      <button onclick="handleMint()"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 text-sm font-semibold transition-colors">
+        Mint Skill NFT
+      </button>
+      <div id="mint-msg" class="text-sm"></div>
+    </div>
+  </section>
+
+  <!-- ── BALANCES ─────────────────────────────────────────────────────────── -->
+  <section id="tab-balances" class="hidden">
+    <h2 class="text-xl font-bold mb-4">Creator Balances</h2>
+    <p class="text-sm text-gray-500 mb-5">
+      Fees accumulate here (pull pattern). Each creator withdraws their own balance.
+    </p>
+    <div id="balance-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+
+  <!-- ── CALL LOG ─────────────────────────────────────────────────────────── -->
+  <section id="tab-log" class="hidden">
+    <h2 class="text-xl font-bold mb-4">Transaction Log</h2>
+    <div id="tx-log" class="space-y-3 max-w-3xl"></div>
+  </section>
+
+  <!-- ── AGENTS ─────────────────────────────────────────────────────────────── -->
+  <section id="tab-agents" class="hidden">
+    <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+      <div>
+        <h2 class="text-xl font-bold">Agent Network</h2>
+        <p class="text-sm text-gray-500">ERC-8004 simulated registry — click any node to inspect</p>
+      </div>
+      <span class="text-xs bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5 font-medium">ERC-8004 sim</span>
+    </div>
+
+    <!-- Network topology canvas -->
+    <div id="agent-network"
+         class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-5 overflow-hidden"
+         style="min-height:240px">
+      <div id="network-nodes" class="flex flex-col items-center gap-8 py-8 px-4">
+        <p class="text-sm text-gray-400">Loading…</p>
+      </div>
+    </div>
+
+    <!-- Detail panel — shown when a node is clicked -->
+    <div id="agent-detail" class="hidden"></div>
+  </section>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// App state
+// ─────────────────────────────────────────────────────────────────────────────
+let S = { skills: [], balances: {}, txLog: [] }
+let dagCache  = {}
+let selectedId = null
+
+const TIER_STYLE = {
+  OPEN:     'bg-green-100 text-green-800 border-green-200',
+  SHIELDED: 'bg-amber-100 text-amber-800 border-amber-200',
+  PRIVATE:  'bg-red-100  text-red-800  border-red-200',
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API helpers
+// ─────────────────────────────────────────────────────────────────────────────
+async function api(method, url, body) {
+  const r = await fetch(url, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  return r.json()
+}
+
+async function refresh() {
+  S = await api('GET', '/api/state')
+  dagCache = {}
+  renderAll()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+function tier(t) {
+  return `<span class="inline-flex text-xs font-medium px-2 py-0.5 rounded-full border ${TIER_STYLE[t]||''}">${t}</span>`
+}
+
+function eth(v) {
+  if (v === 0) return '0'
+  return v < 0.0001 ? v.toFixed(8) : v.toFixed(5)
+}
+
+function me() { return document.getElementById('currentUser').value }
+
+function onUserChange() {
+  const bal = S.balances[me()] || 0
+  document.getElementById('user-balance-badge').textContent = eth(bal) + ' ETH'
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab switching
+// ─────────────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'))
+  document.getElementById('tab-' + name).classList.remove('hidden')
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name)
+  })
+  if (name === 'compose') populateParentCheckboxes()
+  if (name === 'dag')     populateDAGSelect()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Marketplace
+// ─────────────────────────────────────────────────────────────────────────────
+function renderMarketplace() {
+  const filterTier = document.getElementById('filter-tier').value
+  const sortBy     = document.getElementById('sort-by').value
+  let skills = [...S.skills]
+  if (filterTier) skills = skills.filter(s => s.tier === filterTier)
+  if (sortBy === 'calls')   skills.sort((a,b) => b.totalCalls - a.totalCalls)
+  if (sortBy === 'revenue') skills.sort((a,b) => b.totalRevenue - a.totalRevenue)
+
+  document.getElementById('skill-count').textContent = `${S.skills.length} skills minted on-chain`
+
+  document.getElementById('skills-grid').innerHTML = skills.map(s => `
+    <div class="skill-card bg-white border rounded-xl p-4 ${selectedId === s.id ? 'border-indigo-400 shadow-md ring-1 ring-indigo-300' : 'border-gray-200 shadow-sm'}"
+         onclick="selectSkill(${s.id})">
+      <div class="flex items-start justify-between gap-1 mb-2">
+        <span class="font-semibold text-sm leading-tight line-clamp-1">${s.name}</span>
+        ${tier(s.tier)}
+      </div>
+      <p class="text-xs text-gray-400 mb-2 line-clamp-2 min-h-[2rem]">${s.description}</p>
+      <div class="text-xs font-mono text-gray-400 mb-3 truncate">${s.skillType}</div>
+      <div class="grid grid-cols-3 gap-1 text-center text-xs mb-3">
+        <div class="bg-gray-50 rounded-lg py-1.5">
+          <div class="font-bold text-gray-700">${s.totalCalls}</div>
+          <div class="text-gray-400">calls</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg py-1.5">
+          <div class="font-bold text-gray-700">${eth(s.totalRevenue)}</div>
+          <div class="text-gray-400">ETH rev</div>
+        </div>
+        <div class="bg-gray-50 rounded-lg py-1.5">
+          <div class="font-bold text-gray-700">${s.pricePerCall ? eth(s.pricePerCall) : 'free'}</div>
+          <div class="text-gray-400">price</div>
+        </div>
+      </div>
+      <button onclick="event.stopPropagation(); quickCall(${s.id})"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded-lg py-1.5 transition-colors">
+        Call Skill
+      </button>
+    </div>
+  `).join('')
+}
+
+async function selectSkill(id) {
+  selectedId = id
+  renderMarketplace()
+  await renderDetail(id)
+}
+
+async function renderDetail(id) {
+  const panel = document.getElementById('skill-detail')
+  panel.classList.remove('hidden')
+  panel.innerHTML = `<div class="text-gray-400 text-sm animate-pulse">Loading…</div>`
+
+  const [skill, dagData] = await Promise.all([
+    Promise.resolve(S.skills.find(s => s.id === id)),
+    dagCache[id]
+      ? Promise.resolve(dagCache[id])
+      : api('GET', `/api/dag/${id}`).then(d => { dagCache[id] = d; return d })
+  ])
+  if (!skill) { panel.innerHTML = ''; return }
+
+  const hasDAG = dagData?.children?.length > 0
+
+  panel.innerHTML = `
+    <div class="flex items-start justify-between mb-5">
+      <div class="flex items-center gap-3 flex-wrap">
+        <h3 class="text-xl font-bold">${skill.name}</h3>
+        ${tier(skill.tier)}
+        <span class="text-xs text-gray-400 font-mono">skill #${skill.id}</span>
+        ${skill.name === 'save-hello' ? `<span class="text-xs bg-green-100 text-green-700 rounded-full px-2 py-0.5 font-medium">runs locally</span>` : ''}
+      </div>
+      <button onclick="closeDetail()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none ml-4">×</button>
+    </div>
+
+    <p class="text-sm text-gray-600 mb-5">${skill.description}</p>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      ${[['Creator', skill.creator], ['Type', skill.skillType], ['Total Calls', skill.totalCalls], ['Revenue', eth(skill.totalRevenue) + ' ETH']]
+        .map(([l,v]) => `<div class="bg-gray-50 rounded-xl px-4 py-3"><div class="text-xs text-gray-400 mb-0.5">${l}</div><div class="font-semibold text-sm truncate" title="${v}">${v}</div></div>`)
+        .join('')}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- DAG Tree -->
+      <div>
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">Composition DAG</h4>
+        ${hasDAG
+          ? `<div class="bg-gray-50 rounded-xl p-4 text-sm">${buildDAGHtml(dagData, true)}</div>`
+          : `<div class="bg-gray-50 rounded-xl p-4 text-sm text-gray-400 italic">Leaf skill — no dependencies</div>`}
+      </div>
+
+      <!-- Fee Simulator -->
+      <div>
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">Fee Flow Simulator</h4>
+        <div class="bg-gray-50 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-sm text-gray-500">Payment:</span>
+            <input id="sim-amt-${id}" type="number" min="0.0001" step="0.001"
+                   value="${skill.pricePerCall || 0.01}"
+                   oninput="renderFeeFlow(${id})"
+                   class="w-28 border border-gray-300 rounded-lg px-2 py-1 text-sm font-mono" />
+            <span class="text-sm text-gray-400">ETH</span>
+          </div>
+          <div id="fee-flow-${id}"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue split legend -->
+    <div class="flex gap-6 text-sm bg-indigo-50 text-indigo-700 rounded-xl px-4 py-2.5 mb-5 flex-wrap">
+      <span>70% → Creator</span>
+      <span>20% → Upstream royalties</span>
+      <span>10% → Protocol treasury</span>
+    </div>
+
+    <!-- Call controls -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-500">Amount:</label>
+        <input id="call-amt-${id}" type="number" min="0.0001" step="0.001"
+               value="${skill.pricePerCall || 0.001}"
+               class="w-28 border border-gray-300 rounded-lg px-2 py-1 text-sm font-mono" />
+        <span class="text-sm text-gray-400">ETH</span>
+      </div>
+      <button onclick="handleCall(${id})"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-2 text-sm font-semibold transition-colors">
+        Call Skill
+      </button>
+    </div>
+    <div id="call-result-${id}" class="mt-4"></div>
+  `
+  renderFeeFlow(id)
+}
+
+function closeDetail() {
+  document.getElementById('skill-detail').classList.add('hidden')
+  selectedId = null
+  renderMarketplace()
+}
+
+// Build recursive DAG HTML
+function buildDAGHtml(node, isRoot = false) {
+  if (!node) return ''
+  const weightTag = node.weight !== undefined
+    ? `<span class="text-xs font-mono bg-white border border-gray-200 rounded px-1 mr-1">${node.weight}%</span>`
+    : ''
+  const depthTag = isRoot
+    ? `<span class="text-xs text-gray-400 ml-1">depth ${node.depth}</span>`
+    : ''
+  const nameEl = `<span class="font-medium text-indigo-700 hover:underline cursor-pointer"
+                        onclick="selectSkill(${node.id})">${node.name}</span>`
+  const children = node.children?.length
+    ? `<div class="dag-children">${node.children.map(c => `<div class="dag-node">${buildDAGHtml(c)}</div>`).join('')}</div>`
+    : ''
+  return `<div>${weightTag}${nameEl} ${tier(node.tier)}${depthTag}${children}</div>`
+}
+
+// Fee flow simulator (frontend math, mirrors server-side logic)
+function renderFeeFlow(skillId) {
+  const el  = document.getElementById(`fee-flow-${skillId}`)
+  const inp = document.getElementById(`sim-amt-${skillId}`)
+  if (!el || !inp) return
+  const v = parseFloat(inp.value) || 0
+  if (!v) return
+
+  const skill  = S.skills.find(s => s.id === skillId)
+  const dag    = dagCache[skillId]
+  const proto  = v * 0.10
+  const up     = v * 0.20
+  const cBase  = v * 0.70
+
+  const rows = [
+    { label: `Protocol → treasury`,       amount: proto,  cls: 'bg-gray-100 text-gray-700' },
+  ]
+
+  if (dag?.children?.length) {
+    const level1 = up * 0.50
+    dag.children.forEach(c => {
+      rows.push({ label: `Upstream d1 (${c.weight}%) → ${c.creator} [${c.name}]`, amount: level1 * c.weight / 100, cls: 'bg-green-50 text-green-800' })
+    })
+    const remainder = up - level1
+    rows.push({ label: `Upstream remainder → ${skill?.creator}`, amount: cBase + remainder, cls: 'bg-indigo-50 text-indigo-800' })
+  } else {
+    rows.push({ label: `Creator + upstream remainder → ${skill?.creator}`, amount: cBase + up, cls: 'bg-indigo-50 text-indigo-800' })
+  }
+
+  el.innerHTML = rows.map(r => `
+    <div class="flex justify-between text-xs rounded-lg px-2 py-1.5 mb-1 ${r.cls}">
+      <span class="truncate mr-2">${r.label}</span>
+      <span class="font-mono font-semibold shrink-0">${eth(r.amount)} ETH</span>
+    </div>`).join('')
+    + `<div class="flex justify-between text-xs border-t border-gray-200 pt-1.5 mt-1.5">
+         <span class="text-gray-500">Total</span>
+         <span class="font-mono font-bold">${eth(v)} ETH</span>
+       </div>`
+}
+
+// Quick call from skill grid card
+async function quickCall(skillId) {
+  const skill = S.skills.find(s => s.id === skillId)
+  const value = skill?.pricePerCall || 0.001
+  const res   = await api('POST', `/api/call/${skillId}`, { value, caller: me() })
+  if (res.error) { alert('Error: ' + res.error); return }
+  await refresh()
+  // If detail is open for this skill, re-render it
+  if (selectedId === skillId) await renderDetail(skillId)
+}
+
+async function handleCall(skillId) {
+  const input = document.getElementById(`call-amt-${skillId}`)
+  const value = parseFloat(input?.value || 0.001)
+  const res   = await api('POST', `/api/call/${skillId}`, { value, caller: me() })
+  if (res.error) { alert('Error: ' + res.error); return }
+
+  await refresh()
+
+  const resEl = document.getElementById(`call-result-${skillId}`)
+  if (!resEl) return
+  const tx    = res.tx
+  const skill = S.skills.find(s => s.id === skillId)
+
+  const breakdownRows = [
+    `<div class="flex justify-between text-xs bg-gray-100 rounded px-2 py-1 mb-1">
+       <span>Protocol → treasury</span><span class="font-mono">${eth(tx.breakdown.protocol)} ETH</span></div>`,
+    `<div class="flex justify-between text-xs bg-indigo-50 rounded px-2 py-1 mb-1">
+       <span>Creator → ${skill.creator}</span><span class="font-mono">${eth(tx.breakdown.creatorTotal)} ETH</span></div>`,
+    ...tx.breakdown.upstream.map(u =>
+      `<div class="flex justify-between text-xs bg-green-50 rounded px-2 py-1 mb-1">
+         <span>↑ depth ${u.depth} · ${u.skillName} (${u.weight}%) → ${u.creator}</span>
+         <span class="font-mono">${eth(u.amount)} ETH</span></div>`),
+  ]
+  if (tx.fileWritten)   breakdownRows.push(`<div class="text-xs text-green-700 bg-green-50 rounded px-2 py-1 mt-1">✓ hello.txt written to disk</div>`)
+  if (tx.fileWritten === false) breakdownRows.push(`<div class="text-xs text-gray-500 rounded px-2 py-1 mt-1">skill.js not found (run from skill-network/ root)</div>`)
+
+  resEl.innerHTML = `
+    <div class="border border-gray-200 rounded-xl p-3">
+      <div class="text-xs font-semibold text-gray-700 mb-2">
+        Fee distribution — ${eth(tx.value)} ETH paid by ${tx.caller}
+      </div>
+      ${breakdownRows.join('')}
+    </div>`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DAG Explorer tab
+// ─────────────────────────────────────────────────────────────────────────────
+function populateDAGSelect() {
+  const sel = document.getElementById('dag-select')
+  sel.innerHTML = S.skills.map(s => `<option value="${s.id}">#${s.id} ${s.name}</option>`).join('')
+  renderDAGTab()
+}
+
+async function renderDAGTab() {
+  const id   = +document.getElementById('dag-select').value
+  const data = dagCache[id] || await api('GET', `/api/dag/${id}`).then(d => { dagCache[id] = d; return d })
+  const el   = document.getElementById('dag-display')
+  const skill = S.skills.find(s => s.id === id)
+  if (!skill) return
+
+  el.innerHTML = `
+    <div class="mb-4 flex items-center gap-3">
+      <h3 class="text-lg font-bold">${skill.name}</h3>
+      ${tier(skill.tier)}
+      <span class="text-xs text-gray-400">creator: ${skill.creator}</span>
+      <span class="text-xs text-gray-400">depth: ${data.depth}</span>
+    </div>
+    ${data.children?.length
+      ? `<div class="text-sm">${buildDAGHtml(data, true)}</div>`
+      : `<p class="text-sm text-gray-400 italic">Leaf skill — this skill has no composition dependencies.</p>`}
+    <div class="mt-6 pt-4 border-t border-gray-100">
+      <div class="text-xs font-semibold text-gray-500 mb-2">Legend</div>
+      <div class="flex gap-4 text-xs flex-wrap">
+        ${['OPEN','SHIELDED','PRIVATE'].map(t => `<div class="flex items-center gap-1">${tier(t)} <span class="text-gray-500">${t === 'OPEN' ? 'fully public' : t === 'SHIELDED' ? 'semi-private' : 'fully private'}</span></div>`).join('')}
+        <div class="text-gray-400 ml-4">Numbers = royalty weight %</div>
+      </div>
+    </div>`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Compose tab
+// ─────────────────────────────────────────────────────────────────────────────
+function populateParentCheckboxes() {
+  document.getElementById('parent-checkboxes').innerHTML = S.skills.map(s => `
+    <label class="flex items-center gap-2 rounded px-1 py-0.5 cursor-pointer hover:bg-gray-100">
+      <input type="checkbox" name="parent" value="${s.id}" onchange="onParentChange()" />
+      <span class="text-gray-700">#${s.id} ${s.name}</span>
+      ${tier(s.tier)}
+    </label>`).join('')
+}
+
+function onParentChange() {
+  const checked = [...document.querySelectorAll('input[name=parent]:checked')]
+  const section = document.getElementById('weight-section')
+  const rows    = document.getElementById('weight-rows')
+
+  if (!checked.length) { section.classList.add('hidden'); return }
+  section.classList.remove('hidden')
+
+  // Preserve existing weight values
+  const existing = {}
+  document.querySelectorAll('.wi').forEach(i => { existing[i.dataset.id] = i.value })
+
+  const even = Math.floor(100 / checked.length)
+  rows.innerHTML = checked.map((cb, i) => {
+    const id    = cb.value
+    const skill = S.skills.find(s => s.id == id)
+    const def   = existing[id] || (i === 0 ? 100 - even * (checked.length - 1) : even)
+    return `
+      <div class="flex items-center gap-2 text-sm">
+        <span class="flex-1 text-gray-700 truncate">${skill?.name}</span>
+        <input type="number" class="wi w-16 border border-gray-300 rounded px-2 py-1 text-right text-sm"
+               data-id="${id}" min="1" max="100" value="${def}" oninput="updateWtSum()" />
+        <span class="text-gray-400">%</span>
+      </div>`}).join('')
+  updateWtSum()
+}
+
+function updateWtSum() {
+  const sum = [...document.querySelectorAll('.wi')].reduce((a, i) => a + (+i.value || 0), 0)
+  const el  = document.getElementById('weight-sum')
+  el.textContent = `${sum} / 100`
+  el.className = 'font-mono font-bold ' + (sum === 100 ? 'text-green-600' : 'text-red-500')
+}
+
+async function handleMint() {
+  const name  = document.getElementById('c-name').value.trim()
+  const desc  = document.getElementById('c-desc').value.trim()
+  const type  = document.getElementById('c-type').value
+  const t     = document.getElementById('c-tier').value
+  const price = parseFloat(document.getElementById('c-price').value || 0)
+  const msg   = document.getElementById('mint-msg')
+
+  if (!name) { msg.innerHTML = `<span class="text-red-500">Name is required.</span>`; return }
+
+  const r = await api('POST', '/api/mint', { name, description: desc, skillType: type, tier: t, pricePerCall: price, creator: me() })
+  if (r.error) { msg.innerHTML = `<span class="text-red-500">${r.error}</span>`; return }
+
+  const newId   = r.id
+  const checked = [...document.querySelectorAll('input[name=parent]:checked')]
+
+  if (checked.length) {
+    const parentIds = checked.map(c => +c.value)
+    const weights   = [...document.querySelectorAll('.wi')].map(i => +i.value)
+    const cr = await api('POST', '/api/compose', { childId: newId, parentIds, weights, caller: me() })
+    if (cr.error) {
+      msg.innerHTML = `<span class="text-amber-600">Minted #${newId} but compose failed: ${cr.error}</span>`
+      await refresh(); return
+    }
+    msg.innerHTML = `<span class="text-green-600 font-medium">✓ Minted & composed as skill #${newId}</span>`
+  } else {
+    msg.innerHTML = `<span class="text-green-600 font-medium">✓ Minted as skill #${newId}</span>`
+  }
+
+  await refresh()
+  populateParentCheckboxes()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Balances tab
+// ─────────────────────────────────────────────────────────────────────────────
+function renderBalances() {
+  const max = Math.max(...Object.values(S.balances), 0.001)
+  document.getElementById('balance-cards').innerHTML = Object.entries(S.balances).map(([user, amt]) => {
+    const pct     = ((amt / max) * 100).toFixed(1)
+    const isCur   = user === me()
+    const canWith = isCur && amt > 1e-9 && user !== 'treasury'
+    return `
+      <div class="bg-white border ${isCur ? 'border-indigo-300 ring-1 ring-indigo-200' : 'border-gray-200'} rounded-2xl p-5 shadow-sm">
+        <div class="flex justify-between items-start mb-3">
+          <div>
+            <div class="font-bold text-gray-900 flex items-center gap-2">
+              ${user}
+              ${isCur ? `<span class="text-xs bg-indigo-100 text-indigo-600 rounded-full px-1.5">you</span>` : ''}
+            </div>
+            <div class="text-xs text-gray-400">${user === 'treasury' ? 'Protocol Treasury (10% fee)' : 'Skill Creator'}</div>
+          </div>
+          <div class="text-right">
+            <div id="bal-${user}" class="text-2xl font-bold">${eth(amt)}</div>
+            <div class="text-xs text-gray-400">ETH</div>
+          </div>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4">
+          <div class="bal-bar bg-indigo-500 h-1.5 rounded-full" style="width:${pct}%"></div>
+        </div>
+        ${canWith
+          ? `<button onclick="handleWithdraw('${user}')"
+                     class="w-full text-sm bg-green-600 hover:bg-green-700 text-white rounded-xl py-2 font-semibold transition-colors">
+               Withdraw ${eth(amt)} ETH
+             </button>`
+          : user === 'treasury'
+          ? `<div class="text-xs text-center text-gray-400 py-1">Protocol fee — non-withdrawable in demo</div>`
+          : isCur
+          ? `<div class="text-xs text-center text-gray-400 py-1">Nothing to withdraw</div>`
+          : `<div class="text-xs text-center text-gray-400 py-1">Switch to "${user}" to withdraw</div>`}
+      </div>`
+  }).join('')
+}
+
+async function handleWithdraw(user) {
+  const r = await api('POST', '/api/withdraw', { user })
+  if (r.error) { alert(r.error); return }
+  await refresh()
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Call Log tab
+// ─────────────────────────────────────────────────────────────────────────────
+function renderLog() {
+  const el = document.getElementById('tx-log')
+  if (!S.txLog.length) { el.innerHTML = `<p class="text-gray-400 text-sm">No transactions yet.</p>`; return }
+
+  el.innerHTML = S.txLog.map(tx => {
+    if (tx.type === 'WITHDRAW') return `
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <div class="flex justify-between text-sm">
+          <span class="font-semibold">💸 Withdraw — <span class="text-indigo-600">${tx.user}</span></span>
+          <span class="font-mono text-green-700 font-semibold">+${eth(tx.amount)} ETH</span>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">${new Date(tx.ts).toLocaleTimeString()}</div>
+      </div>`
+
+    return `
+      <div class="bg-white border border-gray-200 rounded-xl p-4">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <span class="font-semibold text-sm">${tx.skillName}</span>
+            <span class="text-xs text-gray-400 ml-2">skill #${tx.skillId} · called by ${tx.caller}</span>
+          </div>
+          <span class="font-mono font-bold">${eth(tx.value)} ETH</span>
+        </div>
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs bg-gray-100 rounded-lg px-2 py-1.5">
+            <span>Protocol → treasury (10%)</span>
+            <span class="font-mono">${eth(tx.breakdown.protocol)} ETH</span>
+          </div>
+          <div class="flex justify-between text-xs bg-indigo-50 rounded-lg px-2 py-1.5">
+            <span>Creator (70% + upstream remainder)</span>
+            <span class="font-mono">${eth(tx.breakdown.creatorTotal)} ETH</span>
+          </div>
+          ${tx.breakdown.upstream.map(u => `
+          <div class="flex justify-between text-xs bg-green-50 rounded-lg px-2 py-1.5">
+            <span>↑ depth ${u.depth} · ${u.skillName} (${u.weight}%) → ${u.creator}</span>
+            <span class="font-mono">${eth(u.amount)} ETH</span>
+          </div>`).join('')}
+        </div>
+        <div class="text-xs text-gray-400 mt-2">${new Date(tx.ts).toLocaleTimeString()}</div>
+      </div>`
+  }).join('')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Master render + init
+// ─────────────────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderMarketplace()
+  renderBalances()
+  renderLog()
+  onUserChange()
+}
+
+refresh()
+setInterval(refresh, 10000)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Agents tab — ERC-8004 node network
+// ─────────────────────────────────────────────────────────────────────────────
+let A = { agents: [], log: [] }
+let selectedAgentId = null
+
+const OWNER_COLOR = {
+  deployer: { header: 'bg-violet-600',  badge: 'bg-violet-100 text-violet-700 border-violet-200' },
+  alice:    { header: 'bg-pink-500',    badge: 'bg-pink-100   text-pink-700   border-pink-200'   },
+  bob:      { header: 'bg-sky-500',     badge: 'bg-sky-100    text-sky-700    border-sky-200'    },
+  carol:    { header: 'bg-teal-500',    badge: 'bg-teal-100   text-teal-700   border-teal-200'   },
+}
+function ownerColor(owner) {
+  return OWNER_COLOR[owner] || { header: 'bg-gray-500', badge: 'bg-gray-100 text-gray-600 border-gray-200' }
+}
+
+const STATUS_DOT = { ACTIVE: 'bg-green-400', PAUSED: 'bg-amber-400', REVOKED: 'bg-red-400' }
+
+function agentIcon(name) {
+  if (/orchestrat/i.test(name)) return '⬡'
+  if (/research/i.test(name))   return '🔬'
+  if (/analys/i.test(name))     return '🔍'
+  if (/summar/i.test(name))     return '📝'
+  return '🤖'
+}
+
+async function refreshAgents() {
+  const [agentData, logData] = await Promise.all([
+    api('GET', '/api/agents'),
+    api('GET', '/api/agents/log').catch(() => ({ log: [] })),
+  ])
+  A.agents = agentData.agents || []
+  A.log    = logData.log      || []
+  renderNetwork(A.agents)
+  if (selectedAgentId !== null) {
+    const still = A.agents.find(a => a.agentId === selectedAgentId)
+    if (still) renderDetail(still)
+  }
+}
+
+function renderNetwork(agents) {
+  const nodesEl = document.getElementById('network-nodes')
+  if (!agents.length) {
+    nodesEl.innerHTML = '<p class="text-sm text-gray-400 py-6">No agents registered.</p>'
+    return
+  }
+
+  function nodeHTML(a) {
+    const oc  = ownerColor(a.owner)
+    const dot = STATUS_DOT[a.status] || 'bg-gray-300'
+    const sel = a.agentId === selectedAgentId
+    const ring = sel ? 'ring-2 ring-indigo-400 ring-offset-2' : ''
+    return `
+      <div id="node-${a.agentId}" data-agent-id="${a.agentId}"
+           onclick="selectAgent(${a.agentId})"
+           class="cursor-pointer rounded-2xl shadow-sm border border-gray-200 overflow-hidden w-36 flex-shrink-0 ${ring}
+                  hover:shadow-md transition-shadow select-none">
+        <div class="${oc.header} px-3 py-2 flex items-center justify-between">
+          <span class="text-white text-sm font-semibold truncate">${agentIcon(a.name)}</span>
+          <span class="w-2 h-2 rounded-full ${dot} flex-shrink-0"></span>
+        </div>
+        <div class="bg-white px-3 py-2">
+          <div class="text-xs font-semibold text-gray-800 truncate mb-0.5">${esc(a.name)}</div>
+          <div class="text-[10px] text-gray-400 truncate mb-1">#${a.agentId} · ${a.totalInvocations} calls</div>
+          <span class="text-[10px] border rounded-full px-1.5 py-0.5 ${oc.badge}">${a.owner}</span>
+        </div>
+      </div>`
+  }
+
+  nodesEl.innerHTML = `
+    <div class="flex flex-wrap justify-center gap-4">
+      ${agents.map(nodeHTML).join('')}
+    </div>`
+
+}
+
+function selectAgent(id) {
+  selectedAgentId = id
+  renderNetwork(A.agents)   // re-render to apply selection ring
+  const agent = A.agents.find(a => a.agentId === id)
+  if (agent) renderDetail(agent)
+}
+
+function closeAgentDetail() {
+  selectedAgentId = null
+  document.getElementById('agent-detail').classList.add('hidden')
+  renderNetwork(A.agents)
+}
+
+function renderDetail(agent) {
+  const oc   = ownerColor(agent.owner)
+  const dot  = STATUS_DOT[agent.status] || 'bg-gray-300'
+  const calls = A.log.filter(e => e.agentId === agent.agentId)
+
+  const detailEl = document.getElementById('agent-detail')
+  detailEl.classList.remove('hidden')
+  detailEl.innerHTML = `
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <!-- Header -->
+      <div class="${oc.header} px-5 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-white text-2xl">${agentIcon(agent.name)}</span>
+          <div>
+            <div class="text-white font-bold text-base">${esc(agent.name)}</div>
+            <div class="text-white/70 text-xs">ERC-8004 agent #${agent.agentId}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="flex items-center gap-1 text-xs text-white/80">
+            <span class="w-2 h-2 rounded-full ${dot}"></span>${agent.status}
+          </span>
+          <button onclick="closeAgentDetail()"
+                  class="text-white/70 hover:text-white text-xl leading-none px-1">×</button>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-5 space-y-4">
+        <p class="text-sm text-gray-600">${esc(agent.description)}</p>
+        <!-- Stats grid -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-gray-50 rounded-xl p-3 text-center">
+            <div class="text-lg font-bold text-gray-800">${agent.totalInvocations}</div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wide">Total calls</div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 text-center">
+            <div class="text-lg font-bold text-gray-800">${agent.feePerTask === 0 ? 'Free' : eth(agent.feePerTask) + ' ETH'}</div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wide">Fee / task</div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 text-center">
+            <div class="text-lg font-bold text-gray-800">${eth(agent.totalEarned)}</div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wide">ETH earned</div>
+          </div>
+        </div>
+        <!-- Meta -->
+        <div class="flex flex-wrap gap-2 items-center text-xs">
+          <span class="font-medium text-gray-500">Owner:</span>
+          <span class="border rounded-full px-2 py-0.5 ${oc.badge}">${agent.owner}</span>
+          <span class="font-medium text-gray-500 ml-2">Capabilities:</span>
+          ${agent.capabilities.map(c =>
+            `<span class="bg-violet-50 text-violet-600 border border-violet-100 rounded px-1.5 py-0.5">${esc(c)}</span>`
+          ).join('')}
+        </div>
+        <div class="text-[10px] text-gray-300 font-mono truncate" title="${esc(agent.metadataURI || '')}">
+          metadataURI: ${esc(agent.metadataURI || 'n/a')}
+        </div>
+        <!-- Recent call history -->
+        <div>
+          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            Recent invocations (${calls.length})
+          </div>
+          ${calls.length === 0
+            ? '<p class="text-xs text-gray-400">No calls yet.</p>'
+            : calls.slice(-5).reverse().map(e => `
+              <div class="border border-gray-100 rounded-xl p-3 mb-2 text-xs">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                  <span class="font-medium text-gray-700">${esc(e.task || 'task')}</span>
+                  <span class="text-gray-400">← ${esc(e.payer)}</span>
+                  <span class="ml-auto text-gray-300">${new Date(e.ts).toLocaleTimeString()}</span>
+                </div>
+                ${e.input ? `<div class="text-gray-400 mb-1 truncate">Input: ${esc(e.input)}</div>` : ''}
+                <pre class="text-gray-600 bg-gray-50 rounded-lg p-2 max-h-20 overflow-auto whitespace-pre-wrap">${esc((e.result || '').slice(0, 300))}${(e.result || '').length > 300 ? '…' : ''}</pre>
+              </div>`).join('')
+          }
+        </div>
+      </div>
+    </div>`
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+// Load agents when tab opens
+const _origSwitchTab = switchTab
+switchTab = function(name) {
+  _origSwitchTab(name)
+  if (name === 'agents') refreshAgents()
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+
+# ── Secrets — NEVER commit these ──────────────────────────────
+**/.env
+**/.env.local
+**/.env.hedera
+skill-network/contracts/.env
+skill-network/demo/.env.hedera
+skill-network/frontend/.env
+skill-network/frontend/.env.local
+# (the *.example template files ARE committed)
+
+# ── Build / tool outputs ──────────────────────────────────────
+**/dist/
+skill-network/frontend/dist/
+skill-network/contracts/out/
+skill-network/contracts/cache/
+skill-network/contracts/broadcast/*/31337/
+skill-network/contracts/foundry.lock
+
+# ── Local runtime state ───────────────────────────────────────
+tmp_state.json
+*.log
+
+# ── OS / editor cruft ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

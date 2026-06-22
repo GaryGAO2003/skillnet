@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: skillnet-demo
+    runtime: node
+    rootDir: demo
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HEDERA_ACCOUNT_ID
+        sync: false
+      - key: HEDERA_PRIVATE_KEY
+        sync: false
+      - key: HCS26_DISCOVERY_TOPIC
+        sync: false

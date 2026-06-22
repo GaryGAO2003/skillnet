@@ -1,0 +1,13 @@
+{
+  "task": "onchain-micropayments",
+  "iteration": 1,
+  "total_findings": 12,
+  "status": "complete",
+  "stale_count": 0,
+  "created": "2026-06-21",
+  "completed": "2026-06-21",
+  "method": "deli-autoresearch conventions (state-persisted, work/verify separation, mechanical citation check) via Workflow: 5 parallel web sweeps -> adversarial numeric verification -> synthesis. 11 agents, ~190 web tool uses.",
+  "verdict": "Per-call on-chain settlement NOT viable for sub-cent multi-recipient DAG royalties on any chain incl. Solana (fee floor 2.5-3.7x call value; per-recipient ATA rent ~1000x). 'Microsecond' on-chain settlement does not exist. Recommend off-chain signed vouchers + DAG netting + threshold/timer batch settlement on Base (reuse EVM contracts + x402/USDC), keep Hedera HCS-26 as registry; Solana only if throughput-bound via internal-ledger PDA.",
+  "report": "research/onchain-micropayments/report.md",
+  "open_question": "Empirically pin the real SPL-token-transfers-per-tx count (~10-25 estimated) before any Solana commitment."
+}

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SkillNet Agent</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { display: flex; flex-direction: column; font-family: ui-sans-serif, system-ui, sans-serif; }
+    #messages { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+
+    /* Typing dots */
+    .dot { display:inline-block; width:7px; height:7px; border-radius:50%;
+           background:#94a3b8; animation: bounce 1.2s infinite; }
+    .dot:nth-child(2){ animation-delay:.2s }
+    .dot:nth-child(3){ animation-delay:.4s }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+
+    /* Skill call card accent */
+    .skill-card { border-left: 3px solid #8b5cf6; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-gray-900">
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+<header class="bg-white border-b border-gray-200 px-5 py-3 flex items-center gap-3 flex-shrink-0 shadow-sm z-10">
+  <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base select-none">⚙</div>
+  <div class="leading-tight">
+    <div class="font-bold text-sm">SkillNet Agent</div>
+    <div class="text-xs text-gray-400">Qwen · SkillNet marketplace</div>
+  </div>
+
+  <div class="ml-4 flex items-center gap-1.5">
+    <div id="sn-dot" class="w-2 h-2 rounded-full bg-gray-300"></div>
+    <span id="sn-label" class="text-xs text-gray-400">connecting…</span>
+  </div>
+
+  <div class="flex-1"></div>
+
+  <a href="http://localhost:3000" target="_blank"
+     class="text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg px-3 py-1.5
+            hover:bg-indigo-100 transition-colors font-medium whitespace-nowrap">
+    SkillNet Dashboard →
+  </a>
+</header>
+
+<div class="flex flex-1 min-h-0 overflow-hidden">
+
+  <!-- ══ SIDEBAR ════════════════════════════════════════════════════════════ -->
+  <aside class="w-52 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col text-sm">
+    <div class="px-3 py-2.5 border-b border-gray-100 flex items-center justify-between">
+      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Skills</span>
+      <span id="skill-count" class="text-xs text-gray-400 font-mono"></span>
+    </div>
+
+    <div id="skills-list" class="flex-1 overflow-y-auto p-1.5 space-y-px">
+      <div class="text-xs text-gray-400 px-2 py-3">Loading…</div>
+    </div>
+
+    <div class="px-3 py-2 border-t border-gray-100 text-xs text-gray-400 text-center">
+      Every skill call → <span class="text-indigo-500 font-medium">Call Log</span>
+    </div>
+  </aside>
+
+  <!-- ══ CHAT COLUMN ════════════════════════════════════════════════════════ -->
+  <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+
+    <!-- Messages -->
+    <div id="messages" class="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+
+      <!-- Welcome bubble -->
+      <div class="flex gap-2.5 items-start">
+        <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">A</div>
+        <div class="bg-white rounded-2xl rounded-tl-sm border border-gray-200 px-4 py-3 shadow-sm max-w-md">
+          <p class="font-medium text-sm mb-1">Hi! I'm your SkillNet agent.</p>
+          <p class="text-sm text-gray-600 mb-2.5">
+            I have access to skills from the SkillNet marketplace. When you ask me something that matches a skill, I'll use it — and every call gets recorded in the <strong>SkillNet Call Log</strong>.
+          </p>
+          <div class="text-xs text-gray-400 bg-gray-50 rounded-lg p-2.5 space-y-2">
+            <div class="font-medium text-gray-500 mb-1">Try asking — triggers the skill:</div>
+            <div class="cursor-pointer hover:text-indigo-500 transition-colors" onclick="inject(this)">
+              Save a hello world file
+            </div>
+            <div class="cursor-pointer hover:text-indigo-500 transition-colors" onclick="inject(this)">
+              Run the save-hello skill please
+            </div>
+            <div class="border-t border-gray-200 pt-2 font-medium text-gray-500">
+              General chat — router should skip the skill:
+            </div>
+            <div class="cursor-pointer hover:text-indigo-500 transition-colors" onclick="inject(this)">
+              What is a blockchain?
+            </div>
+            <div class="cursor-pointer hover:text-indigo-500 transition-colors" onclick="inject(this)">
+              Explain how HCS-26 works
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /messages -->
+
+    <!-- Input bar -->
+    <div class="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-3">
+      <div class="flex gap-2 max-w-3xl mx-auto">
+        <textarea id="input" rows="2"
+                  placeholder="Ask anything — I'll use a skill from SkillNet when relevant…"
+                  class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm resize-none
+                         focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"
+                  onkeydown="onKey(event)"></textarea>
+        <button id="send-btn" onclick="send()"
+                class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed
+                       text-white rounded-xl px-5 text-sm font-semibold transition-colors self-end py-2.5">
+          Send
+        </button>
+      </div>
+      <p class="text-center text-xs text-gray-400 mt-1">Enter to send · Shift+Enter for new line</p>
+    </div>
+
+  </div><!-- /chat column -->
+</div><!-- /flex row -->
+
+<!-- ══ SCRIPT ══════════════════════════════════════════════════════════════ -->
+<script>
+const history = []
+let busy = false
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+;(async () => {
+  await loadSkills()
+  document.getElementById('input').focus()
+})()
+
+async function loadSkills() {
+  try {
+    const r  = await fetch('/api/skills')
+    const d  = await r.json()
+    const sk = d.skills || []
+
+    document.getElementById('skill-count').textContent = sk.length
+
+    if (d.error || !sk.length) {
+      setStatus(false, 'SkillNet offline')
+      document.getElementById('skills-list').innerHTML =
+        `<div class="text-xs text-orange-400 px-2 py-3">Start the demo server on :3000 first.</div>`
+      return
+    }
+
+    setStatus(true, `${sk.length} skills`)
+
+    document.getElementById('skills-list').innerHTML = sk.map(s => `
+      <div class="px-2 py-1.5 rounded-lg hover:bg-gray-50 cursor-default group">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span class="text-xs font-medium text-gray-700 truncate flex-1" title="${esc(s.name)}">${esc(s.name)}</span>
+          <span class="text-[10px] font-mono px-1 rounded flex-shrink-0 ${tc(s.tier)}">${s.tier[0]}</span>
+        </div>
+        <div class="text-[10px] text-gray-400 truncate">${esc(s.description)}</div>
+        ${s.totalCalls ? `<div class="text-[10px] text-indigo-400">${s.totalCalls} call${s.totalCalls!==1?'s':''}</div>` : ''}
+      </div>
+    `).join('')
+  } catch {
+    setStatus(false, 'Error')
+  }
+}
+
+function setStatus(ok, label) {
+  document.getElementById('sn-dot').className   = `w-2 h-2 rounded-full ${ok ? 'bg-green-400' : 'bg-orange-400'}`
+  document.getElementById('sn-label').textContent = label
+}
+
+// ── Inject example text into input ───────────────────────────────────────────
+function inject(el) {
+  document.getElementById('input').value = el.textContent.trim()
+  document.getElementById('input').focus()
+}
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+}
+
+async function send() {
+  if (busy) return
+  const text = document.getElementById('input').value.trim()
+  if (!text) return
+
+  document.getElementById('input').value = ''
+  setBusy(true)
+
+  appendUser(text)
+  history.push({ role: 'user', content: text })
+
+  const indicator = appendTyping()
+
+  try {
+    const res = await fetch('/api/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ messages: history }),
+    })
+    indicator.remove()
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+      appendError(e.error || `HTTP ${res.status}`)
+      history.pop()
+      return
+    }
+
+    const d = await res.json()
+    history.push({ role: 'assistant', content: d.reply })
+    appendAssistant(d.reply, d.skillCalls || [])
+
+    // Refresh skill call counts in sidebar
+    if (d.skillCalls?.length) setTimeout(loadSkills, 600)
+
+  } catch(e) {
+    indicator.remove()
+    appendError(e.message)
+    history.pop()
+  } finally {
+    setBusy(false)
+    document.getElementById('input').focus()
+  }
+}
+
+function setBusy(v) {
+  busy = v
+  document.getElementById('send-btn').disabled = v
+}
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+function appendUser(text) {
+  msgs().appendChild(el(`
+    <div class="flex gap-2.5 items-start justify-end">
+      <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm
+                  max-w-md text-sm whitespace-pre-wrap">${esc(text)}</div>
+      <div class="w-7 h-7 rounded-full bg-slate-300 flex items-center justify-center
+                  text-slate-600 text-xs font-bold flex-shrink-0 mt-0.5">U</div>
+    </div>
+  `))
+  scroll()
+}
+
+function appendAssistant(text, skillCalls) {
+  const wrap = document.createElement('div')
+  wrap.className = 'space-y-2'
+
+  // Skill call cards — one per tool use
+  for (const sc of skillCalls) {
+    wrap.appendChild(el(`
+      <div class="flex gap-2.5 items-start">
+        <div class="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center
+                    text-white text-xs flex-shrink-0 mt-0.5">⚙</div>
+        <div class="skill-card bg-white border border-violet-200 rounded-xl px-4 py-3 shadow-sm
+                    max-w-lg text-sm w-full">
+          <div class="flex items-center gap-2 flex-wrap mb-2">
+            <span class="text-xs font-bold text-violet-600 uppercase tracking-wide">Router → Skill</span>
+            <span class="font-semibold text-gray-800">${esc(sc.skillName)}</span>
+            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${tc(sc.tier)}">${esc(sc.tier)}</span>
+            ${sc.tx
+              ? `<span class="ml-auto text-[10px] text-emerald-600 font-medium">✓ recorded on SkillNet</span>`
+              : `<span class="ml-auto text-[10px] text-gray-400">not recorded (SkillNet offline)</span>`
+            }
+          </div>
+          ${sc.input ? `
+            <div class="text-xs text-gray-500 mb-1.5">
+              <span class="font-medium text-gray-600">Input:</span>
+              ${esc(sc.input.slice(0, 180))}${sc.input.length > 180 ? '…' : ''}
+            </div>` : ''}
+          <div class="text-xs text-gray-500 bg-slate-50 rounded-lg p-2 max-h-28 overflow-y-auto leading-relaxed">
+            <span class="font-medium text-gray-600">Output:</span>
+            ${esc((sc.result || '').slice(0, 500))}${(sc.result||'').length > 500 ? '…' : ''}
+          </div>
+        </div>
+      </div>
+    `))
+  }
+
+  // Final assistant reply
+  wrap.appendChild(el(`
+    <div class="flex gap-2.5 items-start">
+      <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center
+                  text-white text-xs font-bold flex-shrink-0 mt-0.5">A</div>
+      <div class="bg-white rounded-2xl rounded-tl-sm border border-gray-200 px-4 py-3 shadow-sm
+                  max-w-lg text-sm whitespace-pre-wrap">${esc(text)}</div>
+    </div>
+  `))
+
+  msgs().appendChild(wrap)
+  scroll()
+}
+
+function appendError(msg) {
+  msgs().appendChild(el(`
+    <div class="flex gap-2.5 items-start">
+      <div class="w-7 h-7 rounded-full bg-rose-500 flex items-center justify-center
+                  text-white text-xs font-bold flex-shrink-0 mt-0.5">!</div>
+      <div class="bg-rose-50 border border-rose-200 rounded-2xl rounded-tl-sm px-4 py-3
+                  shadow-sm max-w-md text-sm text-rose-700">${esc(msg)}</div>
+    </div>
+  `))
+  scroll()
+}
+
+function appendTyping() {
+  const e = el(`
+    <div class="flex gap-2.5 items-start">
+      <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center
+                  text-white text-xs font-bold flex-shrink-0 mt-0.5">A</div>
+      <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+        <div class="flex gap-1 items-center">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+      </div>
+    </div>
+  `)
+  msgs().appendChild(e)
+  scroll()
+  return e
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+function msgs()  { return document.getElementById('messages') }
+function scroll(){ msgs().scrollTop = msgs().scrollHeight }
+function el(html){ const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstElementChild }
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+function tc(tier) {
+  return { OPEN: 'bg-emerald-100 text-emerald-700', SHIELDED: 'bg-amber-100 text-amber-700',
+           PRIVATE: 'bg-rose-100 text-rose-700' }[tier] || 'bg-gray-100 text-gray-600'
+}
+</script>
+</body>
+</html>
