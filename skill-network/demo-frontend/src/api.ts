@@ -1,4 +1,5 @@
 import type { AppState, DAGNode, ValidationResult, SubCall } from './types'
+import { signHeaders, myPubKey, registrySignature } from './auth'
 
 const BASE = ''
 
@@ -7,6 +8,17 @@ async function json<T>(url: string, opts?: RequestInit): Promise<T> {
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
   return data as T
+}
+
+/** POST a JSON body with an Ed25519 signature over the exact bytes sent. */
+async function signedPost<T>(url: string, body: unknown): Promise<T> {
+  const bodyStr = JSON.stringify(body ?? {})
+  const authHeaders = await signHeaders('POST', url, bodyStr)
+  return json<T>(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
+    body: bodyStr,
+  })
 }
 
 export async function fetchState(): Promise<AppState> {
@@ -25,31 +37,25 @@ export async function mintSkill(body: {
   pricePerCall: number
   creator: string
 }): Promise<{ success: boolean; id: number }> {
-  return json('/api/mint', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, status: 'pending' }),
+  const creatorPubKey = await myPubKey()
+  // Bind the HCS-26 registration to content + creator identity (verified server-side before publish).
+  const { registrySignature: regSig } = await registrySignature({
+    name: body.name, description: body.description, license: 'MIT',
+    skillType: body.skillType, tier: body.tier, pricePerCall: body.pricePerCall,
   })
+  return signedPost('/api/mint', { ...body, creatorPubKey, registrySignature: regSig, status: 'pending' })
 }
 
 export async function validateSkill(id: number): Promise<ValidationResult> {
-  return json(`/api/validate/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+  return signedPost(`/api/validate/${id}`, {})
 }
 
 export async function approveSkill(id: number, scores: Record<string, number>): Promise<{ success: boolean }> {
-  return json(`/api/approve/${id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ scores }),
-  })
+  return signedPost(`/api/approve/${id}`, { scores })
 }
 
 export async function composeSkill(childId: number, parentIds: number[], weights: number[], caller: string): Promise<{ success: boolean }> {
-  return json('/api/compose', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ childId, parentIds, weights, caller }),
-  })
+  return signedPost('/api/compose', { childId, parentIds, weights, caller })
 }
 
 export async function callSkill(id: number, caller: string, value: number, input: string): Promise<{
@@ -59,17 +65,9 @@ export async function callSkill(id: number, caller: string, value: number, input
   execution: SubCall | null
   feeDistribution: Record<string, number>
 }> {
-  return json(`/api/call/${id}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ caller, value, input }),
-  })
+  return signedPost(`/api/call/${id}`, { caller, value, input })
 }
 
 export async function withdrawBalance(user: string): Promise<{ success: boolean }> {
-  return json('/api/withdraw', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ user }),
-  })
+  return signedPost('/api/withdraw', { user })
 }

@@ -17,10 +17,11 @@ const path    = require('path')
 const fs      = require('fs')
 const https   = require('https')
 const http    = require('http')
+const crypto  = require('node:crypto')
 
 // ── Load env from same .env.hedera as the demo server ────────────────────────
 const envPath = path.join(__dirname, '.env.hedera')
-if (fs.existsSync(envPath)) {
+if (!process.env.SKILLNET_SKIP_ENV_FILE && fs.existsSync(envPath)) {
   fs.readFileSync(envPath, 'utf8').split('\n')
     .map(l => l.trim())
     .filter(l => l && !l.startsWith('#') && l.includes('='))
@@ -43,6 +44,21 @@ app.use(express.json())
 app.use(express.static(path.join(__dirname, 'public-agent')))
 
 // ── SkillNet HTTP helpers ─────────────────────────────────────────────────────
+//
+// The demo server enforces Ed25519-signed writes when AUTH_MODE=signature (its
+// default), so this agent signs its POSTs with a per-process keypair. The signed
+// endpoints it hits (/api/call) are not ownership-checked, so any valid signer
+// is accepted. In AUTH_MODE=dev the server ignores these headers.
+const _AGENT_KP     = crypto.generateKeyPairSync('ed25519')
+const _AGENT_PUBKEY = _AGENT_KP.publicKey.export({ format: 'jwk' }).x
+
+function snSignHeaders(method, urlPath, bodyStr) {
+  const ts       = Date.now().toString()
+  const bodyHash = crypto.createHash('sha256').update(Buffer.from(bodyStr || '', 'utf8')).digest('hex')
+  const msg      = `${method}\n${urlPath}\n${ts}\n${bodyHash}`
+  const sig      = crypto.sign(null, Buffer.from(msg, 'utf8'), _AGENT_KP.privateKey).toString('base64url')
+  return { 'x-skillnet-pubkey': _AGENT_PUBKEY, 'x-skillnet-timestamp': ts, 'x-skillnet-signature': sig }
+}
 
 function snGet(urlPath) {
   return new Promise((resolve, reject) => {
@@ -59,7 +75,11 @@ function snPost(urlPath, body) {
     const data = JSON.stringify(body)
     const req  = http.request(SKILLNET_URL + urlPath, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+      headers: {
+        'Content-Type':   'application/json',
+        'Content-Length': Buffer.byteLength(data),
+        ...snSignHeaders('POST', urlPath, data),
+      },
     }, res => {
       let d = ''
       res.on('data', c => d += c)

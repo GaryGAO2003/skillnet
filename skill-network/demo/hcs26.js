@@ -17,6 +17,9 @@
  *   HCS26_DISCOVERY_TOPIC   HCS-2 topic ID (created by scripts/setup-hedera.mjs)
  */
 
+const crypto   = require('node:crypto')
+const security = require('./security')
+
 // OASF numeric skill ID mapping from SkillNet skillType enum
 const SKILLTYPE_TO_OASF = {
   PROMPT_WORKFLOW:  [10102],        // NLP – Text Generation
@@ -30,8 +33,129 @@ const SKILLTYPE_TO_OASF = {
 
 const MIRROR_BASE = 'https://testnet.mirrornode.hedera.com/api/v1'
 
+const REGISTRY_LICENSE_DEFAULT = 'MIT'
+
 // Lazy-loaded Hedera client (only initialised when env vars are present)
 let _client = null
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Content + identity binding (pure — no network, offline-testable)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// CANONICAL MANIFEST
+//   The durable, content-defining fields of a skill, serialised as compact JSON
+//   with lexicographically-sorted keys and no insignificant whitespace, so the
+//   same skill hashes identically in Node and in the browser. Fields (sorted):
+//     description, license, name, pricePerCall, skillType, tier
+//   `tags` are intentionally excluded: they are derived deterministically from
+//   skillType via SKILLTYPE_TO_OASF, so binding skillType binds the tags
+//   transitively (and avoids duplicating the OASF table in every client).
+//
+// CONTENT HASH
+//   contentHash = sha256hex(canonicalManifest)
+//
+// SIGNING MESSAGE (bound by the creator's Ed25519 key)
+//   `hcs26-register\n${contentHash}\n${name}`
+//   signature = base64url( Ed25519_sign(creatorPrivKey, signingMessage) )
+//   creatorPubKey = base64url raw 32-byte Ed25519 public key (same format the
+//   server auth layer uses).
+
+/** Deterministic JSON: object keys sorted recursively, arrays kept in order, compact. */
+function stableStringify(v) {
+  if (Array.isArray(v)) return '[' + v.map(stableStringify).join(',') + ']'
+  if (v && typeof v === 'object') {
+    return '{' + Object.keys(v).sort()
+      .map(k => JSON.stringify(k) + ':' + stableStringify(v[k]))
+      .join(',') + '}'
+  }
+  return JSON.stringify(v)
+}
+
+/** Build the canonical manifest string for a skill. */
+function canonicalManifest(skill) {
+  return stableStringify({
+    description:  String(skill.description ?? ''),
+    license:      String(skill.license ?? REGISTRY_LICENSE_DEFAULT),
+    name:         String(skill.name ?? ''),
+    pricePerCall: Number(skill.pricePerCall ?? 0),
+    skillType:    String(skill.skillType ?? ''),
+    tier:         String(skill.tier ?? ''),
+  })
+}
+
+/** sha256hex of the canonical manifest — the contentHash bound into the registration. */
+function contentHashOf(skill) {
+  return crypto.createHash('sha256').update(canonicalManifest(skill), 'utf8').digest('hex')
+}
+
+/** The stable message a creator signs to authorise a registration. */
+function registrySigningMessage(contentHash, name) {
+  return `hcs26-register\n${contentHash}\n${name}`
+}
+
+/** Verify a creator's signature over (contentHash, name). */
+function verifyRegistrationSignature(contentHash, name, creatorPubKey, signature) {
+  if (!contentHash || !creatorPubKey || !signature) return false
+  return security.verifyEd25519(creatorPubKey, registrySigningMessage(contentHash, String(name ?? '')), signature)
+}
+
+/**
+ * Build the HCS-26 `register` message object for a skill, embedding the content
+ * hash, the creator's public key, and the creator's signature. Pure — the caller
+ * decides what to do with the returned object (publish it, or hash it in a test).
+ */
+function buildRegisterMessage(skill, { creatorPubKey = null, signature = null, versionRegistryTopicId, discoveryTopicId, accountId } = {}) {
+  return {
+    p:            'hcs-26',
+    op:           'register',
+    t_id:         versionRegistryTopicId || discoveryTopicId,   // per-skill version registry
+    account_id:   accountId,
+    contentHash:  contentHashOf(skill),
+    creatorPubKey,
+    signature,
+    metadata: {
+      name:         skill.name,
+      description:  skill.description || '',
+      author:       skill.creator || accountId,
+      license:      skill.license || REGISTRY_LICENSE_DEFAULT,
+      tags:         SKILLTYPE_TO_OASF[skill.skillType] || [],
+      // Fields required to recompute contentHash on read:
+      skillType:    skill.skillType || '',
+      tier:         skill.tier || '',
+      pricePerCall: Number(skill.pricePerCall ?? 0),
+    },
+    m: `SkillNet [${skill.tier}] ${skill.name}`,
+  }
+}
+
+/**
+ * Verify a parsed HCS-26 register message.
+ * @returns {{ verified:boolean, legacy:boolean, contentHashOk?:boolean, sigOk?:boolean }}
+ *   legacy=true  → old message without contentHash/creatorPubKey/signature (kept, verified:false)
+ *   verified     → contentHash recomputes (when manifest fields present) AND signature checks out
+ */
+function verifyParsedRegistration(parsed) {
+  const meta = (parsed && typeof parsed.metadata === 'object') ? parsed.metadata : {}
+  const hasCrypto = !!(parsed && parsed.contentHash && parsed.creatorPubKey && parsed.signature)
+  if (!hasCrypto) return { verified: false, legacy: true }
+
+  // Recompute contentHash only when the manifest fields are present.
+  const canRecompute = meta.skillType !== undefined && meta.tier !== undefined
+  let contentHashOk = true
+  if (canRecompute) {
+    contentHashOk = contentHashOf({
+      name:         meta.name,
+      description:  meta.description,
+      license:      meta.license,
+      skillType:    meta.skillType,
+      tier:         meta.tier,
+      pricePerCall: meta.pricePerCall,
+    }) === parsed.contentHash
+  }
+
+  const sigOk = verifyRegistrationSignature(parsed.contentHash, meta.name, parsed.creatorPubKey, parsed.signature)
+  return { verified: !!(contentHashOk && sigOk), legacy: false, contentHashOk, sigOk }
+}
 
 // ─── Configuration check ─────────────────────────────────────────────────────
 
@@ -64,25 +188,18 @@ function getClient() {
  * @param {string} [versionRegistryTopicId]  Per-skill version registry topic (optional)
  * @returns {Promise<number>}  HCS-26 skill_uid (sequence number of the register message)
  */
-async function publishSkill(skill, versionRegistryTopicId) {
+async function publishSkill(skill, versionRegistryTopicId, auth = {}) {
   const { TopicMessageSubmitTransaction } = require('@hashgraph/sdk')
   const client = getClient()
   const discoveryTopicId = process.env.HCS26_DISCOVERY_TOPIC
 
-  const message = JSON.stringify({
-    p:          'hcs-26',
-    op:         'register',
-    t_id:       versionRegistryTopicId || discoveryTopicId,  // per-skill version registry
-    account_id: process.env.HEDERA_ACCOUNT_ID,
-    metadata: {
-      name:        skill.name,
-      description: skill.description || '',
-      author:      skill.creator || process.env.HEDERA_ACCOUNT_ID,
-      license:     'MIT',
-      tags:        SKILLTYPE_TO_OASF[skill.skillType] || [],
-    },
-    m: `SkillNet [${skill.tier}] ${skill.name}`,
-  })
+  const message = JSON.stringify(buildRegisterMessage(skill, {
+    creatorPubKey:         auth.creatorPubKey || null,
+    signature:             auth.signature     || null,
+    versionRegistryTopicId,
+    discoveryTopicId,
+    accountId:             process.env.HEDERA_ACCOUNT_ID,
+  }))
 
   const txResponse = await new TopicMessageSubmitTransaction()
     .setTopicId(discoveryTopicId)
@@ -173,6 +290,7 @@ async function fetchRegisteredSkills() {
         if (parsed.p !== 'hcs-26' || parsed.op !== 'register') return null
 
         const meta = typeof parsed.metadata === 'object' ? parsed.metadata : {}
+        const v = verifyParsedRegistration(parsed)
         return {
           skill_uid:           Number(m.sequence_number),
           consensus_timestamp: m.consensus_timestamp,
@@ -183,6 +301,11 @@ async function fetchRegisteredSkills() {
           tags:                meta.tags        || [],
           tier:                parsed.m?.match(/\[(OPEN|SHIELDED|PRIVATE)\]/)?.[1] || 'OPEN',
           version_registry:    parsed.t_id,
+          // Content + identity binding
+          contentHash:         parsed.contentHash  || null,
+          creatorPubKey:       parsed.creatorPubKey || null,
+          verified:            v.verified,
+          verification:        v,   // { verified, legacy, contentHashOk?, sigOk? }
         }
       } catch {
         return null
@@ -220,4 +343,12 @@ module.exports = {
   fetchRegisteredSkills,
   fetchSkillVersions,
   SKILLTYPE_TO_OASF,
+  // Pure content/identity helpers (offline-testable)
+  stableStringify,
+  canonicalManifest,
+  contentHashOf,
+  registrySigningMessage,
+  verifyRegistrationSignature,
+  buildRegisterMessage,
+  verifyParsedRegistration,
 }

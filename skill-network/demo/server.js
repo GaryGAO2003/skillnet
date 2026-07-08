@@ -15,11 +15,26 @@
 const express = require('express')
 const path    = require('path')
 const fs      = require('fs')
+const crypto  = require('node:crypto')
 const { execFileSync } = require('child_process')
 
+const security = require('./security')
+
+// ─── Runtime configuration ───────────────────────────────────────────────────
+// AUTH_MODE: 'signature' (default — all writes must be Ed25519-signed) or 'dev'
+//            (legacy string-identity behaviour, signatures ignored).
+const AUTH_MODE = (process.env.AUTH_MODE || 'signature').toLowerCase() === 'dev' ? 'dev' : 'signature'
+const getAuthMode = () => AUTH_MODE
+
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:3000')
+  .split(',').map(s => s.trim()).filter(Boolean)
+
+const STATE_FILE = process.env.STATE_FILE || path.join(__dirname, 'data', 'state.json')
+
 // ─── Load Hedera env (demo/.env.hedera) if present ───────────────────────────
+// Set SKILLNET_SKIP_ENV_FILE=1 to bypass this (e.g. tests that must not touch Hedera/Qwen).
 const hederaEnvPath = path.join(__dirname, '.env.hedera')
-if (fs.existsSync(hederaEnvPath)) {
+if (!process.env.SKILLNET_SKIP_ENV_FILE && fs.existsSync(hederaEnvPath)) {
   fs.readFileSync(hederaEnvPath, 'utf8')
     .split('\n')
     .map(l => l.trim())
@@ -36,21 +51,91 @@ const hcs26        = require('./hcs26')
 const agentNetwork = require('./agent-network')
 
 const app = express()
-app.use(express.json())
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', 'Content-Type, X-Payment-Receipt')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  if (req.method === 'OPTIONS') return res.sendStatus(204)
-  next()
-})
+app.set('trust proxy', true)                 // honour X-Forwarded-For behind Render/Docker proxies
+app.use(security.makeCors(ALLOWED_ORIGINS))  // origin allow-list + preflight (incl. x-skillnet-* headers)
+// Capture the raw request body so the signature middleware can hash the exact bytes.
+app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf } }))
+
+// ─── Rate limiting (per-IP token bucket) ─────────────────────────────────────
+const generalLimiter   = security.makeRateLimiter('general',   60, 60 * 1000)  // 60 req/min
+const expensiveLimiter = security.makeRateLimiter('expensive', 10, 60 * 1000)  // 10 req/min (paid LLM)
+app.use('/api', generalLimiter)
+
+// ─── Signature enforcement (writes) ──────────────────────────────────────────
+const requireSignature = security.makeSignatureMiddleware(getAuthMode)
+
+// Fallback Ed25519 key used to sign HCS-26 registrations in dev mode when the
+// named creator has no seeded keypair (generated once per boot).
+let _serverRegistryKey = null
+function getServerRegistryKey() {
+  if (!_serverRegistryKey) _serverRegistryKey = security.generateCreatorKeypair()
+  return _serverRegistryKey
+}
+
+/** 403 unless the signed request's pubkey matches the resource's registered creator key. */
+function requireOwner(resourcePubKey, req, res) {
+  if (AUTH_MODE === 'dev') return true
+  if (!resourcePubKey || req.authPubKey !== resourcePubKey) {
+    res.status(403).json({ error: 'Signer is not the registered owner of this resource' })
+    return false
+  }
+  return true
+}
+
 app.use(express.static(path.join(__dirname, 'public')))
 
-// ─── Fee constants (mirrors FeeRouter.sol) ────────────────────────────────────
-const PROTOCOL_SHARE = 0.10   // protocol fee taken off the top
-const RHO            = 0.20   // upstream pass-through per composition hop (conserving rho-flow — mirrors FeeRouter.sol)
+app.get('/healthz', (_req, res) => res.json({ ok: true, authMode: AUTH_MODE, skills: Object.keys(state.skills).length }))
+
+// ─── Fee constants (mirrors FeeRouter.sol / settlement/engine.mjs) ────────────
+// Internal money accounting is exact BigInt integer math in "wei" micro-units
+// (1 display unit = 1e18 wei), identical to the settlement engine's integer model
+// so there is no float dust and conservation holds exactly. API responses still
+// return display numbers (wei / 1e18) plus a parallel *Micro string field carrying
+// the exact integer for precision consumers.
+const PROTOCOL_BPS = 1000n   // 10% protocol fee off the top  (== old PROTOCOL_SHARE 0.10)
+const RHO_BPS      = 2000n   // 20% upstream pass-through per composition hop (== old RHO 0.20)
+const WEI          = 10n ** 18n
 const MAX_DEPTH      = 5
 const TIERS          = ['OPEN', 'SHIELDED', 'PRIVATE']
+
+// Loaded asynchronously at boot from the vendored settlement engine (demo/settlement/
+// engine.mjs — the copy that ships in the Docker build context). See the async boot
+// block at the bottom of this file.
+let SettlementEngine = null
+
+/** Expand a JS number to a plain (non-exponential) decimal string via its shortest
+ *  round-trip form, so 0.015 → "0.015" (NOT "0.0149999…" that toFixed(18) would give). */
+function numToDecimalString(n) {
+  let s = String(n)
+  if (!/e/i.test(s)) return s
+  let sign = ''
+  if (s.startsWith('-')) { sign = '-'; s = s.slice(1) }
+  const [mant, expStr] = s.split(/e/i)
+  const exp = parseInt(expStr, 10)
+  const [i, f = ''] = mant.split('.')
+  const digits = i + f
+  const pointPos = i.length + exp
+  if (pointPos <= 0)                 return sign + '0.' + '0'.repeat(-pointPos) + digits
+  if (pointPos >= digits.length)     return sign + digits + '0'.repeat(pointPos - digits.length)
+  return sign + digits.slice(0, pointPos) + '.' + digits.slice(pointPos)
+}
+
+/** Exact decimal → BigInt wei conversion (18 decimals). No float dust for demo prices. */
+function toWei(value) {
+  if (typeof value === 'bigint') return value
+  if (value == null) return 0n
+  const raw = typeof value === 'number' ? numToDecimalString(value) : String(value).trim()
+  const neg = raw.startsWith('-')
+  const [intPart, fracPart = ''] = raw.replace(/^-/, '').split('.')
+  const frac = (fracPart + '0'.repeat(18)).slice(0, 18)   // pad/truncate to 18 decimals
+  const w = BigInt(intPart || '0') * WEI + BigInt(frac || '0')
+  return neg ? -w : w
+}
+
+/** BigInt wei → display number (wei / 1e18). Lossy for display only; balances stay exact. */
+function fromWei(wei) {
+  return Number(typeof wei === 'bigint' ? wei : toWei(wei)) / 1e18
+}
 
 // ─── In-memory state ──────────────────────────────────────────────────────────
 const state = {
@@ -59,8 +144,9 @@ const state = {
   deps:     {},    // childId  -> [{parentSkillId, weight}]
   depOf:    {},    // parentId -> [childId]
   depth:    {},    // skillId  -> depth in DAG (0 = leaf)
-  balances: { treasury: 0, deployer: 0, alice: 0, bob: 0, carol: 0 },
+  balances: { treasury: 0n, deployer: 0n, alice: 0n, bob: 0n, carol: 0n },  // BigInt wei — exact, withdrawable
   txLog:    [],
+  creators: {},    // name -> { pubKey (base64url raw), privJwk } — Ed25519 identity per seeded creator
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -75,10 +161,12 @@ function mintSkill({ name, description, skillType, tier, pricePerCall = 0, creat
 }
 
 /** Mint a skill using a supplied ID; optional hcs26_uid stores the Hedera sequence number */
-function mintSkillWithId(id, { name, description, skillType, tier, pricePerCall = 0, creator = 'deployer', previousVersion = 0, hcs26_uid, status = 'approved', scores = null } = {}) {
+function mintSkillWithId(id, { name, description, skillType, tier, pricePerCall = 0, creator = 'deployer', creatorPubKey = null, previousVersion = 0, hcs26_uid, status = 'approved', scores = null } = {}) {
+  // Fall back to a seeded creator's registered key when one isn't supplied explicitly.
+  if (!creatorPubKey && state.creators[creator]) creatorPubKey = state.creators[creator].pubKey
   state.skills[id] = {
     id, name, description, skillType, tier, pricePerCall,
-    creator, version: id, previousVersion,
+    creator, creatorPubKey, version: id, previousVersion,
     totalCalls: 0, totalRevenue: 0,
     createdAt: new Date().toISOString(),
     status,
@@ -153,58 +241,71 @@ function compose(childId, parentIds, weights, caller) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Conserving weight-proportional royalty flow (single decay knob RHO) — mirrors FeeRouter.sol._royalty.
- * A leaf credits its creator the full amount; a composite passes `amount * RHO` to its parents
- * (split by edge weight, each share fully distributed by recursion) and credits its own creator
- * `amount - distributed`. Conserves for ANY DAG shape (chains, diamonds, bundles-of-bundles) and
- * never over-distributes. Replaces the old depth-band model that over-paid (>100% of the pool) on
- * any composite-of-composites, which silently shorted the creator here and reverted on-chain.
+ * Conserving weight-proportional royalty walk in BigInt wei — byte-for-byte the same
+ * integer semantics as SettlementEngine._royalty / FeeRouter._royalty. Produces a
+ * depth-aware log (for the human-readable tx breakdown); it does NOT mutate balances.
+ * A leaf credits its creator the full amount; a composite passes `amount * RHO` upstream
+ * (split by edge weight) and keeps `amount - distributed` (which absorbs any integer-
+ * division dust, so the walk conserves exactly for ANY DAG shape).
  */
-function distributeRoyalty(skillId, amount, depth, log, inWeight) {
-  const skill   = state.skills[skillId]
-  const creator = skill.creator
-  const edges   = state.deps[skillId] || []
-
-  // Leaf: keeps the whole amount
+function royaltyWalk(skillId, amountWei, depth, log, inWeight) {
+  const skill = state.skills[skillId]
+  const edges = state.deps[skillId] || []
   if (!edges.length) {
-    state.balances[creator] = (state.balances[creator] || 0) + amount
-    log.push({ skillId, skillName: skill.name, creator, amount, weight: inWeight, depth })
+    log.push({ skillId, skillName: skill.name, creator: skill.creator, amount: amountWei, weight: inWeight, depth })
     return
   }
-
-  // Composite: pass RHO upstream (by weight), keep the remainder
-  const passUp = amount * RHO
-  let distributed = 0
+  const passUp = (amountWei * RHO_BPS) / 10000n
+  let distributed = 0n
   for (const edge of edges) {
-    const share = passUp * (edge.weight / 100)
-    distributeRoyalty(edge.parentSkillId, share, depth + 1, log, edge.weight)
+    const share = (passUp * BigInt(edge.weight)) / 100n
+    royaltyWalk(edge.parentSkillId, share, depth + 1, log, edge.weight)
     distributed += share
   }
-  const kept = amount - distributed
-  state.balances[creator] = (state.balances[creator] || 0) + kept
-  log.push({ skillId, skillName: skill.name, creator, amount: kept, weight: inWeight, depth })
+  log.push({ skillId, skillName: skill.name, creator: skill.creator, amount: amountWei - distributed, weight: inWeight, depth })
 }
 
+/**
+ * Accrue one paid call. All money math is exact BigInt wei, computed by the vendored
+ * SettlementEngine (the same engine the on-chain SettlementVault batches verify), so the
+ * demo's off-chain accounting is identical to the canonical engine. Balances are credited
+ * from the engine's per-recipient accrual map; a parallel royaltyWalk produces the display
+ * breakdown. A runtime conservation guard asserts credited == value before persisting.
+ */
 function payForCall(skillId, value, caller) {
   const skill = state.skills[skillId]
   if (!skill) throw new Error('Skill not found')
+  if (!SettlementEngine) throw new Error('Settlement engine not loaded yet')
+
+  const valueWei = toWei(value)
 
   skill.totalCalls++
-  skill.totalRevenue += value
+  skill.totalRevenue += value    // display-only running total (unchanged semantics)
 
-  // Protocol fee off the top; the remainder flows through the DAG, conserving exactly.
-  const protocolAmt = value * PROTOCOL_SHARE
-  state.balances.treasury += protocolAmt
-  const net = value - protocolAmt
+  // Canonical distribution: fresh engine fed exactly this one call. engine.accrued is the
+  // authoritative per-recipient credit map (creators + 'treasury').
+  const engine = new SettlementEngine(state.skills, state.deps)
+  engine.recordCall(skillId, valueWei, caller)
 
+  let engineTotal = 0n
+  for (const [recipient, amtWei] of engine.accrued) {
+    state.balances[recipient] = (state.balances[recipient] || 0n) + amtWei
+    engineTotal += amtWei
+  }
+  // Conservation guard — everything credited this call must equal the price, exactly.
+  if (engineTotal !== valueWei) {
+    throw new Error(`conservation broken: credited=${engineTotal} value=${valueWei}`)
+  }
+  const protocolWei = engine.accrued.get('treasury') || 0n
+
+  // Display breakdown via the identical BigInt walk over the net (post-protocol) amount.
   const royaltyLog = []
-  distributeRoyalty(skillId, net, 1, royaltyLog, 100)
-
-  // Display compatibility: the called skill's own kept share is "creatorTotal";
-  // every other credited node is "upstream".
+  royaltyWalk(skillId, valueWei - protocolWei, 1, royaltyLog, 100)
   const top = royaltyLog.find(e => e.skillId === skillId && e.depth === 1)
-  const creatorTotal = top ? top.amount : 0
-  const upstream = royaltyLog.filter(e => !(e.skillId === skillId && e.depth === 1))
+  const creatorTotalWei = top ? top.amount : 0n
+  const upstream = royaltyLog
+    .filter(e => !(e.skillId === skillId && e.depth === 1))
+    .map(e => ({ skillId: e.skillId, skillName: e.skillName, creator: e.creator, amount: fromWei(e.amount), amountMicro: e.amount.toString(), weight: e.weight, depth: e.depth }))
 
   const tx = {
     id:        Date.now(),
@@ -214,19 +315,116 @@ function payForCall(skillId, value, caller) {
     skillName: skill.name,
     caller,
     value,
-    breakdown: { protocol: protocolAmt, creatorTotal, upstream },
+    valueMicro: valueWei.toString(),
+    breakdown: {
+      protocol:        fromWei(protocolWei),
+      protocolMicro:   protocolWei.toString(),
+      creatorTotal:    fromWei(creatorTotalWei),
+      creatorTotalMicro: creatorTotalWei.toString(),
+      upstream,
+    },
   }
   state.txLog.unshift(tx)
   return tx
 }
 
 function withdraw(user) {
-  const amount = state.balances[user] || 0
-  if (amount < 1e-10) throw new Error('Nothing to withdraw')
-  state.balances[user] = 0
-  const tx = { id: Date.now(), ts: new Date().toISOString(), type: 'WITHDRAW', user, amount }
+  const amount = state.balances[user] || 0n
+  if (amount <= 0n) throw new Error('Nothing to withdraw')
+  state.balances[user] = 0n
+  const tx = { id: Date.now(), ts: new Date().toISOString(), type: 'WITHDRAW', user, amount: fromWei(amount), amountMicro: amount.toString() }
   state.txLog.unshift(tx)
   return tx
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Persistence — debounced atomic JSON snapshot of `state`
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// `state` is mostly JSON-serialisable (plain objects/arrays/numbers/strings). Two
+// exceptions are handled here:
+//   • state.balances values are BigInt wei — encoded as decimal STRINGS on write and
+//     decoded back to BigInt on load (old float snapshots migrate via toWei on load).
+//   • state.creators values hold a private JWK; private keys are persisted ONLY in dev
+//     mode (so seeded creators survive a restart for local impersonation), else stripped.
+
+function serializeState() {
+  const creators = {}
+  for (const [name, c] of Object.entries(state.creators)) {
+    creators[name] = AUTH_MODE === 'dev'
+      ? { pubKey: c.pubKey, privJwk: c.privJwk }
+      : { pubKey: c.pubKey }
+  }
+  const balances = {}
+  for (const [name, v] of Object.entries(state.balances)) {
+    balances[name] = (typeof v === 'bigint' ? v : toWei(v)).toString()   // BigInt wei → decimal string
+  }
+  return JSON.stringify({
+    nextId:   state.nextId,
+    skills:   state.skills,
+    deps:     state.deps,
+    depOf:    state.depOf,
+    depth:    state.depth,
+    balances,
+    txLog:    state.txLog,
+    creators,
+  })
+}
+
+/** Decode a persisted balances object into BigInt wei, migrating old float snapshots. */
+function decodeBalances(raw) {
+  const out = {}
+  for (const [name, v] of Object.entries(raw || {})) {
+    if (typeof v === 'string')      out[name] = BigInt(v)     // new format: decimal wei string
+    else if (typeof v === 'bigint') out[name] = v
+    else if (typeof v === 'number') out[name] = toWei(v)      // legacy float snapshot → micro-units
+    else                            out[name] = 0n
+  }
+  return out
+}
+
+let _saveTimer = null
+/** Debounce ~1s, then write atomically (tmp + rename). */
+function scheduleSave() {
+  if (_saveTimer) return
+  _saveTimer = setTimeout(() => {
+    _saveTimer = null
+    try {
+      fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true })
+      const tmp = STATE_FILE + '.tmp'
+      fs.writeFileSync(tmp, serializeState())
+      fs.renameSync(tmp, STATE_FILE)
+    } catch (e) {
+      console.error('  ⚠ state snapshot failed:', e.message)
+    }
+  }, 1000)
+}
+
+/** Load a snapshot into `state`. Returns true if a snapshot existed and loaded. */
+function loadState() {
+  if (!fs.existsSync(STATE_FILE)) return false
+  try {
+    const snap = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'))
+    state.nextId   = snap.nextId   ?? state.nextId
+    state.skills   = snap.skills   || {}
+    state.deps     = snap.deps     || {}
+    state.depOf    = snap.depOf    || {}
+    state.depth    = snap.depth    || {}
+    state.balances = snap.balances ? decodeBalances(snap.balances) : state.balances
+    state.txLog    = snap.txLog    || []
+    state.creators = snap.creators || {}
+    return true
+  } catch (e) {
+    console.error('  ⚠ failed to load state snapshot, re-seeding:', e.message)
+    return false
+  }
+}
+
+/** Ensure every named creator has an Ed25519 identity (generated per-boot at seed time). */
+function ensureCreatorKeys(names) {
+  for (const name of names) {
+    if (!state.creators[name]) state.creators[name] = security.generateCreatorKeypair()
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,6 +432,9 @@ function withdraw(user) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function seed() {
+  // Generate deterministic-per-boot Ed25519 identities for the demo creators.
+  ensureCreatorKeys(['deployer', 'alice', 'bob', 'carol'])
+
   // 1 — JSON Parser
   mintSkillWithId(state.nextId++, {
     name: 'JSON Parser', description: 'Parses and validates JSON payloads, extracts nested fields by path, and normalizes structures for downstream consumption.',
@@ -297,17 +498,27 @@ function seed() {
 
   console.log(`  ✓ Seeded 8 skills (5 base + 3 composed) with call history`)
 }
-seed()
-agentNetwork.seedAgents()
+
+// Boot (engine import → restore/seed → listen) runs in the async IIFE at the bottom
+// of this file, because the settlement engine is an ESM module loaded via import().
 
 // ─────────────────────────────────────────────────────────────────────────────
 // REST API
 // ─────────────────────────────────────────────────────────────────────────────
 
 app.get('/api/state', (_req, res) => {
+  // Balances are exact BigInt wei internally; expose display numbers (wei/1e18) for
+  // backward compatibility plus a parallel balancesMicro string map for precision.
+  const balances = {}, balancesMicro = {}
+  for (const [name, v] of Object.entries(state.balances)) {
+    const wei = typeof v === 'bigint' ? v : toWei(v)
+    balances[name]      = fromWei(wei)
+    balancesMicro[name] = wei.toString()
+  }
   res.json({
     skills:   Object.values(state.skills),
-    balances: state.balances,
+    balances,
+    balancesMicro,
     txLog:    state.txLog.slice(0, 50),
   })
 })
@@ -323,8 +534,15 @@ function buildTree(id) {
 }
 app.get('/api/dag/:id', (req, res) => res.json(buildTree(+req.params.id)))
 
-app.post('/api/mint', async (req, res) => {
+app.post('/api/mint', requireSignature, async (req, res) => {
   try {
+    // In signature mode you may only mint under your own key.
+    if (AUTH_MODE !== 'dev') {
+      if (!req.body.creatorPubKey) return res.status(400).json({ error: 'creatorPubKey required' })
+      if (req.body.creatorPubKey !== req.authPubKey) {
+        return res.status(403).json({ error: 'creatorPubKey must match the signing key' })
+      }
+    }
     // Local ID always comes from the auto-increment counter
     const id = state.nextId++
     let hcs26_uid = null
@@ -332,8 +550,25 @@ app.post('/api/mint', async (req, res) => {
     if (hcs26.isConfigured()) {
       // Publish to Hedera asynchronously; skill_uid is the HCS-2 sequence number
       try {
+        // Bind the registration to content + creator identity. In signature mode
+        // the client signs the manifest (registrySignature); in dev mode a
+        // server-held key (the seeded creator's, else a per-boot registry key) signs.
+        const contentHash = hcs26.contentHashOf(req.body)
+        let registryPubKey, registrySignature
+        if (AUTH_MODE === 'dev') {
+          const signer = state.creators[req.body.creator] || getServerRegistryKey()
+          registryPubKey    = signer.pubKey
+          registrySignature = security.signEd25519(signer.privJwk, hcs26.registrySigningMessage(contentHash, req.body.name))
+        } else {
+          registryPubKey    = req.body.creatorPubKey
+          registrySignature = req.body.registrySignature
+          if (!hcs26.verifyRegistrationSignature(contentHash, req.body.name, registryPubKey, registrySignature)) {
+            return res.status(400).json({ error: 'Invalid or missing registrySignature for HCS-26 publish' })
+          }
+        }
+
         const versionTopicId = await hcs26.createVersionRegistryTopic(req.body.name)
-        hcs26_uid = await hcs26.publishSkill(req.body, versionTopicId)
+        hcs26_uid = await hcs26.publishSkill(req.body, versionTopicId, { creatorPubKey: registryPubKey, signature: registrySignature })
 
         // Fire-and-forget: publish version entry to the per-skill version registry
         hcs26.publishVersion(versionTopicId, {
@@ -350,14 +585,21 @@ app.post('/api/mint', async (req, res) => {
     }
 
     mintSkillWithId(id, { ...req.body, hcs26_uid, status: req.body.status || 'pending', scores: req.body.scores || null })
+    scheduleSave()
     res.json({ success: true, id, hcs26: hcs26.isConfigured(), hcs26_uid })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
-app.post('/api/compose', (req, res) => {
+app.post('/api/compose', requireSignature, (req, res) => {
   try {
-    const { childId, parentIds, weights, caller } = req.body
+    const { childId, parentIds, weights } = req.body
+    const child = state.skills[childId]
+    if (!child) return res.status(404).json({ error: 'Child skill not found' })
+    if (!requireOwner(child.creatorPubKey, req, res)) return
+    // In signature mode ownership is proven by the key; satisfy the domain string check with the owner.
+    const caller = AUTH_MODE === 'dev' ? req.body.caller : child.creator
     compose(childId, parentIds, weights, caller)
+    scheduleSave()
     res.json({ success: true })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
@@ -381,43 +623,32 @@ function buildExecutionTrace(skillId) {
   }
 }
 
-/** Build detailed fee distribution object for a call (preview — does not modify balances) */
+/**
+ * Build the detailed fee-distribution object for a call (preview — does not modify balances).
+ * Uses the exact BigInt royaltyWalk, then converts to display numbers for the UI. Keys are
+ * "Skill (creator)" → display amount; plus a "Protocol treasury" entry.
+ */
 function buildFeeDistribution(skillId, value) {
   const skill = state.skills[skillId]
   if (!skill) return {}
-  const result = {}
-  const protocolAmt = value * PROTOCOL_SHARE
-  const net = value - protocolAmt
+  const valueWei    = toWei(value)
+  const protocolWei = (valueWei * PROTOCOL_BPS) / 10000n
+  const netWei      = valueWei - protocolWei
 
   const items = []
-  royaltyPreview(skillId, net, 1, items, 100)
+  royaltyWalk(skillId, netWei, 1, items, 100)
+  const acc = {}
   for (const item of items) {
     const key = `${item.skillName} (${item.creator})`
-    result[key] = (result[key] || 0) + item.amount
+    acc[key] = (acc[key] || 0n) + item.amount
   }
-  result['Protocol treasury'] = protocolAmt   // 100% to treasury (mirrors FeeRouter.sol)
+  const result = {}
+  for (const [key, wei] of Object.entries(acc)) result[key] = fromWei(wei)
+  result['Protocol treasury'] = fromWei(protocolWei)   // 100% to treasury (mirrors FeeRouter.sol)
   return result
 }
 
-/** Preview-only conserving royalty walk (doesn't modify balances) — mirrors distributeRoyalty */
-function royaltyPreview(skillId, amount, depth, log, inWeight) {
-  const skill = state.skills[skillId]
-  const edges = state.deps[skillId] || []
-  if (!edges.length) {
-    log.push({ skillId, skillName: skill.name, creator: skill.creator, amount, depth, weight: inWeight })
-    return
-  }
-  const passUp = amount * RHO
-  let distributed = 0
-  for (const edge of edges) {
-    const share = passUp * (edge.weight / 100)
-    royaltyPreview(edge.parentSkillId, share, depth + 1, log, edge.weight)
-    distributed += share
-  }
-  log.push({ skillId, skillName: skill.name, creator: skill.creator, amount: amount - distributed, depth, weight: inWeight })
-}
-
-app.post('/api/call/:id', async (req, res) => {
+app.post('/api/call/:id', expensiveLimiter, requireSignature, async (req, res) => {
   try {
     const skill  = state.skills[+req.params.id]
     if (!skill) return res.status(404).json({ error: 'Skill not found' })
@@ -425,6 +656,7 @@ app.post('/api/call/:id', async (req, res) => {
     const caller = req.body.caller || 'user'
     const input  = req.body.input || ''
     const tx     = payForCall(+req.params.id, value, caller)
+    scheduleSave()
 
     // Actually execute the save-hello skill when it's called
     if (skill.name === 'save-hello') {
@@ -457,21 +689,35 @@ app.post('/api/call/:id', async (req, res) => {
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
-app.post('/api/withdraw', (req, res) => {
-  try { res.json({ success: true, tx: withdraw(req.body.user) }) }
-  catch (e) { res.status(400).json({ error: e.message }) }
+app.post('/api/withdraw', requireSignature, (req, res) => {
+  try {
+    const user = req.body.user
+    // Balance ownership: the withdrawable balance for a creator name is owned by that
+    // creator's registered Ed25519 key (state.creators[name].pubKey). In signature mode
+    // only that key may withdraw it (treasury/unknown names have no key → 403). Dev mode
+    // keeps the legacy unsigned behaviour.
+    if (!requireOwner(state.creators[user]?.pubKey, req, res)) return
+    const tx = withdraw(user)
+    scheduleSave()
+    res.json({ success: true, tx })
+  } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
-app.post('/api/upgrade-tier', (req, res) => {
+app.post('/api/upgrade-tier', requireSignature, (req, res) => {
   try {
-    upgradeTier(+req.body.skillId, req.body.newTier, req.body.caller)
+    const skill = state.skills[+req.body.skillId]
+    if (!skill) return res.status(404).json({ error: 'Skill not found' })
+    if (!requireOwner(skill.creatorPubKey, req, res)) return
+    const caller = AUTH_MODE === 'dev' ? req.body.caller : skill.creator
+    upgradeTier(+req.body.skillId, req.body.newTier, caller)
+    scheduleSave()
     res.json({ success: true })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 // ─── Validation + Approval endpoints ─────────────────────────────────────────
 
-app.post('/api/validate/:id', async (req, res) => {
+app.post('/api/validate/:id', expensiveLimiter, requireSignature, async (req, res) => {
   const skill = state.skills[+req.params.id]
   if (!skill) return res.status(404).json({ error: 'Skill not found' })
 
@@ -553,21 +799,33 @@ app.post('/api/validate/:id', async (req, res) => {
   })
 })
 
-app.post('/api/approve/:id', (req, res) => {
+// Approval is a network/validator governance action, not an owner action: require a
+// valid signature (authenticated identity) but not skill ownership. Dev mode is open.
+app.post('/api/approve/:id', requireSignature, (req, res) => {
   const skill = state.skills[+req.params.id]
   if (!skill) return res.status(404).json({ error: 'Skill not found' })
   skill.status = 'approved'
   if (req.body.scores) {
     skill.scores = req.body.scores
   }
+  scheduleSave()
   res.json({ success: true, id: +req.params.id })
 })
 
-app.post('/api/reject/:id', (req, res) => {
+app.post('/api/reject/:id', requireSignature, (req, res) => {
   const skill = state.skills[+req.params.id]
   if (!skill) return res.status(404).json({ error: 'Skill not found' })
   skill.status = 'rejected'
+  scheduleSave()
   res.json({ success: true, id: +req.params.id })
+})
+
+// ─── Dev-only: expose seeded creator keypairs so the local UI can impersonate ─
+app.get('/api/dev/keys', (_req, res) => {
+  if (AUTH_MODE !== 'dev') return res.status(403).json({ error: 'Only available when AUTH_MODE=dev' })
+  const out = {}
+  for (const [name, c] of Object.entries(state.creators)) out[name] = { pubKey: c.pubKey, privJwk: c.privJwk }
+  res.json(out)
 })
 
 // ─── HCS-26 endpoints ─────────────────────────────────────────────────────────
@@ -579,7 +837,12 @@ app.get('/api/hcs26/skills', async (_req, res) => {
   }
   try {
     const skills = await hcs26.fetchRegisteredSkills()
-    res.json({ skills, count: skills.length, topic: process.env.HCS26_DISCOVERY_TOPIC })
+    res.json({
+      skills,
+      count:         skills.length,
+      verifiedCount: skills.filter(s => s.verified).length,
+      topic:         process.env.HCS26_DISCOVERY_TOPIC,
+    })
   } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
@@ -619,10 +882,13 @@ app.get('/api/agents/:id', (req, res) => {
   res.json(a)
 })
 
-/** Register a new agent (ERC-8004 mint) */
-app.post('/api/agents/register', (req, res) => {
+/** Register a new agent (ERC-8004 mint) — authenticated; binds ownerPubKey to the signer. */
+app.post('/api/agents/register', requireSignature, (req, res) => {
   try {
-    const id = agentNetwork.registerAgent({ ...req.body, owner: req.body.owner || 'deployer' })
+    // In signature mode the agent's owning key is the signer (so only they can later
+    // pause/revoke it via /status). Dev mode keeps the legacy free-form ownerPubKey.
+    const ownerPubKey = AUTH_MODE === 'dev' ? (req.body.ownerPubKey || null) : req.authPubKey
+    const id = agentNetwork.registerAgent({ ...req.body, owner: req.body.owner || 'deployer', ownerPubKey })
     res.json({ success: true, agentId: id, agent: agentNetwork.getAgent(id) })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
@@ -636,7 +902,7 @@ app.post('/api/agents/register', (req, res) => {
  * With X-Payment-Receipt header (from /pay):
  *   → validates receipt, calls Qwen, returns result
  */
-app.post('/api/agents/:id/invoke', async (req, res) => {
+app.post('/api/agents/:id/invoke', expensiveLimiter, requireSignature, async (req, res) => {
   const agent = agentNetwork.getAgent(+req.params.id)
   if (!agent) return res.status(404).json({ error: 'Agent not found' })
   if (agent.status !== 'ACTIVE') return res.status(403).json({ error: `Agent is ${agent.status}` })
@@ -676,7 +942,7 @@ app.post('/api/agents/:id/invoke', async (req, res) => {
  * Returns a receipt UUID that must be included in the next /invoke request
  * (either as X-Payment-Receipt header or body.receiptId).
  */
-app.post('/api/agents/:id/pay', (req, res) => {
+app.post('/api/agents/:id/pay', requireSignature, (req, res) => {
   try {
     const result = agentNetwork.issueReceipt(
       +req.params.id,
@@ -688,21 +954,54 @@ app.post('/api/agents/:id/pay', (req, res) => {
 })
 
 /** Pause or revoke an agent */
-app.post('/api/agents/:id/status', (req, res) => {
+app.post('/api/agents/:id/status', requireSignature, (req, res) => {
   try {
-    agentNetwork.setAgentStatus(+req.params.id, req.body.status, req.body.caller)
+    const agent = agentNetwork.getAgent(+req.params.id)
+    if (!agent) return res.status(404).json({ error: 'Agent not found' })
+    if (!requireOwner(agent.ownerPubKey, req, res)) return
+    const caller = AUTH_MODE === 'dev' ? req.body.caller : agent.owner
+    agentNetwork.setAgentStatus(+req.params.id, req.body.status, caller)
     res.json({ success: true })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Async boot: load the ESM settlement engine (from the vendored demo/settlement/ copy,
+// which is what ships in the Docker build context), then restore/seed and listen. The
+// engine is loaded BEFORE seed()/any paid call so payForCall always has it.
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
+;(async () => {
+  const { pathToFileURL } = require('node:url')
+  const enginePath = path.join(__dirname, 'settlement', 'engine.mjs')
+  const engineMod  = await import(pathToFileURL(enginePath).href)
+  SettlementEngine = engineMod.SettlementEngine
+
+  // Boot: restore snapshot or seed fresh
+  if (loadState()) {
+    // Existing creators keep their persisted keys; only fill in any that are missing.
+    ensureCreatorKeys(['deployer', 'alice', 'bob', 'carol'])
+    console.log(`  ✓ Restored state from ${STATE_FILE} (${Object.keys(state.skills).length} skills)`)
+  } else {
+    seed()
+    scheduleSave()
+  }
+  agentNetwork.seedAgents(state.creators.deployer?.pubKey)
+
+  app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════╗')
   console.log('║   SkillNet Demo  +  HCS-26            ║')
   console.log('╚══════════════════════════════════════╝')
   console.log(`\n  → http://localhost:${PORT}`)
+  if (AUTH_MODE === 'dev') {
+    console.log('\n  ⚠⚠⚠  AUTH_MODE=dev — SIGNATURE CHECKS DISABLED  ⚠⚠⚠')
+    console.log('  ⚠  Any client can mint/compose/call as any identity. Never use in production.')
+    console.log('  ⚠  GET /api/dev/keys is exposed (seeded creator private keys).')
+  } else {
+    console.log('  → Auth: signature mode (Ed25519-signed writes required)')
+  }
+  console.log(`  → CORS allow-list: ${ALLOWED_ORIGINS.join(', ')}`)
+  console.log(`  → State snapshot: ${STATE_FILE}`)
   if (hcs26.isConfigured()) {
     console.log(`  → HCS-26 Discovery Registry: ${process.env.HCS26_DISCOVERY_TOPIC}`)
     console.log(`  → Hedera Account: ${process.env.HEDERA_ACCOUNT_ID}`)
@@ -711,4 +1010,5 @@ app.listen(PORT, () => {
     console.log('    To enable: fill in demo/.env.hedera and run scripts/setup-hedera.mjs')
   }
   console.log()
-})
+  })
+})()

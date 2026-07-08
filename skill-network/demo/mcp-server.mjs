@@ -11,15 +11,33 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
+import crypto from 'node:crypto'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+const hcs26 = require('./hcs26.js')   // pure content/identity helpers (no network on import)
 
 const BASE = 'http://localhost:3000'
 
+// Per-process Ed25519 identity — the demo server requires signed writes when
+// AUTH_MODE=signature (its default). This key mints/composes/calls as itself; in
+// AUTH_MODE=dev the server ignores these headers.
+const _KP     = crypto.generateKeyPairSync('ed25519')
+const MY_PUBKEY = _KP.publicKey.export({ format: 'jwk' }).x
+
+function signHeaders(method, pathname, bodyStr) {
+  const ts       = Date.now().toString()
+  const bodyHash = crypto.createHash('sha256').update(Buffer.from(bodyStr || '', 'utf8')).digest('hex')
+  const msg      = `${method}\n${pathname}\n${ts}\n${bodyHash}`
+  const sig      = crypto.sign(null, Buffer.from(msg, 'utf8'), _KP.privateKey).toString('base64url')
+  return { 'x-skillnet-pubkey': MY_PUBKEY, 'x-skillnet-timestamp': ts, 'x-skillnet-signature': sig }
+}
+
 async function call(method, path, body) {
-  const r = await fetch(BASE + path, {
-    method,
-    headers: body ? { 'Content-Type': 'application/json' } : {},
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  const bodyStr = body ? JSON.stringify(body) : undefined
+  const headers = body ? { 'Content-Type': 'application/json' } : {}
+  if (method !== 'GET') Object.assign(headers, signHeaders(method, path, bodyStr || ''))
+  const r = await fetch(BASE + path, { method, headers, body: bodyStr })
   return r.json()
 }
 
@@ -199,7 +217,12 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       }
 
       case 'mint_skill': {
-        const res = await call('POST', '/api/mint', args)
+        // Bind the HCS-26 registration to content + this key's identity.
+        const contentHash = hcs26.contentHashOf(args)
+        const registrySignature = crypto
+          .sign(null, Buffer.from(hcs26.registrySigningMessage(contentHash, args.name), 'utf8'), _KP.privateKey)
+          .toString('base64url')
+        const res = await call('POST', '/api/mint', { ...args, creatorPubKey: MY_PUBKEY, registrySignature })
         text = res.error ? `Error: ${res.error}` : `Minted skill #${res.id} — "${args.name}" [${args.tier}]`
         break
       }
@@ -246,13 +269,19 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         text =
           `HCS-26 Discovery Registry  (topic ${topic})\n` +
           `${count} skill${count === 1 ? '' : 's'} registered on Hedera Testnet\n\n` +
-          skills.map(s =>
-            `uid=${s.skill_uid}  "${s.name}"\n` +
-            `  ${s.description}\n` +
-            `  author: ${s.author}  license: ${s.license}\n` +
-            `  tags (OASF): [${s.tags.join(', ')}]  tier: ${s.tier}\n` +
-            `  consensus_ts: ${s.consensus_timestamp}`
-          ).join('\n\n')
+          skills.map(s => {
+            const badge = s.verified ? '✓ VERIFIED'
+              : (s.verification?.legacy ? '– unsigned (legacy)' : '✗ UNVERIFIED')
+            return (
+              `uid=${s.skill_uid}  "${s.name}"  [${badge}]\n` +
+              `  ${s.description}\n` +
+              `  author: ${s.author}  license: ${s.license}\n` +
+              `  tags (OASF): [${s.tags.join(', ')}]  tier: ${s.tier}\n` +
+              (s.creatorPubKey ? `  creatorPubKey: ${s.creatorPubKey}\n` : '') +
+              (s.contentHash ? `  contentHash: ${s.contentHash}\n` : '') +
+              `  consensus_ts: ${s.consensus_timestamp}`
+            )
+          }).join('\n\n')
         break
       }
 

@@ -226,14 +226,84 @@ const TIER_STYLE = {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Ed25519 request signing (WebCrypto) — required when the server runs
+// AUTH_MODE=signature (the default). A per-browser keypair is generated on first
+// use and persisted as a JWK in localStorage.
+// ─────────────────────────────────────────────────────────────────────────────
+const _AUTH = { pub: null, key: null }
+function _b64url(buf) {
+  const b = new Uint8Array(buf); let s = ''
+  for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i])
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+async function _sha256hex(t) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t))
+  return Array.from(new Uint8Array(d)).map(x => x.toString(16).padStart(2, '0')).join('')
+}
+async function _identity() {
+  if (_AUTH.key) return _AUTH
+  let privJwk, pub = localStorage.getItem('skillnet_pub') || ''
+  const stored = localStorage.getItem('skillnet_priv_jwk')
+  if (stored && pub) {
+    privJwk = JSON.parse(stored)
+  } else {
+    const kp = await crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify'])
+    privJwk = await crypto.subtle.exportKey('jwk', kp.privateKey)
+    pub = privJwk.x
+    localStorage.setItem('skillnet_priv_jwk', JSON.stringify(privJwk))
+    localStorage.setItem('skillnet_pub', pub)
+  }
+  _AUTH.key = await crypto.subtle.importKey('jwk', privJwk, { name: 'Ed25519' }, false, ['sign'])
+  _AUTH.pub = pub
+  return _AUTH
+}
+async function myPubKey() { return (await _identity()).pub }
+async function signHeaders(method, url, bodyStr) {
+  const { pub, key } = await _identity()
+  const pathname = new URL(url, location.origin).pathname
+  const ts = Date.now().toString()
+  const bodyHash = await _sha256hex(bodyStr || '')
+  const msg = `${method}\n${pathname}\n${ts}\n${bodyHash}`
+  const sig = await crypto.subtle.sign({ name: 'Ed25519' }, key, new TextEncoder().encode(msg))
+  return { 'x-skillnet-pubkey': pub, 'x-skillnet-timestamp': ts, 'x-skillnet-signature': _b64url(sig) }
+}
+
+// HCS-26 content + identity binding — must match demo/hcs26.js canonicalisation.
+function _stableStringify(v) {
+  if (Array.isArray(v)) return '[' + v.map(_stableStringify).join(',') + ']'
+  if (v && typeof v === 'object') {
+    return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + _stableStringify(v[k])).join(',') + '}'
+  }
+  return JSON.stringify(v)
+}
+async function _registrySignature(m) {
+  const manifest = _stableStringify({
+    description: String(m.description ?? ''), license: String(m.license ?? 'MIT'),
+    name: String(m.name ?? ''), pricePerCall: Number(m.pricePerCall ?? 0),
+    skillType: String(m.skillType ?? ''), tier: String(m.tier ?? ''),
+  })
+  const contentHash = await _sha256hex(manifest)
+  const message = `hcs26-register\n${contentHash}\n${String(m.name ?? '')}`
+  const { key } = await _identity()
+  const sig = await crypto.subtle.sign({ name: 'Ed25519' }, key, new TextEncoder().encode(message))
+  return _b64url(sig)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // API helpers
 // ─────────────────────────────────────────────────────────────────────────────
 async function api(method, url, body) {
-  const r = await fetch(url, {
-    method,
-    headers: body ? { 'Content-Type': 'application/json' } : {},
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  // Attach this browser's creator identity + HCS-26 registry signature when minting.
+  if (body && url === '/api/mint') {
+    if (!body.creatorPubKey)     body.creatorPubKey = await myPubKey()
+    if (!body.registrySignature) body.registrySignature = await _registrySignature(body)
+  }
+
+  const bodyStr = body ? JSON.stringify(body) : undefined
+  const headers = body ? { 'Content-Type': 'application/json' } : {}
+  if (method !== 'GET') Object.assign(headers, await signHeaders(method, url, bodyStr || ''))
+
+  const r = await fetch(url, { method, headers, body: bodyStr })
   return r.json()
 }
 

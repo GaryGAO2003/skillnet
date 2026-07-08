@@ -34,11 +34,12 @@ const registry = {
 }
 
 // ─── ERC-8004 agent registration ─────────────────────────────────────────────
-function registerAgent({ name, description, capabilities, feePerTask, systemPrompt, owner }) {
+function registerAgent({ name, description, capabilities, feePerTask, systemPrompt, owner, ownerPubKey }) {
   const id = registry.nextId++
   registry.agents[id] = {
     agentId:          id,
     owner:            owner || 'deployer',
+    ownerPubKey:      ownerPubKey || null,   // Ed25519 identity that may change this agent's status
     name,
     description,
     // ERC-8004 fields
@@ -215,13 +216,14 @@ function buildUserMessage(task, input) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Seed (called once on startup)
 // ─────────────────────────────────────────────────────────────────────────────
-function seedAgents() {
+function seedAgents(deployerPubKey) {
   registerAgent({
     name:         'Qwen Agent',
     description:  'LLM-powered agent running on port 3001. Uses an LLM router to match user messages to registered SkillNet skills and records every skill call in the Call Log.',
     capabilities: ['skill-routing', 'llm-chat', 'skill-execution', 'call-recording'],
     feePerTask:   0,
     owner:        'deployer',
+    ownerPubKey:  deployerPubKey || null,
     systemPrompt: 'You are a SkillNet agent powered by Qwen. You have access to registered skills from the SkillNet marketplace. A separate router decides whether to invoke a skill before each reply.',
   })
 

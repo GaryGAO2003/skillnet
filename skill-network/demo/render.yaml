@@ -8,6 +8,16 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Auth: 'signature' (default, Ed25519-signed writes) or 'dev' (legacy, no auth)
+      - key: AUTH_MODE
+        value: signature
+      # Comma-separated CORS allow-list (same-origin is always allowed)
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:5173,http://localhost:3000
+      # Persisted state snapshot path (relative to rootDir; attach a Render disk
+      # here to survive redeploys, otherwise it survives in-instance restarts only)
+      - key: STATE_FILE
+        value: data/state.json
       - key: HEDERA_ACCOUNT_ID
         sync: false
       - key: HEDERA_PRIVATE_KEY
