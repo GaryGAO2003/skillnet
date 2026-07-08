@@ -1,11 +1,29 @@
 # SkillNet — composable AI skill network
 
+[![CI](https://github.com/GaryGAO2003/skillnet/actions/workflows/ci.yml/badge.svg)](https://github.com/GaryGAO2003/skillnet/actions/workflows/ci.yml)
+
 A decentralized marketplace where AI skills register, **compose** into a dependency DAG, and earn
 **recursive royalties** on every call. Skill identity / topology / provenance is anchored on
 **Hedera HCS-26**; value transfer settles on an EVM chain.
 
-> **Status:** research + redesign + working local prototypes. The Solidity contracts are
-> covered by 21 passing Foundry tests but are **not yet deployed** to a public testnet.
+> **Status:** live on **Base Sepolia** testnet (contracts below) + **Hedera testnet** (HCS-26
+> discovery topic `0.0.8599076`). 36 automated tests (21 Foundry + 15 node:test) run in CI.
+
+## Live deployment (Base Sepolia, chain 84532)
+
+| Contract | Address |
+|---|---|
+| SkillNFT | [`0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd`](https://sepolia.basescan.org/address/0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd) |
+| CompositionDAG | [`0x873324449b77d66343D2A5D051bBdAd2ca0bf9d9`](https://sepolia.basescan.org/address/0x873324449b77d66343D2A5D051bBdAd2ca0bf9d9) |
+| FeeRouter | [`0x58Cb19d316F09E25452Bfe2c852E1deC2352765b`](https://sepolia.basescan.org/address/0x58Cb19d316F09E25452Bfe2c852E1deC2352765b) |
+| SettlementVault | [`0xb6DECc3e5d3a4E8a0F64DdFC5Fe8A6128abeb8B8`](https://sepolia.basescan.org/address/0xb6DECc3e5d3a4E8a0F64DdFC5Fe8A6128abeb8B8) |
+
+Sources verified on Sourcify. Seeded with 8 skills, a 3-level composition DAG, and live paid
+calls whose royalty split conserves exactly on-chain.
+
+**Security model (demo server):** Ed25519 creator-key signatures on every write and money
+endpoint, per-IP rate limiting, CORS allow-list, exact BigInt (wei) royalty accounting, and
+HCS-26 registrations bound to a content hash + creator signature verified on read.
 
 ## Documents
 
@@ -28,14 +46,18 @@ A decentralized marketplace where AI skills register, **compose** into a depende
 ## Quickstart
 
 ```bash
-# Contracts — 21 tests (royalty conservation + settlement vault)
+# Contracts — 21 Foundry tests (royalty conservation + settlement vault)
 cd skill-network/contracts && forge test
+
+# Demo server — 15 node:test tests (conservation, auth, persistence, drift guard)
+cd skill-network/demo && npm install && npm test
 
 # Off-chain settlement demo — 200 sub-cent calls collapse into 2 on-chain batches, conserved to the wei
 node skill-network/settlement/run-demo.mjs
 
-# Local protocol demo (in-memory)
-cd skill-network/demo && npm install && node server.js
+# Local protocol demo (AUTH_MODE=dev skips request signing for local play;
+# the default is signature mode, which both bundled UIs support via WebCrypto)
+cd skill-network/demo && npm install && AUTH_MODE=dev node server.js
 ```
 
 ## Royalty model (conserving ρ-flow)
