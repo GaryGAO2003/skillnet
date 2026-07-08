@@ -4,6 +4,7 @@ import { Marketplace } from './pages/Marketplace'
 import { SkillDetail } from './pages/SkillDetail'
 import { ComposeSkill } from './pages/ComposeSkill'
 import { Dashboard } from './pages/Dashboard'
+import { Vault } from './pages/Vault'
 
 function Navbar() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -20,6 +21,7 @@ function Navbar() {
           <NavLink to="/" end className={linkClass}>Marketplace</NavLink>
           <NavLink to="/compose" className={linkClass}>Compose</NavLink>
           <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
+          <NavLink to="/vault" className={linkClass}>Vault</NavLink>
         </div>
 
         <ConnectButton chainStatus="icon" showBalance={false} />
@@ -39,6 +41,7 @@ export function App() {
             <Route path="/skill/:id" element={<SkillDetail />} />
             <Route path="/compose" element={<ComposeSkill />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/vault" element={<Vault />} />
           </Routes>
         </main>
       </div>
