@@ -166,13 +166,16 @@ contract SeedScript is Script {
         console.log("Full Audit Suite composed");
 
         // -------------------------------------------------------------------
-        // Simulate 10 calls to Full Audit Suite
+        // Simulate paid calls to Full Audit Suite
+        // (SEED_CALLS env overrides; default 10 suits a funded local node,
+        //  use a smaller value on testnets where the deployer holds less ETH)
         // -------------------------------------------------------------------
-        console.log("\nSimulating 10 calls to Full Audit Suite...");
-        for (uint256 i = 0; i < 10; i++) {
+        uint256 numCalls = vm.envOr("SEED_CALLS", uint256(10));
+        console.log("\nSimulating calls to Full Audit Suite:", numCalls);
+        for (uint256 i = 0; i < numCalls; i++) {
             feeRouter.payForCall{value: 0.015 ether}(fullAuditId);
         }
-        console.log("10 calls simulated successfully");
+        console.log("Calls simulated successfully:", numCalls);
 
         vm.stopBroadcast();
 
