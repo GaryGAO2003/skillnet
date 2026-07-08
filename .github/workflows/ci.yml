@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contracts:
+    name: Foundry (contracts)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: skill-network/contracts
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: forge build
+        run: forge build
+
+      - name: forge test
+        run: forge test -vvv
+
+  demo:
+    name: Node (demo)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: skill-network/demo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Install deps only if a package.json is present.
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            (npm ci || npm install)
+          else
+            echo "no package.json yet — skipping install"
+          fi
+
+      # Another agent is adding JS tests under skill-network/demo/test/ later.
+      # Stay green until then.
+      - name: node --test
+        run: |
+          if [ -d test ]; then
+            node --test
+          else
+            echo "no demo/test dir yet — skipping"
+          fi
