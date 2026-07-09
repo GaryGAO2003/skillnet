@@ -2,9 +2,10 @@ services:
   - type: web
     name: skillnet-demo
     runtime: node
-    rootDir: demo
+    rootDir: skill-network/demo
     buildCommand: npm install
     startCommand: node server.js
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,6 +19,8 @@ services:
       # here to survive redeploys, otherwise it survives in-instance restarts only)
       - key: STATE_FILE
         value: data/state.json
+      # Hedera HCS-26 publishing — leave empty to run in local-only mode;
+      # fill in the dashboard later to enable the live registry.
       - key: HEDERA_ACCOUNT_ID
         sync: false
       - key: HEDERA_PRIVATE_KEY
