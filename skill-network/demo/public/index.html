@@ -444,8 +444,8 @@ async function renderDetail(id) {
         <div class="bg-gray-50 rounded-xl p-4">
           <div class="flex items-center gap-2 mb-3">
             <span class="text-sm text-gray-500">Payment:</span>
-            <input id="sim-amt-${id}" type="number" min="0.0001" step="0.001"
-                   value="${skill.pricePerCall || 0.01}"
+            <input id="sim-amt-${id}" type="number" min="${skill.pricePerCall ?? 0}" step="0.001"
+                   value="${skill.pricePerCall ?? 0}"
                    oninput="renderFeeFlow(${id})"
                    class="w-28 border border-gray-300 rounded-lg px-2 py-1 text-sm font-mono" />
             <span class="text-sm text-gray-400">ETH</span>
@@ -466,8 +466,8 @@ async function renderDetail(id) {
     <div class="flex items-center gap-3 flex-wrap">
       <div class="flex items-center gap-2">
         <label class="text-sm text-gray-500">Amount:</label>
-        <input id="call-amt-${id}" type="number" min="0.0001" step="0.001"
-               value="${skill.pricePerCall || 0.001}"
+        <input id="call-amt-${id}" type="number" min="${skill.pricePerCall ?? 0}" step="0.001"
+               value="${skill.pricePerCall ?? 0}"
                class="w-28 border border-gray-300 rounded-lg px-2 py-1 text-sm font-mono" />
         <span class="text-sm text-gray-400">ETH</span>
       </div>
@@ -547,7 +547,8 @@ function renderFeeFlow(skillId) {
 // Quick call from skill grid card
 async function quickCall(skillId) {
   const skill = S.skills.find(s => s.id === skillId)
-  const value = skill?.pricePerCall || 0.001
+  // Nullish (not ||) so a FREE skill (pricePerCall === 0) sends value 0 instead of 0.001.
+  const value = skill?.pricePerCall ?? 0
   const res   = await api('POST', `/api/call/${skillId}`, { value, caller: me() })
   if (res.error) { alert('Error: ' + res.error); return }
   await refresh()
@@ -556,8 +557,13 @@ async function quickCall(skillId) {
 }
 
 async function handleCall(skillId) {
-  const input = document.getElementById(`call-amt-${skillId}`)
-  const value = parseFloat(input?.value || 0.001)
+  const input  = document.getElementById(`call-amt-${skillId}`)
+  // Missing/empty input → the skill's exact price (0 for a free skill); a typed amount parses,
+  // with NaN falling back to the price. Never let an empty string collapse to NaN.
+  const price  = S.skills.find(s => s.id === skillId)?.pricePerCall ?? 0
+  const raw    = input?.value
+  const parsed = raw == null ? NaN : parseFloat(raw)
+  const value  = (raw == null || raw.trim() === '' || Number.isNaN(parsed)) ? price : parsed
   const res   = await api('POST', `/api/call/${skillId}`, { value, caller: me() })
   if (res.error) { alert('Error: ' + res.error); return }
 
@@ -645,15 +651,17 @@ function onParentChange() {
   if (!checked.length) { section.classList.add('hidden'); return }
   section.classList.remove('hidden')
 
-  // Preserve existing weight values
-  const existing = {}
-  document.querySelectorAll('.wi').forEach(i => { existing[i.dataset.id] = i.value })
-
+  // Redistribute evenly across the CURRENT checked set on every selection change. Stale
+  // preservation was removed because keeping a prior row's value while giving a newly-checked
+  // row its own even share produced sums > 100 (e.g. 100 + 50 = 150), which the server rejects.
+  // First row absorbs the rounding remainder so the total is exactly 100 for any n
+  // (1→100; 2→50/50; 3→34/33/33). Manual fine-tuning still works: rows only re-render on a
+  // selection change, and the live "X / 100" indicator guides manual edits.
   const even = Math.floor(100 / checked.length)
   rows.innerHTML = checked.map((cb, i) => {
     const id    = cb.value
     const skill = S.skills.find(s => s.id == id)
-    const def   = existing[id] || (i === 0 ? 100 - even * (checked.length - 1) : even)
+    const def   = i === 0 ? 100 - even * (checked.length - 1) : even
     return `
       <div class="flex items-center gap-2 text-sm">
         <span class="flex-1 text-gray-700 truncate">${skill?.name}</span>

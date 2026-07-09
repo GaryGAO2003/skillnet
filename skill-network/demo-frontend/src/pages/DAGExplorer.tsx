@@ -26,7 +26,9 @@ export default function DAGExplorer({ initialSkillId }: Props) {
     if (selectedId) {
       fetchDAG(selectedId).then(setDag)
       const skill = skills.find(s => s.id === selectedId)
-      if (skill) setCallPrice(String(skill.pricePerCall || 0.015))
+      // Nullish (not ||) so a FREE skill (pricePerCall === 0) keeps its real 0 price in the
+      // fee simulator instead of being clobbered to 0.015.
+      if (skill) setCallPrice(String(skill.pricePerCall ?? 0.015))
     }
   }, [selectedId, skills])
 

@@ -28,3 +28,4 @@ tmp_state.json
 Thumbs.db
 .idea/
 .vscode/
+.gstack/

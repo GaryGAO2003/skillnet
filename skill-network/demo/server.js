@@ -655,6 +655,12 @@ app.post('/api/call/:id', expensiveLimiter, requireSignature, async (req, res) =
     const value  = req.body.value ?? skill.pricePerCall ?? 0
     const caller = req.body.caller || 'user'
     const input  = req.body.input || ''
+    // Payment floor — mirrors FeeRouter.sol `require(msg.value >= skill.pricePerCall)`.
+    // Compare in exact BigInt wei (never floats) so no rounding lets an underpayment slip
+    // through. Overpay stays allowed; a price-0 skill is legitimately called with value 0.
+    if (toWei(value) < toWei(skill.pricePerCall ?? 0)) {
+      return res.status(400).json({ error: `Insufficient payment: skill price is ${skill.pricePerCall ?? 0}` })
+    }
     const tx     = payForCall(+req.params.id, value, caller)
     scheduleSave()
 
