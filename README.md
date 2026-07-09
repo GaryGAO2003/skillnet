@@ -7,7 +7,11 @@ A decentralized marketplace where AI skills register, **compose** into a depende
 **Hedera HCS-26**; value transfer settles on an EVM chain.
 
 > **Status:** live on **Base Sepolia** testnet (contracts below) + **Hedera testnet** (HCS-26
-> discovery topic `0.0.8599076`). 36 automated tests (21 Foundry + 15 node:test) run in CI.
+> discovery topic `0.0.8599076`). 40 automated tests (21 Foundry + 19 node:test) run in CI.
+>
+> **🌐 Live demo:** <https://skillnet-demo.onrender.com> — signature-auth demo server on
+> Render (free tier: first request after idle takes ~30-60s to wake; in-memory state
+> re-seeds on redeploy).
 
 ## Live deployment (Base Sepolia, chain 84532)
 
