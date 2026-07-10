@@ -12,6 +12,10 @@ A decentralized marketplace where AI skills register, **compose** into a depende
 > **🌐 Live demo:** <https://skillnet-demo.onrender.com> — signature-auth demo server on
 > Render (free tier: first request after idle takes ~30-60s to wake; in-memory state
 > re-seeds on redeploy).
+>
+> **⛓️ Live on-chain UI:** <https://skillnet-ten.vercel.app> — wagmi/RainbowKit frontend
+> against the Base Sepolia contracts below (connect an injected wallet like MetaMask;
+> `/vault` hosts the SettlementVault deposit/withdraw flow).
 
 ## Live deployment (Base Sepolia, chain 84532)
 
