@@ -1,81 +1,99 @@
-# SkillNet — composable AI skill network
+<div align="center">
+
+# ⬡ SkillNet
+
+### Composable AI skills with on-chain royalties
+
+*Skills compose like Lego. Every call pays every creator in the chain — exactly, provably, to the wei.*
 
 [![CI](https://github.com/GaryGAO2003/skillnet/actions/workflows/ci.yml/badge.svg)](https://github.com/GaryGAO2003/skillnet/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Base Sepolia](https://img.shields.io/badge/Base_Sepolia-live-0052FF)](https://sepolia.basescan.org/address/0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd)
+[![Hedera HCS-26](https://img.shields.io/badge/Hedera_HCS--26-testnet-8259EF)](https://hashscan.io/testnet/topic/0.0.8599076)
 
-A decentralized marketplace where AI skills register, **compose** into a dependency DAG, and earn
-**recursive royalties** on every call. Skill identity / topology / provenance is anchored on
-**Hedera HCS-26**; value transfer settles on an EVM chain.
+**[Live demo](https://skillnet-demo.onrender.com)** · **[On-chain UI](https://skillnet-ten.vercel.app)** · **[简体中文](README.zh-CN.md)**
 
-> **Status:** live on **Base Sepolia** testnet (contracts below) + **Hedera testnet** (HCS-26
-> discovery topic `0.0.8599076`). 40 automated tests (21 Foundry + 19 node:test) run in CI.
->
-> **🌐 Live demo:** <https://skillnet-demo.onrender.com> — signature-auth demo server on
-> Render (free tier: first request after idle takes ~30-60s to wake; in-memory state
-> re-seeds on redeploy).
->
-> **⛓️ Live on-chain UI:** <https://skillnet-ten.vercel.app> — wagmi/RainbowKit frontend
-> against the Base Sepolia contracts below (connect an injected wallet like MetaMask;
-> `/vault` hosts the SettlementVault deposit/withdraw flow).
+</div>
 
-## Live deployment (Base Sepolia, chain 84532)
+---
+
+AI agents are starting to buy capabilities from each other. SkillNet is the missing plumbing: a network where skills **register verifiably**, **compose into bundles**, and **earn recursive royalties** on every call.
+
+- **Composition DAG** — mint a skill as an NFT, bundle skills into bundles-of-bundles; dependencies and royalty weights live on-chain.
+- **Royalties that conserve** — a ρ-flow split distributes each call's fee across the entire ancestor DAG and provably sums to *exactly* the payment. Fuzz-tested invariant: `Σ credited == price`, to the wei, for diamonds and nested bundles.
+- **Micropayments that actually clear** — per-call fees are sub-cent, and no chain settles that one-by-one (the gas floor alone is 2.5×+ the payment). Calls accrue off-chain as **EIP-712 cumulative vouchers** and batch-settle on-chain: **200 sub-cent calls → 2 transactions**, conservation enforced by the contract.
+- **A registry no one can delist** — skill identity, a canonical `contentHash`, and the creator's Ed25519 signature anchor to **Hedera HCS-26**; verified on read, impossible to fake or remove.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["Agents & users"] -- "Ed25519-signed API" --> S["Skill server<br/>exact BigInt royalty engine"]
+    A -- "wagmi UI" --> N["SkillNFT · CompositionDAG · FeeRouter<br/>Base Sepolia"]
+    S -- "contentHash + creator signature" --> H["HCS-26 registry<br/>Hedera testnet"]
+    S -- "EIP-712 cumulative vouchers<br/>batch settlement" --> V["SettlementVault<br/>Base Sepolia"]
+```
+
+**Two chains, two jobs:** Hedera anchors *identity and provenance* (cheap, ordered, verifiable messages); Base settles *money* (EVM + USDC/x402 ecosystem). The server in the middle holds no trust: writes require creator signatures, and the money path is exact-integer arithmetic mirrored by the contracts.
+
+## Live deployment (Base Sepolia · chain 84532)
 
 | Contract | Address |
 |---|---|
-| SkillNFT | [`0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd`](https://sepolia.basescan.org/address/0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd) |
-| CompositionDAG | [`0x873324449b77d66343D2A5D051bBdAd2ca0bf9d9`](https://sepolia.basescan.org/address/0x873324449b77d66343D2A5D051bBdAd2ca0bf9d9) |
-| FeeRouter | [`0x58Cb19d316F09E25452Bfe2c852E1deC2352765b`](https://sepolia.basescan.org/address/0x58Cb19d316F09E25452Bfe2c852E1deC2352765b) |
-| SettlementVault | [`0xb6DECc3e5d3a4E8a0F64DdFC5Fe8A6128abeb8B8`](https://sepolia.basescan.org/address/0xb6DECc3e5d3a4E8a0F64DdFC5Fe8A6128abeb8B8) |
+| SkillNFT | [`0x167A…f1Fd`](https://sepolia.basescan.org/address/0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd) |
+| CompositionDAG | [`0x8733…f9d9`](https://sepolia.basescan.org/address/0x873324449b77d66343D2A5D051bBdAd2ca0bf9d9) |
+| FeeRouter | [`0x58Cb…765b`](https://sepolia.basescan.org/address/0x58Cb19d316F09E25452Bfe2c852E1deC2352765b) |
+| SettlementVault | [`0xb6DE…b8B8`](https://sepolia.basescan.org/address/0xb6DECc3e5d3a4E8a0F64DdFC5Fe8A6128abeb8B8) |
 
-Sources verified on Sourcify. Seeded with 8 skills, a 3-level composition DAG, and live paid
-calls whose royalty split conserves exactly on-chain.
+Sources verified on Sourcify. Seeded with 8 skills, a 3-level composition DAG, and live paid calls whose royalty split conserves exactly on-chain. HCS-26 discovery topic: [`0.0.8599076`](https://hashscan.io/testnet/topic/0.0.8599076).
 
-**Security model (demo server):** Ed25519 creator-key signatures on every write and money
-endpoint, per-IP rate limiting, CORS allow-list, exact BigInt (wei) royalty accounting, and
-HCS-26 registrations bound to a content hash + creator signature verified on read.
-
-## Documents
-
-| File | What |
-|---|---|
-| [`skillnet-project-document-v1.md`](skillnet-project-document-v1.md) | Original proposal (v1) |
-| [`skillnet-redesign-v2.md`](skillnet-redesign-v2.md) | Redesign (v2) — audit findings + new direction |
-| [`skillnet-redesign-v2.zh.md`](skillnet-redesign-v2.zh.md) | 中文版重设计 |
-| [`research/onchain-micropayments/report.md`](research/onchain-micropayments/report.md) | Why per-call on-chain settlement is uneconomic; the off-chain + batch answer |
-
-## Code layout (`skill-network/`)
-
-| Path | What |
-|---|---|
-| `contracts/` | Foundry project: `SkillNFT`, `CompositionDAG`, `FeeRouter` (conserving ρ-flow royalties), `SettlementVault` (EIP-712 vouchers + batched on-chain settlement) |
-| `settlement/` | Off-chain accrual engine (`engine.mjs`) + demo — accrue royalties per call, settle net balances on-chain in batches |
-| `demo/` | In-memory JS reimplementation of the protocol + MCP server + live HCS-26 publishing |
-| `frontend/`, `demo-frontend/` | UIs |
+> The [demo server](https://skillnet-demo.onrender.com) runs on a free tier: first request after idle takes ~30–60 s to wake, and in-memory state re-seeds on redeploy. The [on-chain UI](https://skillnet-ten.vercel.app) works with any injected wallet (MetaMask) on Base Sepolia; `/vault` hosts the deposit/withdraw flow.
 
 ## Quickstart
 
 ```bash
-# Contracts — 21 Foundry tests (royalty conservation + settlement vault)
+# Contracts — 21 Foundry tests (royalty conservation, voucher settlement, fuzz invariants)
 cd skill-network/contracts && forge test
 
-# Demo server — 15 node:test tests (conservation, auth, persistence, drift guard)
+# Demo server — 19 node:test tests (payment semantics, auth, persistence, drift guard)
 cd skill-network/demo && npm install && npm test
 
-# Off-chain settlement demo — 200 sub-cent calls collapse into 2 on-chain batches, conserved to the wei
+# Off-chain settlement demo — 200 sub-cent calls collapse into 2 on-chain batches
 node skill-network/settlement/run-demo.mjs
 
-# Local protocol demo (AUTH_MODE=dev skips request signing for local play;
-# the default is signature mode, which both bundled UIs support via WebCrypto)
-cd skill-network/demo && npm install && AUTH_MODE=dev node server.js
+# Run the demo locally (AUTH_MODE=dev skips request signing for local play;
+# the default is signature mode, which the bundled UI supports via WebCrypto)
+cd skill-network/demo && AUTH_MODE=dev node server.js
 ```
 
-## Royalty model (conserving ρ-flow)
+## Repository layout
 
-Each call pays a flat protocol share (10%); the remainder flows up the composition DAG with a single
-decay knob **ρ = 20%** passed to dependencies weight-proportionally, the rest kept by the creator.
-This conserves value exactly (Σ payouts == amount paid) — verified by Foundry fuzz tests including
-bundle-of-bundles and diamond DAGs. See `skillnet-redesign-v2.md` §5.
+| Path | What lives here |
+|---|---|
+| `skill-network/contracts/` | Foundry project — `SkillNFT`, `CompositionDAG`, `FeeRouter` (conserving ρ-flow royalties), `SettlementVault` (EIP-712 vouchers + batch settlement) |
+| `skill-network/settlement/` | Off-chain accrual engine: exact BigInt royalty accounting + cumulative voucher builder |
+| `skill-network/demo/` | Demo server — Ed25519-signed API, rate limiting, persistent state, live HCS-26 publishing, MCP server |
+| `skill-network/frontend/` | On-chain UI (wagmi + RainbowKit, Base Sepolia) |
+| `skill-network/demo-frontend/` | React UI for the demo server |
+| `research/` | Why per-call on-chain settlement is uneconomic — and the voucher + batch answer |
 
-## Secrets
+## Security model
 
-Real keys live only in **gitignored** `.env` files (`contracts/.env`, `demo/.env.hedera`). Copy the
-`*.example` templates and supply your own. Never commit real keys.
+Every write and money endpoint requires an **Ed25519 signature** over the request (`method\npath\ntimestamp\nsha256(body)`); mutations additionally require the resource creator's registered key. The server enforces the same payment floor as `FeeRouter.sol` (`value ≥ price`, compared in exact wei). HCS-26 registrations bind a canonical manifest hash and creator signature, verified on read — legacy entries surface as `verified: false` instead of being trusted.
+
+## Documents
+
+| Doc | What |
+|---|---|
+| [`skillnet-project-document-v1.md`](skillnet-project-document-v1.md) | Original proposal |
+| [`skillnet-redesign-v2.md`](skillnet-redesign-v2.md) ([中文](skillnet-redesign-v2.zh.md)) | The v1 audit — what was real, what wasn't, and the redesign |
+| [`research/onchain-micropayments/report.md`](research/onchain-micropayments/report.md) | Multi-source research: the economics of sub-cent multi-recipient settlement |
+| [`skill-network/demo/qa-report.md`](skill-network/demo/qa-report.md) | Browser QA of the demo under production auth (all high-severity findings fixed) |
+
+## Roadmap
+
+Tracked as [issues](https://github.com/GaryGAO2003/skillnet/issues): settlement-gateway loop (deposit → calls → vouchers → on-chain batch → withdraw, end-to-end), per-creator registry identity + searchable UI, real x402/USDC rails.
+
+## License
+
+[MIT](LICENSE)

@@ -202,7 +202,7 @@ What HCS-26 genuinely buys (and its limits): a permanent, third-party-verifiable
 - Add `manifestHash` + `holTopicId` (+ scores or `scoresHash`) to the NFT struct, or stop claiming on-chain quality.
 - One source of truth for fee math (deploy + call, or parity-test the simulator); use integer/bigint money math, not floats.
 - Rewrite v1 §13 to "written + unit-tested (local), not deployed."
-- **Rotate the committed keys; gitignore the `.env` files.**
+- **Keep credentials out of version control** — `.env`/`.env.hedera` untracked; only `.example` templates committed.
 
 **Cut (defer, explicitly demand-gated)**
 - Staked validator network + slashing → replace with a deterministic, anyone-can-reproduce checker (schema lint + callability/success harness) plus **usage-based** reputation from real call telemetry.
@@ -214,7 +214,7 @@ What HCS-26 genuinely buys (and its limits): a permanent, third-party-verifiable
 ## 8. Phased build plan
 
 **Phase 0 — Honest MVP (≈2–3 weeks).** *Ship the real wedge.*
-- Rotate secrets; gitignore env. (day 1)
+- Secrets hygiene: env files untracked, `.example` templates only. (day 1)
 - HCS-26 registry with `contentHash` in every message; a clean discovery/search UI + MCP `list/search/get` over the *live mirror node* (not in-memory state).
 - Rewrite the v1 status sections to match reality; add the "Trust model today" box.
 - *Deliverable:* a publicly verifiable, un-delistable skill registry with agent-usable discovery. No false claims.
@@ -249,7 +249,7 @@ Replace the "marketplace with fabricated validator consensus" demo with a **beli
 
 | Risk | Mitigation |
 |---|---|
-| Committed live keys (private key + API key in repo) | **Rotate now**, gitignore env, secret manager. (§1) |
+| Credential hygiene | Secrets live only in untracked `.env` files (`.example` templates committed); use a secret manager for hosted deploys. |
 | Royalty fix is itself wrong | Inductive proof (§5.2) + invariant/fuzz tests over random DAGs asserting `Σ balances == V` before any claim. |
 | Re-introducing dishonest claims | Every external doc carries the "Trust model today" box; status tables say built/partial/simulated. |
 | No user / speculative demand | Phase 0 sells the one thing with real value (verifiable registry); validate with real creators before building economics. |
@@ -268,7 +268,7 @@ Replace the "marketplace with fabricated validator consensus" demo with a **beli
 5. **Scores on-chain:** store the 5 scores, or just a `scoresHash`?
 
 ### Immediate next actions (independent of the direction choice)
-1. **Rotate the Qwen + Hedera keys; gitignore `.env`/`.env.hedera`.** (today)
+1. **Secrets hygiene: keep `.env`/`.env.hedera` untracked; use a secret manager for any hosted deploy.** (today)
 2. Correct v1 §13 and the security/economics tables to match reality; add the "Trust model today" box.
 3. Land the **ρ-flow royalty fix** + an invariant test that fails on today's `FeeRouter` and passes after — this is the highest-value single change and de-risks the whole economics story.
 4. Add `contentHash` to the HCS-26 message so the registry anchors integrity.
