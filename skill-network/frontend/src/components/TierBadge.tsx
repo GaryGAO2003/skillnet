@@ -1,10 +1,11 @@
 import type { VisibilityTier } from '../types'
 import { TIER_LABELS } from '../constants'
 
-const TIER_STYLES: Record<VisibilityTier, string> = {
-  0: 'bg-green-100 text-green-800 border border-green-300',
-  1: 'bg-amber-100 text-amber-800 border border-amber-300',
-  2: 'bg-red-100 text-red-800 border border-red-300',
+// Square tier stamps: OPEN ink outline / SHIELDED warning / PRIVATE danger.
+const TIER_CLASS: Record<VisibilityTier, string> = {
+  0: 'stamp-open',
+  1: 'stamp-shielded',
+  2: 'stamp-private',
 }
 
 interface TierBadgeProps {
@@ -13,9 +14,9 @@ interface TierBadgeProps {
 }
 
 export function TierBadge({ tier, size = 'md' }: TierBadgeProps) {
-  const sizeClass = size === 'sm' ? 'text-xs px-1.5 py-0.5' : 'text-sm px-2.5 py-1'
+  const sizeClass = size === 'sm' ? 'stamp-sm' : 'stamp-md'
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${sizeClass} ${TIER_STYLES[tier]}`}>
+    <span className={`stamp ${sizeClass} ${TIER_CLASS[tier]}`}>
       {TIER_LABELS[tier]}
     </span>
   )

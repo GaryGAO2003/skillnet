@@ -30,13 +30,16 @@ export function ComposeSkill() {
     .filter(Boolean) as SkillWithId[]
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Compose a Skill</h1>
-      <p className="text-gray-500 text-sm mb-8">
-        Create a new skill that builds on existing ones. Set dependency weights to define how royalties flow upstream.
-      </p>
+    <div className="max-w-2xl mx-auto px-6 py-12">
+      <header className="mb-8">
+        <h1 className="font-display text-5xl leading-[0.95] tracking-tight text-ink">Compose a Skill</h1>
+        <p className="font-mono text-[12px] tracking-[0.02em] text-muted mt-3 max-w-[56ch]">
+          Build on existing skills. Fix each contributor's royalty weight at mint —
+          every downstream call settles the split on-chain, to the wei.
+        </p>
+      </header>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="bg-surface border border-line rounded-sm p-6">
         <ComposeForm
           availableSkills={skills}
           onSuccess={() => navigate('/')}

@@ -1,71 +1,74 @@
-import { Link } from 'react-router-dom'
-import { formatEther } from 'viem'
+import { useNavigate } from 'react-router-dom'
 import { TierBadge } from './TierBadge'
 import { usePayForCall } from '../hooks/useFeeRouter'
 import { SKILL_TYPE_LABELS } from '../constants'
+import { formatWeiValue, registryMark } from '../lib/format'
 import type { SkillWithId } from '../types'
 
-interface SkillCardProps {
+interface SkillRowProps {
   skill: SkillWithId
 }
 
-export function SkillCard({ skill }: SkillCardProps) {
+/** A skill rendered as a ledger row (not a card). */
+export function SkillRow({ skill }: SkillRowProps) {
+  const navigate = useNavigate()
   const { payForCall, isPending, isConfirming } = usePayForCall()
 
+  const isFree = skill.pricePerCall === BigInt(0)
+
   async function handleCall() {
-    if (skill.pricePerCall === BigInt(0)) {
-      await payForCall(skill.tokenId, BigInt(1))
-    } else {
-      await payForCall(skill.tokenId, skill.pricePerCall)
-    }
+    // Payment floor: free skills still record a call at the minimum unit.
+    const value = isFree ? BigInt(1) : skill.pricePerCall
+    await payForCall(skill.tokenId, value)
   }
 
   const isBusy = isPending || isConfirming
+  const calls = skill.totalCalls.toString()
+  const revenue = formatWeiValue(skill.totalRevenue)
+  const price = formatWeiValue(skill.pricePerCall)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-base font-semibold text-gray-900 leading-tight">{skill.name}</h3>
-        <TierBadge tier={skill.tier} size="sm" />
+    <div className="led-row">
+      <div className="led-id">{registryMark(skill.tokenId)}</div>
+
+      <div className="led-main">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="led-name">{skill.name}</span>
+          <TierBadge tier={skill.tier} size="sm" />
+        </div>
+        <div className="led-desc line-clamp-2">{skill.description}</div>
+        <span className="led-type">{SKILL_TYPE_LABELS[skill.skillType]}</span>
       </div>
 
-      <p className="text-sm text-gray-500 line-clamp-2">{skill.description}</p>
-
-      <div className="text-xs text-gray-400 font-mono">
-        {SKILL_TYPE_LABELS[skill.skillType]}
+      <div className="led-num">{calls}</div>
+      <div className="led-num">
+        {revenue} <span className="u">ETH</span>
+      </div>
+      <div className={`led-num price ${isFree ? 'free' : ''}`}>
+        {isFree ? 'FREE' : <>{price} <span className="u">ETH</span></>}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center text-xs">
-        <div className="bg-gray-50 rounded p-2">
-          <div className="font-semibold text-gray-700">{skill.totalCalls.toString()}</div>
-          <div className="text-gray-400">Calls</div>
-        </div>
-        <div className="bg-gray-50 rounded p-2">
-          <div className="font-semibold text-gray-700">{formatEther(skill.totalRevenue).slice(0, 7)}</div>
-          <div className="text-gray-400">ETH Revenue</div>
-        </div>
-        <div className="bg-gray-50 rounded p-2">
-          <div className="font-semibold text-gray-700">
-            {skill.pricePerCall === BigInt(0) ? 'Free' : `${formatEther(skill.pricePerCall)} ETH`}
-          </div>
-          <div className="text-gray-400">Price</div>
-        </div>
+      {/* Compact numeric stack for narrow screens */}
+      <div className="led-mobilenums">
+        <span className="mn"><small>Calls</small>{calls}</span>
+        <span className="mn"><small>Revenue</small>{revenue}</span>
+        <span className="mn"><small>Price</small>{isFree ? 'FREE' : price}</span>
       </div>
 
-      <div className="flex gap-2 mt-1">
+      <div className="led-act">
         <button
           onClick={handleCall}
           disabled={isBusy}
-          className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg py-2 transition-colors"
+          className="btn btn-primary btn-sm"
         >
-          {isBusy ? 'Processing…' : 'Call Skill'}
+          {isBusy ? '…' : 'Call'}
         </button>
-        <Link
-          to={`/skill/${skill.tokenId}`}
-          className="flex-1 text-center border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg py-2 transition-colors"
+        <button
+          onClick={() => navigate(`/skill/${skill.tokenId}`)}
+          className="btn btn-ghost btn-sm"
         >
-          View DAG
-        </Link>
+          DAG
+        </button>
       </div>
     </div>
   )

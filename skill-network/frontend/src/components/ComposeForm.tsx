@@ -4,6 +4,7 @@ import { keccak256, toHex, parseEther } from 'viem'
 import { useMintSkill } from '../hooks/useSkillNFT'
 import { useCompose } from '../hooks/useCompositionDAG'
 import { SKILL_TYPE_LABELS, TIER_LABELS } from '../constants'
+import { formatWeiValue, registryId } from '../lib/format'
 import type { SkillType, VisibilityTier, SkillWithId } from '../types'
 
 interface ParentEntry {
@@ -16,6 +17,12 @@ interface ComposeFormProps {
   availableSkills: SkillWithId[]
   onSuccess?: () => void
 }
+
+const STEPS: { n: '01' | '02' | '03'; label: string }[] = [
+  { n: '01', label: 'METADATA' },
+  { n: '02', label: 'DEPENDENCIES' },
+  { n: '03', label: 'PREVIEW & SUBMIT' },
+]
 
 export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
   const { address } = useAccount()
@@ -83,50 +90,66 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
     }
   }
 
+  // Would-be revenue split at the entered price (wei-exact, informational).
+  let previewPrice = 0n
+  try { previewPrice = parseEther(priceEth || '0') } catch { previewPrice = 0n }
+  const pvProtocol = (previewPrice * 10n) / 100n
+  const pvCreator = (previewPrice * 70n) / 100n
+  const pvUpstream = previewPrice - pvProtocol - pvCreator
+  const pvRemainder = previewPrice - (pvProtocol + pvCreator + pvUpstream)
+
   return (
     <div className="space-y-6">
-      {/* Step indicator */}
-      <div className="flex gap-4 text-sm">
-        {([1, 2, 3] as const).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStep(s)}
-            className={`px-3 py-1 rounded-full font-medium ${
-              step === s ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {s === 1 ? 'Metadata' : s === 2 ? 'Dependencies' : 'Preview & Submit'}
-          </button>
-        ))}
+      {/* Progress rail */}
+      <div className="grid grid-cols-3 border-t border-b border-line divide-x divide-line">
+        {STEPS.map((s, i) => {
+          const stepNum = (i + 1) as 1 | 2 | 3
+          const active = step === stepNum
+          return (
+            <button
+              key={s.n}
+              type="button"
+              onClick={() => setStep(stepNum)}
+              className={`text-left px-3 py-3 transition-colors ${active ? 'bg-surface-raised' : 'hover:bg-surface-raised'}`}
+            >
+              <div className={`font-mono text-[11px] font-bold tracking-[0.06em] ${active ? 'text-ink' : 'text-muted'}`}>
+                {s.n}
+              </div>
+              <div className={`font-mono text-[10px] tracking-[0.08em] mt-1 ${active ? 'text-accent-strong' : 'text-muted'}`}>
+                {s.label}
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       {step === 1 && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="field-label">Name</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="field-input font-sans"
               placeholder="My Composed Skill"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="field-label">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="field-input font-sans"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Skill Type</label>
+              <label className="field-label">Skill Type</label>
               <select
                 value={skillType}
                 onChange={(e) => setSkillType(Number(e.target.value) as SkillType)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="sel w-full"
               >
                 {SKILL_TYPE_LABELS.map((label, i) => (
                   <option key={i} value={i}>{label}</option>
@@ -134,11 +157,11 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility Tier</label>
+              <label className="field-label">Visibility Tier</label>
               <select
                 value={tier}
                 onChange={(e) => setTier(Number(e.target.value) as VisibilityTier)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="sel w-full"
               >
                 {TIER_LABELS.map((label, i) => (
                   <option key={i} value={i}>{label}</option>
@@ -147,20 +170,21 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price Per Call (ETH)</label>
+            <label className="field-label">Price Per Call (ETH)</label>
             <input
               type="number"
               min="0"
               step="0.001"
               value={priceEth}
               onChange={(e) => setPriceEth(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="field-input"
             />
+            <div className="field-hint">Fixed at mint · settled to the wei on every call</div>
           </div>
           <button
             onClick={() => setStep(2)}
             disabled={!name}
-            className="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+            className="btn btn-primary btn-block"
           >
             Next: Select Dependencies
           </button>
@@ -170,16 +194,16 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-gray-600 mb-1">
-              Parent dependencies <span className="text-gray-400">(optional — skip to create a leaf skill)</span>
+            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted mb-2">
+              Parent dependencies <span className="text-muted opacity-70">(optional — skip for a leaf skill)</span>
             </p>
 
             {availableSkills.length === 0 ? (
-              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 text-sm text-gray-400 italic">
+              <div className="border border-line rounded-sm p-4 bg-surface-raised font-mono text-[12px] text-muted">
                 No skills available to depend on yet.
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3">
+              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto border border-line rounded-sm p-3">
                 {availableSkills.map((skill) => {
                   const isAdded = !!parents.find((p) => p.skillId === skill.tokenId)
                   return (
@@ -187,14 +211,15 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
                       key={skill.tokenId}
                       type="button"
                       onClick={() => isAdded ? removeParent(skill.tokenId) : addParent(skill)}
-                      className={`text-left text-sm px-3 py-2 rounded-lg border transition-colors ${
+                      className={`text-left text-[13px] px-3 py-2 rounded-sm border transition-colors ${
                         isAdded
-                          ? 'border-indigo-400 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                          ? 'border-accent-strong bg-surface-raised text-ink'
+                          : 'border-line hover:bg-surface-raised text-ink'
                       }`}
                     >
-                      <span className="font-mono text-gray-400 mr-1">#{skill.tokenId}</span> {skill.name}
-                      {isAdded && <span className="ml-2 text-xs">✓</span>}
+                      <span className="font-mono text-muted mr-2">⬡ {registryId(skill.tokenId)}</span>
+                      {skill.name}
+                      {isAdded && <span className="ml-2 font-mono text-accent-strong text-xs">✓</span>}
                     </button>
                   )
                 })}
@@ -202,37 +227,38 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
             )}
 
             {parents.length === 0 && (
-              <p className="text-xs text-gray-400 mt-1">
-                No parents selected — this skill will be a <strong>leaf skill</strong> and keeps 90% of each call fee.
+              <p className="font-mono text-[11px] text-muted mt-2">
+                No parents — this skill is a <strong className="text-ink">leaf</strong> and keeps 90% of each call fee.
               </p>
             )}
           </div>
 
           {parents.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">
-                Royalty weights (total:{' '}
-                <span className={totalWeight === 100 ? 'text-green-600 font-semibold' : 'text-red-500 font-semibold'}>
+              <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+                Royalty weights · total{' '}
+                <span className={totalWeight === 100 ? 'text-success font-bold' : 'text-danger font-bold'}>
                   {totalWeight}
                 </span>
-                /100 — must equal 100)
+                {' '}/ 100 — must equal 100
               </p>
               {parents.map((p) => (
                 <div key={p.skillId} className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600 flex-1 truncate">{p.name}</span>
+                  <span className="font-mono text-[12px] text-muted mr-1">⬡ {registryId(p.skillId)}</span>
+                  <span className="text-[13px] text-ink flex-1 truncate">{p.name}</span>
                   <input
                     type="number"
                     min="1"
                     max="100"
                     value={p.weight}
                     onChange={(e) => updateWeight(p.skillId, Number(e.target.value))}
-                    className="w-20 border border-gray-300 rounded px-2 py-1 text-sm text-right"
+                    className="field-input w-20 text-right"
                   />
-                  <span className="text-sm text-gray-400">%</span>
+                  <span className="font-mono text-[12px] text-muted">%</span>
                   <button
                     type="button"
                     onClick={() => removeParent(p.skillId)}
-                    className="text-gray-400 hover:text-red-500 text-xs"
+                    className="font-mono text-muted hover:text-danger text-xs transition-colors"
                   >
                     ✕
                   </button>
@@ -242,20 +268,16 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
           )}
 
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="flex-1 border border-gray-300 rounded-lg py-2 text-sm"
-            >
+            <button type="button" onClick={() => setStep(1)} className="btn btn-ghost flex-1">
               Back
             </button>
             <button
               type="button"
               onClick={() => setStep(3)}
               disabled={!weightsValid}
-              className="flex-1 bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+              className="btn btn-primary flex-1"
             >
-              {parents.length === 0 ? 'Next: Preview (no dependencies)' : 'Next: Preview'}
+              {parents.length === 0 ? 'Next: Preview (no deps)' : 'Next: Preview'}
             </button>
           </div>
         </div>
@@ -263,37 +285,58 @@ export function ComposeForm({ availableSkills, onSuccess }: ComposeFormProps) {
 
       {step === 3 && (
         <div className="space-y-4">
-          <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2">
-            <div><span className="text-gray-500">Name:</span> <strong>{name}</strong></div>
-            <div><span className="text-gray-500">Type:</span> {SKILL_TYPE_LABELS[skillType]}</div>
-            <div><span className="text-gray-500">Tier:</span> {TIER_LABELS[tier]}</div>
-            <div><span className="text-gray-500">Price:</span> {priceEth} ETH</div>
-            <div>
-              <span className="text-gray-500">Dependencies:</span>{' '}
-              {parents.length === 0
-                ? <span className="text-gray-400 italic">None (leaf skill)</span>
-                : <ul className="ml-4 mt-1 list-disc">
-                    {parents.map((p) => (
-                      <li key={p.skillId}>{p.name} — {p.weight}%</li>
-                    ))}
-                  </ul>
-              }
+          <div className="border border-line rounded-sm p-4 font-mono text-[12.5px] space-y-2">
+            <div className="flex gap-3"><span className="text-muted w-28 shrink-0">NAME</span><span className="text-ink font-medium">{name}</span></div>
+            <div className="flex gap-3"><span className="text-muted w-28 shrink-0">TYPE</span><span className="text-ink">{SKILL_TYPE_LABELS[skillType]}</span></div>
+            <div className="flex gap-3"><span className="text-muted w-28 shrink-0">TIER</span><span className="text-ink">{TIER_LABELS[tier]}</span></div>
+            <div className="flex gap-3"><span className="text-muted w-28 shrink-0">PRICE</span><span className="text-ink">{formatWeiValue(previewPrice)} ETH</span></div>
+            <div className="flex gap-3">
+              <span className="text-muted w-28 shrink-0">DEPENDENCIES</span>
+              <span className="text-ink">
+                {parents.length === 0
+                  ? <span className="text-muted">None (leaf skill)</span>
+                  : (
+                    <span className="space-y-1 block">
+                      {parents.map((p) => (
+                        <span key={p.skillId} className="block">⬡ {registryId(p.skillId)} {p.name} — {p.weight}%</span>
+                      ))}
+                    </span>
+                  )}
+              </span>
+            </div>
+          </div>
+
+          {/* Would-be receipt split at the listed price */}
+          <div className="receipt">
+            <div className="font-mono text-[12px] font-bold pb-3 mb-4 border-b border-dashed border-line">
+              <span className="block text-[16px] mb-1 tracking-tight">
+                REVENUE SPLIT · {formatWeiValue(previewPrice)} ETH
+              </span>
+              <span className="text-muted font-medium">PER CALL · WOULD SETTLE AS</span>
+            </div>
+            <div className="rline"><span className="k"><b>protocol</b> · network fee (10%)</span><span className="v">{formatWeiValue(pvProtocol)}</span></div>
+            <div className="rline"><span className="k"><b>creator</b> · you (70%)</span><span className="v">{formatWeiValue(pvCreator)}</span></div>
+            <div className="rline"><span className="k"><b>upstream</b> · ancestor royalties (20%)</span><span className="v">{formatWeiValue(pvUpstream)}</span></div>
+            <div className="rline total"><span className="k">DISTRIBUTED</span><span className="v">{formatWeiValue(previewPrice - pvRemainder)}</span></div>
+            <div className="rline remainder">
+              <span className="k">REMAINDER</span>
+              <span className="v">{formatWeiValue(pvRemainder)} ETH <span className="ok">✓ CONSERVED</span></span>
             </div>
           </div>
 
           <div className="flex gap-3">
-            <button onClick={() => setStep(2)} className="flex-1 border border-gray-300 rounded-lg py-2 text-sm">
+            <button onClick={() => setStep(2)} className="btn btn-ghost flex-1">
               Back
             </button>
             <button
               onClick={handleSubmit}
               disabled={isBusy || !address}
-              className="flex-1 bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+              className="btn btn-primary flex-1"
             >
               {isBusy ? 'Submitting…' : 'Mint & Compose'}
             </button>
           </div>
-          {!address && <p className="text-xs text-red-500">Connect your wallet to submit.</p>}
+          {!address && <p className="font-mono text-[11px] text-danger">Connect your wallet to submit.</p>}
         </div>
       )}
     </div>

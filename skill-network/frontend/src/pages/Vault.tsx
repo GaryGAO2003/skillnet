@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
-import { formatEther, parseEther } from 'viem'
+import { parseEther } from 'viem'
 import { SETTLEMENT_VAULT_ADDRESS, ZERO_ADDRESS } from '../constants'
 import {
   useVaultDeposit,
@@ -9,6 +9,17 @@ import {
   useDepositToVault,
   useVaultWithdraw,
 } from '../hooks/useSettlementVault'
+import { VisitorEmptyState } from '../components/VisitorEmptyState'
+import { formatWeiValue, formatEth } from '../lib/format'
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="border-t-2 border-line-strong pt-3">
+      <div className="font-mono text-[24px] font-bold tracking-tight text-ink leading-none">{value}</div>
+      <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted mt-2">{label}</div>
+    </div>
+  )
+}
 
 export function Vault() {
   const { address, isConnected } = useAccount()
@@ -59,15 +70,15 @@ export function Vault() {
 
   if (notDeployed) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Settlement Vault</h1>
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-amber-800">
-          <div className="font-medium">Vault not deployed</div>
-          <p className="text-sm mt-1 text-amber-700">
+      <div className="max-w-content mx-auto px-6 py-12">
+        <h1 className="font-display text-5xl leading-[0.95] tracking-tight text-ink mb-6">Settlement Vault</h1>
+        <div className="alert warning">
+          <span className="lbl">Not Deployed</span>
+          <span className="msg">
             The SettlementVault contract address is not configured. Set{' '}
-            <code className="bg-amber-100 px-1 py-0.5 rounded text-xs">VITE_SETTLEMENT_VAULT_ADDRESS</code>{' '}
+            <code className="font-mono text-[12px] bg-surface-raised px-1 py-0.5 border border-line rounded-sm">VITE_SETTLEMENT_VAULT_ADDRESS</code>{' '}
             in your environment to enable deposits and withdrawals.
-          </p>
+          </span>
         </div>
       </div>
     )
@@ -75,48 +86,39 @@ export function Vault() {
 
   if (!isConnected) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <p className="text-gray-500">Connect your wallet to use the settlement vault.</p>
-      </div>
+      <VisitorEmptyState
+        title="Settlement Vault"
+        pitch="Prepay ETH once; signed vouchers draw against it as skills settle royalties to you on-chain — no gas per call."
+        columnLabels={['Deposit', 'Settled', 'Withdrawable']}
+        rows={[
+          { id: '◆ A1', name: 'agent.eth', cols: ['0.500000', '0.142000', '0.358000'] },
+          { id: '◆ B2', name: 'builder.eth', cols: ['0.100000', '0.087500', '0.012500'] },
+        ]}
+      />
     )
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-content mx-auto px-6 py-12 space-y-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settlement Vault</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="font-display text-5xl leading-[0.95] tracking-tight text-ink">Settlement Vault</h1>
+        <p className="font-mono text-[12px] tracking-[0.02em] text-muted mt-3 max-w-[60ch]">
           Prepay for off-chain skill calls, then withdraw royalties settled to you on-chain.
         </p>
       </div>
 
-      {/* Balance cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <div className="text-2xl font-bold text-gray-900">
-            {deposited !== undefined ? formatEther(deposited).slice(0, 10) : '…'}
-          </div>
-          <div className="text-sm text-gray-500">Prepaid Deposit (ETH)</div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <div className="text-2xl font-bold text-gray-900">
-            {spent !== undefined ? formatEther(spent).slice(0, 10) : '…'}
-          </div>
-          <div className="text-sm text-gray-500">Total Settled (ETH)</div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <div className="text-2xl font-bold text-gray-900">
-            {withdrawable !== undefined ? formatEther(withdrawable).slice(0, 10) : '…'}
-          </div>
-          <div className="text-sm text-gray-500">Withdrawable (ETH)</div>
-        </div>
+      {/* Balance stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Stat value={deposited !== undefined ? formatWeiValue(deposited) : '…'} label="Prepaid Deposit (ETH)" />
+        <Stat value={spent !== undefined ? formatWeiValue(spent) : '…'} label="Total Settled (ETH)" />
+        <Stat value={withdrawable !== undefined ? formatWeiValue(withdrawable) : '…'} label="Withdrawable (ETH)" />
       </div>
 
       {/* Deposit form */}
-      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+      <div className="bg-surface border border-line rounded-sm p-5 space-y-3">
         <div>
-          <div className="text-sm font-medium text-gray-800">Deposit</div>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <div className="font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-ink">Deposit</div>
+          <p className="font-mono text-[11px] text-muted mt-1">
             Prepay ETH into the vault. Signed vouchers draw against this balance.
           </p>
         </div>
@@ -127,36 +129,36 @@ export function Vault() {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.0"
-            className="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="field-input flex-1"
           />
-          <span className="flex items-center text-sm text-gray-500 font-medium">ETH</span>
+          <span className="flex items-center font-mono text-[12px] text-muted">ETH</span>
           <button
             onClick={handleDeposit}
             disabled={isDepositBusy || !parsedAmount || parsedAmount <= BigInt(0)}
-            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5 text-sm transition-colors"
+            className="btn btn-primary"
           >
-            {isDepositBusy ? 'Depositing…' : isDepositSuccess ? 'Deposited!' : 'Deposit'}
+            {isDepositBusy ? 'Depositing…' : isDepositSuccess ? 'Deposited ✓' : 'Deposit'}
           </button>
         </div>
         {amount.trim() && !parsedAmount && (
-          <div className="text-xs text-red-600">Enter a valid ETH amount.</div>
+          <div className="font-mono text-[11px] text-danger">Enter a valid ETH amount.</div>
         )}
         {depositError && (
-          <div className="text-xs text-red-600">
+          <div className="font-mono text-[11px] text-danger">
             {(depositError as any).shortMessage ?? depositError.message}
           </div>
         )}
       </div>
 
-      {/* Withdraw */}
-      <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 flex items-center justify-between">
+      {/* Withdraw — receipt */}
+      <div className="receipt flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="text-sm text-indigo-600 font-medium">Withdrawable Balance</div>
-          <div className="text-2xl font-bold text-indigo-900 mt-1">
-            {withdrawable !== undefined ? formatEther(withdrawable) : '…'} ETH
+          <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-muted">Withdrawable Balance</div>
+          <div className="font-mono text-[26px] font-bold text-ink mt-1">
+            {withdrawable !== undefined ? formatEth(withdrawable) : '…'}
           </div>
           {withdrawError && (
-            <div className="text-xs text-red-600 mt-1">
+            <div className="font-mono text-[11px] text-danger mt-1">
               {(withdrawError as any).shortMessage ?? withdrawError.message}
             </div>
           )}
@@ -164,9 +166,9 @@ export function Vault() {
         <button
           onClick={handleWithdraw}
           disabled={isWithdrawBusy || !withdrawable || withdrawable === BigInt(0)}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg px-5 py-2.5 text-sm transition-colors"
+          className="btn btn-primary"
         >
-          {isWithdrawBusy ? 'Withdrawing…' : isWithdrawSuccess ? 'Withdrawn!' : 'Withdraw'}
+          {isWithdrawBusy ? 'Withdrawing…' : isWithdrawSuccess ? 'Withdrawn ✓' : 'Withdraw'}
         </button>
       </div>
     </div>

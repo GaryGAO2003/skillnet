@@ -1,3 +1,694 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   THE EXACT LEDGER — SkillNet design system
+   Light industrial financial ledger. Ink on warm paper.
+   ============================================================ */
+
+:root {
+  --bg: #EEEBE3;
+  --surface: #F4F1E8;
+  --surface-raised: #FCFAF4;
+  --ink: #181A17;
+  --muted: #62675D;
+  --line: #B9B8AE;
+  --line-strong: #181A17;
+  --accent: #B9FF38;
+  --accent-strong: #8ED900;
+  --accent-ink: #181A17;
+  --success: #16855B;
+  --danger: #D9472B;
+  --warning: #B07C10;
+  --wire-bg: #141613;
+  --wire-ink: #F2F0E8;
+  --wire-dim: #7E8B5A;
+
+  --dur: 150ms;
+  --ease: cubic-bezier(.2, .6, .25, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #0E0D0A;
+  --surface: #141613;
+  --surface-raised: #1B1A16;
+  --ink: #F2F0E8;
+  --muted: #8A8F82;
+  --line: #33342E;
+  --line-strong: #F2F0E8;
+  --accent: #B9FF38;
+  --accent-strong: #A6EE1E;
+  --accent-ink: #181A17;
+  --success: #3FC489;
+  --danger: #F0664C;
+  --warning: #D9A83A;
+  /* Wire panels stay dark instruments in both themes. */
+  --wire-bg: #141613;
+  --wire-ink: #F2F0E8;
+  --wire-dim: #7E8B5A;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* Tabular figures for all mono numerals — the brand. */
+  .font-mono {
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* ---------- Buttons: square, 2px bottom border in line-strong ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    line-height: 1;
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+    padding: 9px 16px;
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 1px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--ink);
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+      border-color var(--dur) var(--ease);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent-strong);
+    border-bottom-color: var(--line-strong);
+  }
+  .btn-primary:not(:disabled):hover {
+    background: var(--accent-strong);
+  }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .btn-secondary:not(:disabled):hover {
+    background: var(--surface-raised);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+    border-bottom-color: var(--line-strong);
+  }
+  .btn-ghost:not(:disabled):hover {
+    background: var(--surface);
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .btn-block {
+    display: flex;
+    width: 100%;
+  }
+
+  /* ---------- Tier stamps: square outline ---------- */
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--ink);
+    border-radius: 1px;
+    color: var(--ink);
+    background: transparent;
+    white-space: nowrap;
+  }
+  .stamp-md {
+    font-size: 11px;
+    padding: 4px 9px;
+  }
+  .stamp-sm {
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 0.08em;
+    border-width: 1px;
+  }
+  .stamp-open {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .stamp-shielded {
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+  .stamp-private {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  /* ---------- Inputs: square, small-caps mono labels ---------- */
+  .field-label {
+    display: block;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .field-input {
+    width: 100%;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--line-strong);
+    border-radius: 1px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+      box-shadow var(--dur) var(--ease);
+  }
+  .field-input::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+  }
+  .field-input:focus {
+    border-color: var(--ink);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  textarea.field-input {
+    line-height: 1.5;
+    resize: vertical;
+  }
+  .field-hint {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* Square select */
+  .sel {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-bottom: 2px solid var(--line-strong);
+    border-radius: 1px;
+    padding: 7px 30px 7px 12px;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'><path d='M1 1l4 4 4-4' stroke='%2362675D' stroke-width='1.5' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  /* ---------- Filter chips: square tier stamps ---------- */
+  .chip-stamp {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 1px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+      border-color var(--dur) var(--ease);
+  }
+  .chip-stamp:hover {
+    color: var(--ink);
+  }
+  .chip-stamp[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  /* ---------- Ledger rows (marketplace) ---------- */
+  .led-head {
+    display: grid;
+    grid-template-columns: 68px minmax(200px, 1fr) 96px 132px 128px 148px;
+    gap: 16px;
+    padding: 0 16px 8px;
+    align-items: end;
+  }
+  .led-head span {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .led-head .r {
+    text-align: right;
+  }
+
+  .led-row {
+    display: grid;
+    grid-template-columns: 68px minmax(200px, 1fr) 96px 132px 128px 148px;
+    gap: 16px;
+    align-items: center;
+    padding: 16px;
+    border-top: 1px solid var(--line);
+    position: relative;
+    background: var(--surface);
+    transition: background var(--dur) var(--ease);
+  }
+  .led-row:nth-child(even) {
+    background: var(--surface-raised);
+  }
+  .led-row:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .led-row::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -1px;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur) var(--ease);
+  }
+  .led-row:hover {
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  }
+  .led-row:hover::before {
+    transform: scaleY(1);
+  }
+
+  /* ---------- Receipt block ---------- */
+  .receipt {
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--line-strong);
+    border-radius: 1px;
+    padding: 24px;
+  }
+  .rline {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 13px;
+    padding: 7px 0;
+    align-items: baseline;
+    letter-spacing: -0.01em;
+  }
+  .rline .k {
+    color: var(--muted);
+  }
+  .rline .k b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .rline .v {
+    font-feature-settings: "tnum" 1;
+    color: var(--ink);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .rline.sub {
+    padding-left: 16px;
+  }
+  .rline.sub .k::before {
+    content: "\2514  ";
+    color: var(--line);
+  }
+  .rline.total {
+    border-top: 2px solid var(--line-strong);
+    margin-top: 8px;
+    padding-top: 12px;
+    font-weight: 700;
+  }
+  .rline.total .k {
+    color: var(--ink);
+  }
+  .rline.remainder {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+  .rline.remainder .ok {
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  /* ---------- Wire panel: dark instrument inset (both themes) ---------- */
+  .wire-panel {
+    background: #141613;
+    color: #F2F0E8;
+    border: 1px solid #000;
+    border-radius: 1px;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    position: relative;
+    overflow: hidden;
+  }
+  .wire-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #2a2c26;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7E8B5A;
+  }
+  .wire-head .live {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #B9FF38;
+  }
+  .wire-head .live i {
+    width: 6px;
+    height: 6px;
+    background: #B9FF38;
+    border-radius: 50%;
+    display: inline-block;
+    animation: wire-pulse 1.6s var(--ease) infinite;
+  }
+  .wire-cap {
+    padding: 12px 16px;
+    border-top: 1px solid #2a2c26;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7E8B5A;
+  }
+  .wire-cap b {
+    color: #B9FF38;
+    font-weight: 700;
+  }
+  .wire-legend {
+    display: flex;
+    gap: 16px;
+    padding: 0 16px 12px;
+    font-size: 10px;
+    color: #7E8B5A;
+    letter-spacing: 0.04em;
+  }
+  .wire-legend i {
+    display: inline-block;
+    width: 16px;
+    height: 0;
+    border-top: 2px solid;
+    vertical-align: middle;
+    margin-right: 5px;
+  }
+  .wire-legend .a i {
+    border-color: #B9FF38;
+    border-top-style: dashed;
+  }
+  .wire-legend .d i {
+    border-color: #7E8B5A;
+    border-top-style: dashed;
+  }
+
+  /* Wire tree (data-driven DAG rendered in the wire panel) */
+  .wire-node {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 7px 0;
+  }
+  .wire-hex {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #B9FF38;
+    white-space: nowrap;
+  }
+  .wire-hex.leaf {
+    color: #7E8B5A;
+  }
+  .wire-name {
+    font-size: 12px;
+    color: #F2F0E8;
+    letter-spacing: 0.01em;
+  }
+  .wire-weight {
+    font-size: 11px;
+    color: #B9FF38;
+  }
+  .wire-branch {
+    margin-left: 6px;
+    padding-left: 18px;
+    border-left: 1px dashed #2f3129;
+    position: relative;
+  }
+  .wire-branch.active {
+    border-left-color: #B9FF38;
+  }
+
+  /* ---------- Ledger tables ---------- */
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .ledger-table thead th {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .ledger-table thead th.r,
+  .ledger-table td.r {
+    text-align: right;
+  }
+  .ledger-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .ledger-table td.r {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .ledger-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* ---------- Alerts ---------- */
+  .alert {
+    border-left: 4px solid var(--line);
+    background: var(--surface);
+    padding: 12px 16px;
+    border-radius: 1px;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .alert .lbl {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    flex: 0 0 auto;
+  }
+  .alert .msg {
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .alert.success {
+    border-left-color: var(--success);
+  }
+  .alert.success .lbl {
+    color: var(--success);
+  }
+  .alert.warning {
+    border-left-color: var(--warning);
+  }
+  .alert.warning .lbl {
+    color: var(--warning);
+  }
+  .alert.danger {
+    border-left-color: var(--danger);
+  }
+  .alert.danger .lbl {
+    color: var(--danger);
+  }
+  .alert.info {
+    border-left-color: var(--line-strong);
+  }
+  .alert.info .lbl {
+    color: var(--ink);
+  }
+}
+
+@layer components {
+  /* ---------- Ledger row inner cells ---------- */
+  .led-id {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .led-name {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+  }
+  .led-desc {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .led-type {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+    display: inline-block;
+  }
+  .led-num {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.02em;
+    text-align: right;
+    font-size: 13px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .led-num .u {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .led-num.free {
+    color: var(--muted);
+  }
+  .led-num.price {
+    font-weight: 700;
+  }
+  .led-act {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .led-mobilenums {
+    display: none;
+  }
+  .led-mobilenums .mn {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .led-mobilenums .mn small {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+}
+
+@keyframes wire-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* Ledger responsive collapse (unlayered — wins over @layer components) */
+@media (max-width: 820px) {
+  .led-head {
+    display: none;
+  }
+  .led-row {
+    grid-template-columns: 52px 1fr;
+    grid-template-areas:
+      "id main"
+      "id nums"
+      "id acts";
+    gap: 12px;
+    row-gap: 12px;
+  }
+  .led-row .led-id {
+    grid-area: id;
+  }
+  .led-row .led-main {
+    grid-area: main;
+  }
+  .led-row .led-num {
+    display: none;
+  }
+  .led-row .led-mobilenums {
+    grid-area: nums;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .led-row .led-act {
+    grid-area: acts;
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+  }
+}

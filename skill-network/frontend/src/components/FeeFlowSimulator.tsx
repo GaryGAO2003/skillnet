@@ -3,7 +3,7 @@ import { useReadContract } from 'wagmi'
 import { compositionDAGAbi } from '../abi/CompositionDAG'
 import { skillNFTAbi } from '../abi/SkillNFT'
 import { DAG_ADDRESS, SKILL_NFT_ADDRESS } from '../constants'
-import { formatEther, parseEther } from 'viem'
+import { formatEthFloat, registryId } from '../lib/format'
 
 // Depth weights matching FeeRouter.sol
 const DEPTH_WEIGHTS = [0.5, 0.3, 0.15, 0.05]
@@ -13,6 +13,7 @@ interface FeeFlowRow {
   skillId: number
   amount: number
   type: 'protocol' | 'creator' | 'upstream'
+  sub?: boolean
 }
 
 interface FeeFlowSimulatorProps {
@@ -44,8 +45,8 @@ export function FeeFlowSimulator({ skillId }: FeeFlowSimulatorProps) {
   const protocolAmount = payment * 0.10
 
   const rows: FeeFlowRow[] = [
-    { label: 'Protocol Treasury', skillId: 0, amount: protocolAmount, type: 'protocol' },
-    { label: `Creator (${skill?.name ?? '…'})`, skillId, amount: creatorAmount, type: 'creator' },
+    { label: 'protocol · network fee', skillId: 0, amount: protocolAmount, type: 'protocol' },
+    { label: `creator · ${skill?.name ?? '…'}`, skillId, amount: creatorAmount, type: 'creator' },
   ]
 
   // Depth-1 distribution
@@ -54,64 +55,77 @@ export function FeeFlowSimulator({ skillId }: FeeFlowSimulatorProps) {
     deps.forEach((edge) => {
       const share = levelAmount * (Number(edge.weight) / 100)
       rows.push({
-        label: `Upstream (depth 1, ${edge.weight}%)`,
+        label: `⬡ ${registryId(Number(edge.parentSkillId))} · depth 1 · ${edge.weight}%`,
         skillId: Number(edge.parentSkillId),
         amount: share,
         type: 'upstream',
+        sub: true,
       })
     })
     const remainder = upstreamTotal - levelAmount
     if (remainder > 0) {
       rows.push({
-        label: 'Upstream remainder → Creator',
+        label: 'upstream remainder → creator',
         skillId,
         amount: remainder,
         type: 'upstream',
+        sub: true,
       })
     }
   } else {
     rows.push({
-      label: 'Upstream remainder → Creator (no deps)',
+      label: 'upstream remainder → creator (no deps)',
       skillId,
       amount: upstreamTotal,
       type: 'upstream',
+      sub: true,
     })
   }
 
-  const TYPE_COLORS: Record<FeeFlowRow['type'], string> = {
-    protocol: 'bg-gray-100 text-gray-700',
-    creator: 'bg-indigo-50 text-indigo-700',
-    upstream: 'bg-green-50 text-green-700',
-  }
+  const distributed = rows.reduce((sum, r) => sum + r.amount, 0)
+  const remainder = payment - distributed
+  const conserved = Math.abs(remainder) < 1e-12
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Fee Flow Simulator</h3>
+    <div className="receipt">
+      <div className="font-mono text-[12px] font-bold pb-3 mb-4 border-b border-dashed border-line">
+        <span className="block text-[16px] mb-1 tracking-tight">
+          FEE FLOW · {formatEthFloat(payment)} ETH
+        </span>
+        <span className="text-muted font-medium">SIMULATED SPLIT · 70 / 20 / 10</span>
+      </div>
 
       <div className="flex items-center gap-3 mb-4">
-        <label className="text-sm text-gray-600 shrink-0">Payment (ETH)</label>
+        <label htmlFor="sim-amt" className="field-label mb-0">Payment (ETH)</label>
         <input
+          id="sim-amt"
           type="number"
           min="0"
           step="0.001"
           value={ethAmount}
           onChange={(e) => setEthAmount(e.target.value)}
-          className="w-32 border border-gray-300 rounded px-2 py-1 text-sm"
+          className="field-input w-36"
         />
       </div>
 
-      <div className="space-y-2">
-        {rows.map((row, i) => (
-          <div key={i} className={`flex justify-between items-center rounded px-3 py-2 text-sm ${TYPE_COLORS[row.type]}`}>
-            <span>{row.label}</span>
-            <span className="font-mono font-medium">{row.amount.toFixed(6)} ETH</span>
-          </div>
-        ))}
+      {rows.map((row, i) => (
+        <div key={i} className={`rline ${row.sub ? 'sub' : ''}`}>
+          <span className="k"><b>{row.label}</b></span>
+          <span className="v">{formatEthFloat(row.amount)}</span>
+        </div>
+      ))}
+
+      <div className="rline total">
+        <span className="k">DISTRIBUTED</span>
+        <span className="v">{formatEthFloat(distributed)}</span>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-sm font-semibold">
-        <span>Total</span>
-        <span className="font-mono">{payment.toFixed(6)} ETH</span>
+      <div className="rline remainder">
+        <span className="k">REMAINDER</span>
+        <span className="v">
+          {formatEthFloat(Math.abs(remainder))} ETH{' '}
+          {conserved && <span className="ok">✓ CONSERVED</span>}
+        </span>
       </div>
     </div>
   )

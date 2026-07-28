@@ -3,7 +3,7 @@ import { useReadContracts } from 'wagmi'
 import { skillNFTAbi } from '../abi/SkillNFT'
 import { SKILL_NFT_ADDRESS, TIER_LABELS } from '../constants'
 import { useSkillCount } from '../hooks/useSkillNFT'
-import { SkillCard } from '../components/SkillCard'
+import { SkillRow } from '../components/SkillCard'
 import type { SkillWithId, VisibilityTier } from '../types'
 
 type SortKey = 'calls' | 'revenue' | 'price'
@@ -44,63 +44,80 @@ export function Marketplace() {
     })
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Skill Marketplace</h1>
-        <p className="text-gray-500 mt-1">{count} skills minted on-chain</p>
-      </div>
+    <div className="max-w-content mx-auto px-6 py-12">
+      {/* Poster header */}
+      <header className="mb-10">
+        <h1 className="font-display text-5xl sm:text-6xl leading-[0.95] tracking-tight text-ink">
+          Skill Marketplace
+        </h1>
+        <p className="font-mono text-[12px] sm:text-[13px] tracking-[0.03em] text-muted mt-4">
+          EVERY CALL PAYS EVERY CREATOR — <span className="text-accent-strong font-bold">TO THE WEI</span>
+        </p>
+        <p className="font-mono text-[11px] tracking-[0.1em] uppercase text-muted mt-2">
+          {count} {count === 1 ? 'Skill' : 'Skills'} Registered
+        </p>
+      </header>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-3 mb-6 pb-6 border-b border-line">
+        <span className="font-mono text-[11px] tracking-[0.08em] uppercase text-muted mr-1">Tier</span>
+        <button
+          onClick={() => setTierFilter('all')}
+          className="chip-stamp"
+          aria-pressed={tierFilter === 'all'}
+        >
+          All
+        </button>
+        {([0, 1, 2] as VisibilityTier[]).map((t) => (
           <button
-            onClick={() => setTierFilter('all')}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-              tierFilter === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-            }`}
+            key={t}
+            onClick={() => setTierFilter(t)}
+            className="chip-stamp"
+            aria-pressed={tierFilter === t}
           >
-            All
+            {TIER_LABELS[t]}
           </button>
-          {([0, 1, 2] as VisibilityTier[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTierFilter(t)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                tierFilter === t ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {TIER_LABELS[t]}
-            </button>
-          ))}
-        </div>
+        ))}
 
-        <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm text-gray-500">Sort by:</span>
-          <select
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="border border-gray-300 rounded px-2 py-1 text-sm"
-          >
-            <option value="calls">Most Calls</option>
-            <option value="revenue">Most Revenue</option>
-            <option value="price">Highest Price</option>
-          </select>
-        </div>
+        <span className="flex-1" />
+
+        <select
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value as SortKey)}
+          className="sel"
+          aria-label="Sort skills"
+        >
+          <option value="calls">Sort · Calls ↓</option>
+          <option value="revenue">Sort · Revenue ↓</option>
+          <option value="price">Sort · Price ↓</option>
+        </select>
       </div>
 
       {isLoading && (
-        <div className="text-center py-12 text-gray-400">Loading skills…</div>
+        <div className="py-12 text-center font-mono text-[13px] text-muted">Loading skills…</div>
       )}
 
       {!isLoading && filtered.length === 0 && (
-        <div className="text-center py-12 text-gray-400">No skills minted yet.</div>
+        <div className="py-12 text-center font-mono text-[13px] text-muted">No skills registered yet.</div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filtered.map((skill) => (
-          <SkillCard key={skill.tokenId} skill={skill} />
-        ))}
-      </div>
+      {filtered.length > 0 && (
+        <>
+          <div className="led-head">
+            <span>ID</span>
+            <span>Skill</span>
+            <span className="r">Calls</span>
+            <span className="r">Revenue</span>
+            <span className="r">Price</span>
+            <span className="r">Action</span>
+          </div>
+          <div>
+            {filtered.map((skill) => (
+              <SkillRow key={skill.tokenId} skill={skill} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

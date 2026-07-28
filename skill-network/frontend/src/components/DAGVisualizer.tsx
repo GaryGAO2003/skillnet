@@ -1,10 +1,9 @@
 import { useReadContract } from 'wagmi'
+import { useNavigate } from 'react-router-dom'
 import { compositionDAGAbi } from '../abi/CompositionDAG'
 import { skillNFTAbi } from '../abi/SkillNFT'
 import { DAG_ADDRESS, SKILL_NFT_ADDRESS } from '../constants'
-import { TierBadge } from './TierBadge'
-import type { VisibilityTier } from '../types'
-import { Link } from 'react-router-dom'
+import { registryId } from '../lib/format'
 
 interface DAGNodeProps {
   skillId: number
@@ -13,6 +12,8 @@ interface DAGNodeProps {
 }
 
 function DAGNode({ skillId, weight, depth = 0 }: DAGNodeProps) {
+  const navigate = useNavigate()
+
   const { data: skill } = useReadContract({
     address: SKILL_NFT_ADDRESS,
     abi: skillNFTAbi,
@@ -27,31 +28,31 @@ function DAGNode({ skillId, weight, depth = 0 }: DAGNodeProps) {
     args: [BigInt(skillId)],
   })
 
-  if (!skill) return <div className="text-gray-400 text-sm">Loading #{skillId}…</div>
+  const hasDeps = !!deps && deps.length > 0
+  const isRoot = depth === 0
 
-  const indentClass = depth === 0 ? '' : 'border-l-2 border-gray-200 pl-4 ml-2'
+  if (!skill) {
+    return <div className="wire-node"><span className="wire-hex">⬡ {registryId(skillId)}</span></div>
+  }
 
   return (
-    <div className={`${indentClass} my-2`}>
-      <div className="flex items-center gap-2 flex-wrap">
-        {weight !== undefined && (
-          <span className="text-xs font-mono text-gray-500 bg-gray-100 rounded px-1.5 py-0.5">
-            {weight}%
-          </span>
-        )}
-        <Link
-          to={`/skill/${skillId}`}
-          className="font-medium text-indigo-600 hover:text-indigo-800 text-sm"
+    <div>
+      <div className="wire-node">
+        {weight !== undefined && <span className="wire-weight">{weight}%</span>}
+        <span className={`wire-hex ${!isRoot && !hasDeps ? 'leaf' : ''}`}>⬡ {registryId(skillId)}</span>
+        <button
+          type="button"
+          onClick={() => navigate(`/skill/${skillId}`)}
+          className="wire-name hover:underline"
+          style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
         >
           {skill.name}
-        </Link>
-        <TierBadge tier={skill.tier as VisibilityTier} size="sm" />
-        <span className="text-xs text-gray-400">#{skillId}</span>
+        </button>
       </div>
 
-      {deps && deps.length > 0 && (
-        <div className="mt-1">
-          {deps.map((edge) => (
+      {hasDeps && (
+        <div className="wire-branch active">
+          {deps!.map((edge) => (
             <DAGNode
               key={Number(edge.parentSkillId)}
               skillId={Number(edge.parentSkillId)}
@@ -80,14 +81,33 @@ export function DAGVisualizer({ skillId }: DAGVisualizerProps) {
 
   if (!isComposed) {
     return (
-      <div className="text-gray-500 text-sm italic">This skill has no dependencies.</div>
+      <div className="wire-panel">
+        <div className="wire-head">
+          <span>The Wire · Composition</span>
+        </div>
+        <div className="px-4 py-6 text-[12px] text-wire-dim font-mono">
+          Leaf skill — no upstream dependencies.
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Composition Tree</h3>
-      <DAGNode skillId={skillId} />
+    <div className="wire-panel">
+      <div className="wire-head">
+        <span>The Wire · Composition</span>
+        <span className="live"><i /> Flowing</span>
+      </div>
+      <div className="px-4 py-4">
+        <DAGNode skillId={skillId} />
+      </div>
+      <div className="wire-legend">
+        <span className="a"><i />active ancestor path</span>
+        <span className="d"><i />registry mark</span>
+      </div>
+      <div className="wire-cap">
+        THE WIRE — value flows through the <b>ancestor DAG</b>
+      </div>
     </div>
   )
 }
