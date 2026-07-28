@@ -1,0 +1,28 @@
+name: healthcheck
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Demo server /healthz (also wakes the Render free instance)
+        run: |
+          # Render free tier cold-starts in ~50s; retry before declaring dead.
+          for i in 1 2 3 4 5; do
+            body=$(curl -sS --max-time 60 https://skillnet-demo.onrender.com/healthz || true)
+            echo "attempt $i: $body"
+            echo "$body" | grep -q '"ok":true' && exit 0
+            sleep 20
+          done
+          echo "demo server unhealthy" >&2
+          exit 1
+
+      - name: On-chain UI (Vercel)
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://skillnet-ten.vercel.app/)
+          echo "vercel status: $code"
+          test "$code" = "200"
