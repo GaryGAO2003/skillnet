@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Exact Ledger OG card: warm paper, hard ink serif headline, one lime strip, mono footer -->
+  <rect x="0" y="0" width="1200" height="630" fill="#EEEBE3"/>
+
+  <!-- top bar: registry wordmark + label -->
+  <polygon points="86,58 98.12,65 98.12,79 86,86 73.88,79 73.88,65"
+           fill="none" stroke="#181A17" stroke-width="2.6" stroke-linejoin="miter"/>
+  <text x="114" y="81" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700"
+        letter-spacing="0.5" fill="#181A17">SkillNet</text>
+  <text x="1128" y="80" text-anchor="end" font-family="'Courier New', ui-monospace, monospace"
+        font-size="16" letter-spacing="1.5" fill="#62675D">ON-CHAIN ROYALTY REGISTRY</text>
+  <line x1="72" y1="108" x2="1128" y2="108" stroke="#B9B8AE" stroke-width="1"/>
+
+  <!-- hero headline -->
+  <text x="70" y="256" font-family="Georgia, 'Times New Roman', Times, serif"
+        font-size="112" fill="#181A17">SKILLS COMPOSE.</text>
+
+  <!-- lime strip: value in motion -->
+  <rect x="0" y="298" width="1200" height="150" fill="#B9FF38"/>
+  <text x="70" y="408" font-family="Georgia, 'Times New Roman', Times, serif"
+        font-size="112" fill="#181A17">VALUE FLOWS.</text>
+
+  <!-- supporting line -->
+  <text x="72" y="506" font-family="Arial, Helvetica, sans-serif" font-size="24"
+        letter-spacing="0.2" fill="#62675D">Composable AI skills. Recursive royalties on every call. Every wei accounted for, on-chain.</text>
+
+  <!-- footer rule + mono strapline -->
+  <line x1="72" y1="548" x2="1128" y2="548" stroke="#181A17" stroke-width="1.5"/>
+  <text x="72" y="590" font-family="'Courier New', ui-monospace, monospace" font-size="18"
+        letter-spacing="0.5" fill="#181A17">EVERY CALL PAYS EVERY CREATOR &#8212; TO THE WEI &#183; skillnet-ten.vercel.app</text>
+</svg>
