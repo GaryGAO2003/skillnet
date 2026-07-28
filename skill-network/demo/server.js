@@ -49,6 +49,7 @@ if (!process.env.SKILLNET_SKIP_ENV_FILE && fs.existsSync(hederaEnvPath)) {
 
 const hcs26        = require('./hcs26')
 const agentNetwork = require('./agent-network')
+const x402lib      = require('./x402')
 
 const app = express()
 app.set('trust proxy', true)                 // honour X-Forwarded-For behind Render/Docker proxies
@@ -154,6 +155,18 @@ const state = {
 // boot block AFTER state is restored/seeded, so it captures the final skills/deps references and
 // excludes the pre-boot seed call history. Stays null until then; all touch-points guard on it.
 let gateway = null
+
+// x402 payment gateway (x402.js) — REAL USDC on Base Sepolia by default; X402_MODE=sim keeps the
+// legacy UUID-receipt flow for offline dev. Construction only reads config (no network — the
+// facilitator client is built lazily on first settlement), so it never blocks boot. Any failure
+// falls back to sim mode rather than taking down the demo.
+let x402gw
+try {
+  x402gw = new x402lib.X402Gateway({ env: process.env })
+} catch (e) {
+  console.error('  ⚠ x402 init failed — falling back to sim mode:', e.message)
+  x402gw = new x402lib.X402Gateway({ env: { ...process.env, X402_MODE: 'sim' } })
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SkillNFT
@@ -917,9 +930,14 @@ app.get('/api/agents/log', (_req, res) => {
   res.json({ log: agentNetwork.getLog(50) })
 })
 
-/** Agent balances — must be before /:id */
+/** Agent balances — must be before /:id. Unit depends on the x402 mode
+ *  (REAL → micro-USDC, SIM → simulated ETH); labelled by `currency`. */
 app.get('/api/agents/balances', (_req, res) => {
-  res.json({ balances: agentNetwork.getBalances() })
+  res.json({
+    balances: agentNetwork.getBalances(),
+    currency: x402gw.mode === 'sim' ? 'ETH' : 'USDC',
+    mode:     x402gw.mode,
+  })
 })
 
 /** ERC-8004 metadata for a single agent (the metadataURI endpoint) */
@@ -943,53 +961,104 @@ app.post('/api/agents/register', requireSignature, (req, res) => {
 /**
  * Invoke an agent.
  *
- * Without X-Payment-Receipt header:
- *   → 402 with simulated x402 payment-required body
+ * REAL x402 mode (default):
+ *   • free agent (feePerTask 0)      → runs immediately, no payment
+ *   • priced, no `X-PAYMENT` header  → 402 with a v2 PaymentRequired body (accepts[] = USDC reqs)
+ *   • priced, with `X-PAYMENT`       → verify + settle via the facilitator (submits USDC on-chain,
+ *                                       sponsors gas), then run the invoke; records the settlement
+ *                                       tx hash + micro-USDC amount and returns X-PAYMENT-RESPONSE.
+ *   • facilitator/network failure    → 402 with a retryable error (never crashes the request)
  *
- * With X-Payment-Receipt header (from /pay):
- *   → validates receipt, calls Qwen, returns result
+ * SIM mode (X402_MODE=sim) preserves the legacy UUID-receipt flow verbatim.
  */
 app.post('/api/agents/:id/invoke', expensiveLimiter, requireSignature, async (req, res) => {
   const agent = agentNetwork.getAgent(+req.params.id)
   if (!agent) return res.status(404).json({ error: 'Agent not found' })
   if (agent.status !== 'ACTIVE') return res.status(403).json({ error: `Agent is ${agent.status}` })
 
-  const receiptId = req.headers['x-payment-receipt'] || req.body.receiptId
+  const caller = req.body.caller || 'user'
+  const task   = req.body.task   || 'No task specified'
+  const input  = req.body.input  || ''
 
-  // No receipt → return 402
-  if (!receiptId && agent.feePerTask > 0) {
+  // ── SIM mode: legacy UUID-receipt flow (unchanged behaviour) ────────────────
+  if (x402gw.mode === 'sim') {
+    const receiptId = req.headers['x-payment-receipt'] || req.body.receiptId
+    if (!receiptId && agent.feePerTask > 0) {
+      return res.status(402).json({
+        payment402: agentNetwork.build402Sim(agent),
+        hint: `POST /api/agents/${agent.agentId}/pay  body: { "payer": "<user>", "amount": ${agent.feePerTask} }`,
+      })
+    }
+    let effectiveReceiptId = receiptId
+    if (!receiptId && agent.feePerTask === 0) {
+      const r = agentNetwork.issueReceipt(agent.agentId, caller, 0)
+      effectiveReceiptId = r.receiptId
+    }
+    try {
+      const inv = await agentNetwork.invokeAgent(agent.agentId, caller, task, input, effectiveReceiptId)
+      return res.json({ success: true, invocation: inv })
+    } catch (e) { return res.status(400).json({ error: e.message }) }
+  }
+
+  // ── REAL x402/USDC mode ─────────────────────────────────────────────────────
+  // Free agent (e.g. the seeded Qwen Agent) → no payment gate.
+  if (agent.feePerTask <= 0) {
+    try {
+      const inv = await agentNetwork.invokeAgentPaid(agent.agentId, caller, task, input, { amountMicro: '0', txHash: null })
+      return res.json({ success: true, invocation: inv, payment: { currency: 'USDC', amountMicro: '0', free: true } })
+    } catch (e) { return res.status(400).json({ error: e.message }) }
+  }
+
+  // Priced agent: require a signed x402 payment in the X-PAYMENT header.
+  const xPayment = req.headers['x-payment']
+  if (!xPayment) {
+    return res.status(402).json(x402gw.challenge(agent))
+  }
+
+  const collected = await x402gw.collect(agent, xPayment)
+  if (!collected.ok) {
+    // Facilitator failure or invalid payment → 402 (retryable flag distinguishes the two).
     return res.status(402).json({
-      payment402: agentNetwork.build402(agent),
-      hint: `POST /api/agents/${agent.agentId}/pay  body: { "payer": "<user>", "amount": ${agent.feePerTask} }`,
+      ...x402gw.challenge(agent),
+      error:     collected.error,
+      retryable: Boolean(collected.retryable),
     })
   }
 
-  // Free agent (Orchestrator) or receipt provided → proceed
-  let effectiveReceiptId = receiptId
-  if (!receiptId && agent.feePerTask === 0) {
-    // Issue a zero-value internal receipt so invokeAgent flow is uniform
-    const r = agentNetwork.issueReceipt(agent.agentId, req.body.caller || 'user', 0)
-    effectiveReceiptId = r.receiptId
-  }
-
   try {
-    const inv = await agentNetwork.invokeAgent(
-      +req.params.id,
-      req.body.caller || 'user',
-      req.body.task   || 'No task specified',
-      req.body.input  || '',
-      effectiveReceiptId,
-    )
-    res.json({ success: true, invocation: inv })
+    const inv = await agentNetwork.invokeAgentPaid(agent.agentId, collected.payer || caller, task, input, {
+      amountMicro: collected.amountMicro,
+      txHash:      collected.txHash,
+    })
+    if (collected.paymentResponseB64) res.set('X-PAYMENT-RESPONSE', collected.paymentResponseB64)
+    res.json({
+      success:    true,
+      invocation: inv,
+      payment: {
+        txHash:      collected.txHash,
+        amountMicro: collected.amountMicro,
+        currency:    'USDC',
+        network:     collected.network,
+        payer:       collected.payer,
+      },
+    })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 /**
- * Simulate paying for an agent call.
- * Returns a receipt UUID that must be included in the next /invoke request
- * (either as X-Payment-Receipt header or body.receiptId).
+ * Legacy pay endpoint.
+ *   • SIM mode  → mints a UUID receipt for the next /invoke (unchanged).
+ *   • REAL mode → 410 Gone: the UUID receipt flow is retired in favour of the x402 flow.
  */
 app.post('/api/agents/:id/pay', requireSignature, (req, res) => {
+  if (x402gw.mode !== 'sim') {
+    return res.status(410).json({
+      error: 'Gone',
+      message: 'The UUID receipt flow is retired. Use the x402 flow: POST /api/agents/:id/invoke ' +
+               'without an X-PAYMENT header to receive a 402 challenge, sign an EIP-3009 USDC ' +
+               'transferWithAuthorization, then retry with the base64 X-PAYMENT header. See X402.md.',
+    })
+  }
   try {
     const result = agentNetwork.issueReceipt(
       +req.params.id,
@@ -1034,6 +1103,13 @@ const PORT = process.env.PORT || 3000
     scheduleSave()
   }
   agentNetwork.seedAgents(state.creators.deployer?.pubKey)
+
+  // ── x402 agent-payment path ──────────────────────────────────────────────────
+  if (x402gw.mode === 'sim') {
+    console.log('  → x402: SIM mode (legacy UUID receipts, no chain) — set X402_MODE=real to enable USDC')
+  } else {
+    console.log(`  → x402: REAL USDC on ${x402gw.cfg.network} via ${x402gw.cfg.facilitatorUrl} (payTo ${x402gw.cfg.receivingAddr})`)
+  }
 
   // ── Settlement gateway ──────────────────────────────────────────────────────
   // Constructed AFTER restore/seed so it captures the final skills/deps refs and excludes the

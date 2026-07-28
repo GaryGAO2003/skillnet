@@ -8,6 +8,10 @@ The gateway is an **on-chain shadow**: it runs in parallel and never touches the
 `state.balances` ledger. If its chain env is absent it runs **disabled** and the demo behaves
 exactly as before (all gateway endpoints return `{ "enabled": false }`).
 
+> **Two-leg money model.** This is the **egress** leg (skill-call royalties, ETH-wei, vault →
+> creators). The **ingress** leg — paying to invoke an *agent* — is real **USDC on Base Sepolia**
+> via the x402 protocol; see `X402.md`. The two legs are separate surfaces.
+
 > **DEMO-MODE CUSTODY.** In production each payer signs its own voucher client-side and the
 > gateway never holds a payer key. For this self-contained testnet demo the gateway *derives* a
 > deterministic throwaway wallet per caller name from `DEMO_PAYER_SEED` and signs on their behalf.

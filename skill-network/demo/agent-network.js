@@ -69,11 +69,12 @@ function setAgentStatus(agentId, status, caller) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Simulated x402 payment flow
+// SIM-mode payment flow (X402_MODE=sim) — legacy UUID receipts, no chain.
+// The REAL x402/USDC flow lives in x402.js; server.js selects between them by mode.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Returns the simulated 402 payment-required body (x402 spec shape) */
-function build402(agent) {
+/** Returns the simulated 402 payment-required body (legacy sim shape, ETH-denominated). */
+function build402Sim(agent) {
   return {
     x402Version: 1,
     error:       'Payment Required',
@@ -105,7 +106,9 @@ function issueReceipt(agentId, payer, amount) {
   const receiptId = crypto.randomUUID()
   const expiresAt = new Date(Date.now() + RECEIPT_TTL_MS).toISOString()
   registry.pendingReceipts[receiptId] = { agentId, payer, amount, expiresAt, used: false }
-  setTimeout(() => { delete registry.pendingReceipts[receiptId] }, RECEIPT_TTL_MS)
+  // .unref() so this TTL-cleanup timer never keeps the process alive (matters for in-process tests).
+  const t = setTimeout(() => { delete registry.pendingReceipts[receiptId] }, RECEIPT_TTL_MS)
+  if (typeof t.unref === 'function') t.unref()
   return { receiptId, expiresAt, amountPaid: amount, agentId }
 }
 
@@ -170,18 +173,16 @@ function callQwen(systemPrompt, userMessage) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Agent invocation — validates x402 receipt then calls Qwen
+// Agent invocation — credits the agent, calls Qwen, records the call.
+// Payment is settled BEFORE these run: SIM mode consumes a UUID receipt (ETH), REAL mode
+// passes the settled x402/USDC payment (settlement tx hash + micro-USDC amount).
 // ─────────────────────────────────────────────────────────────────────────────
-async function invokeAgent(agentId, payer, task, input, receiptId) {
-  const agent = getAgent(agentId)
-  if (!agent)                    throw new Error('Agent not found')
-  if (agent.status !== 'ACTIVE') throw new Error(`Agent is ${agent.status}`)
 
-  const receipt = consumeReceipt(receiptId)
-
+/** Shared: credit the agent, run Qwen (unchanged), append the invocation-log entry. */
+async function _runAndLog(agent, payer, task, input, ledger) {
   agent.totalInvocations++
-  agent.totalEarned          += receipt.amount
-  registry.balances[agentId] += receipt.amount
+  agent.totalEarned                += ledger.credit
+  registry.balances[agent.agentId] += ledger.credit
 
   let result = ''
   try {
@@ -193,18 +194,48 @@ async function invokeAgent(agentId, payer, task, input, receiptId) {
 
   const entry = {
     id:         crypto.randomUUID(),
-    agentId,
+    agentId:    agent.agentId,
     agentName:  agent.name,
     payer,
     task,
     input:      String(input || '').slice(0, 400),
     result:     String(result).slice(0, 3000),
-    paidAmount: receipt.amount,
-    receiptId,
+    paidAmount: ledger.credit,
+    currency:   ledger.currency,
+    txHash:     ledger.txHash   || null,   // x402 settlement tx (REAL mode)
+    receiptId:  ledger.receiptId || null,  // UUID receipt (SIM mode)
     ts:         new Date().toISOString(),
   }
   registry.invocationLog.unshift(entry)
   return entry
+}
+
+/** SIM mode: validate + consume a UUID receipt (ETH-denominated), then invoke. */
+async function invokeAgent(agentId, payer, task, input, receiptId) {
+  const agent = getAgent(agentId)
+  if (!agent)                    throw new Error('Agent not found')
+  if (agent.status !== 'ACTIVE') throw new Error(`Agent is ${agent.status}`)
+
+  const receipt = consumeReceipt(receiptId)
+  return _runAndLog(agent, payer, task, input, {
+    credit: receipt.amount, currency: 'ETH', receiptId,
+  })
+}
+
+/**
+ * REAL mode: invoke after an x402/USDC payment has been verified + settled by the facilitator.
+ * @param {Object} payment  { amountMicro:<string>, txHash:<string|null> } — settlement result.
+ */
+async function invokeAgentPaid(agentId, payer, task, input, payment = {}) {
+  const agent = getAgent(agentId)
+  if (!agent)                    throw new Error('Agent not found')
+  if (agent.status !== 'ACTIVE') throw new Error(`Agent is ${agent.status}`)
+
+  return _runAndLog(agent, payer, task, input, {
+    credit:   Number(payment.amountMicro) || 0,   // micro-USDC (integer)
+    currency: 'USDC',
+    txHash:   payment.txHash || null,
+  })
 }
 
 function buildUserMessage(task, input) {
@@ -239,10 +270,11 @@ module.exports = {
   getAgent,
   listAgents,
   setAgentStatus,
-  issueReceipt,
-  consumeReceipt,
-  invokeAgent,
-  build402,
+  issueReceipt,      // SIM mode only
+  consumeReceipt,    // SIM mode only
+  invokeAgent,       // SIM mode (UUID receipt)
+  invokeAgentPaid,   // REAL mode (settled x402/USDC payment)
+  build402Sim,       // SIM mode 402 body; REAL mode uses x402.js buildPaymentRequired
   __callQwen: callQwen,
   getLog:      (n = 50) => registry.invocationLog.slice(0, n),
   getBalances: ()       => Object.entries(registry.balances).map(([id, earned]) => {
