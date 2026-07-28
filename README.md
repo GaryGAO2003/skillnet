@@ -11,7 +11,7 @@
 [![Base Sepolia](https://img.shields.io/badge/Base_Sepolia-live-0052FF)](https://sepolia.basescan.org/address/0x167A8D5B7702ABE98eCCb1579435C849B4f0f1Fd)
 [![Hedera HCS-26](https://img.shields.io/badge/Hedera_HCS--26-testnet-8259EF)](https://hashscan.io/testnet/topic/0.0.8599076)
 
-**[Live demo](https://skillnet-demo.onrender.com)** · **[On-chain UI](https://skillnet-ten.vercel.app)** · **[简体中文](README.zh-CN.md)**
+**[Live demo](https://skillnet-demo.onrender.com)** · **[On-chain UI](https://skillnet-ten.vercel.app)** · **[Registry](https://skillnet-ten.vercel.app/registry)** · **[简体中文](README.zh-CN.md)**
 
 </div>
 
@@ -21,8 +21,13 @@ AI agents are starting to buy capabilities from each other. SkillNet is the miss
 
 - **Composition DAG** — mint a skill as an NFT, bundle skills into bundles-of-bundles; dependencies and royalty weights live on-chain.
 - **Royalties that conserve** — a ρ-flow split distributes each call's fee across the entire ancestor DAG and provably sums to *exactly* the payment. Fuzz-tested invariant: `Σ credited == price`, to the wei, for diamonds and nested bundles.
-- **Micropayments that actually clear** — per-call fees are sub-cent, and no chain settles that one-by-one (the gas floor alone is 2.5×+ the payment). Calls accrue off-chain as **EIP-712 cumulative vouchers** and batch-settle on-chain: **200 sub-cent calls → 2 transactions**, conservation enforced by the contract.
-- **A registry no one can delist** — skill identity, a canonical `contentHash`, and the creator's Ed25519 signature anchor to **Hedera HCS-26**; verified on read, impossible to fake or remove.
+- **Micropayments that actually clear** — per-call fees are sub-cent, and no chain settles that one-by-one (the gas floor alone is 2.5×+ the payment). Calls accrue off-chain as **EIP-712 cumulative vouchers** and batch-settle on-chain — **proven live: [6 sub-cent calls → 1 `settleBatch` transaction](https://sepolia.basescan.org/tx/0x6cc916a1b6b8d286a9edba71d4ce65acca22506ec911897206adeb0df4ba47d4)**, conservation enforced by the contract.
+- **A registry no one can delist** — skill identity, a canonical `contentHash`, and the creator's Ed25519 signature anchor to **Hedera HCS-26**. [Browse it live](https://skillnet-ten.vercel.app/registry): every row is read straight from Hedera's public mirror node and **re-verified in your own browser** — no server in the middle.
+
+<p align="center">
+  <img src="docs/media/landing.png" width="49%" alt="SkillNet landing page — Exact Ledger design" />
+  <img src="docs/media/registry.png" width="49%" alt="HCS-26 skill registry, verified in the browser" />
+</p>
 
 ## Architecture
 
@@ -47,6 +52,8 @@ flowchart LR
 
 Sources verified on Sourcify. Seeded with 8 skills, a 3-level composition DAG, and live paid calls whose royalty split conserves exactly on-chain. HCS-26 discovery topic: [`0.0.8599076`](https://hashscan.io/testnet/topic/0.0.8599076).
 
+**The settlement loop runs end-to-end on testnet:** demo calls accrue into cumulative EIP-712 vouchers and a gateway service batch-settles them into the vault — see [`settleBatch` tx `0x6cc9…47d4`](https://sepolia.basescan.org/tx/0x6cc916a1b6b8d286a9edba71d4ce65acca22506ec911897206adeb0df4ba47d4) (2 vouchers, 4 creditors, exact conservation). Details in [`skill-network/demo/GATEWAY.md`](skill-network/demo/GATEWAY.md).
+
 > The [demo server](https://skillnet-demo.onrender.com) runs on a free tier: first request after idle takes ~30–60 s to wake, and in-memory state re-seeds on redeploy. The [on-chain UI](https://skillnet-ten.vercel.app) works with any injected wallet (MetaMask) on Base Sepolia; `/vault` hosts the deposit/withdraw flow.
 
 ## Quickstart
@@ -55,7 +62,7 @@ Sources verified on Sourcify. Seeded with 8 skills, a 3-level composition DAG, a
 # Contracts — 21 Foundry tests (royalty conservation, voucher settlement, fuzz invariants)
 cd skill-network/contracts && forge test
 
-# Demo server — 19 node:test tests (payment semantics, auth, persistence, drift guard)
+# Demo server — 29 node:test tests (payment semantics, auth, persistence, settlement gateway, drift guard)
 cd skill-network/demo && npm install && npm test
 
 # Off-chain settlement demo — 200 sub-cent calls collapse into 2 on-chain batches
@@ -92,7 +99,7 @@ Every write and money endpoint requires an **Ed25519 signature** over the reques
 
 ## Roadmap
 
-Tracked as [issues](https://github.com/GaryGAO2003/skillnet/issues): settlement-gateway loop (deposit → calls → vouchers → on-chain batch → withdraw, end-to-end), per-creator registry identity + searchable UI, real x402/USDC rails.
+Tracked as [issues](https://github.com/GaryGAO2003/skillnet/issues). Shipped: the settlement-gateway loop (deposit → calls → vouchers → on-chain batch, [proven on testnet](https://sepolia.basescan.org/tx/0x6cc916a1b6b8d286a9edba71d4ce65acca22506ec911897206adeb0df4ba47d4)) and the [searchable registry UI](https://skillnet-ten.vercel.app/registry) with browser-side verification. In progress: real x402/USDC rails for agent-to-agent payment. Next: creator account binding (HCS-11), USDC-denominated vault.
 
 ## License
 
