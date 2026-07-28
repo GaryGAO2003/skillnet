@@ -177,6 +177,20 @@
     color: var(--danger);
   }
 
+  /* Verification stamps (registry) — outline only, square. */
+  .stamp-verified {
+    border-color: var(--success);
+    color: var(--success);
+  }
+  .stamp-legacy {
+    border-color: var(--line);
+    color: var(--muted);
+  }
+  .stamp-unverified {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
   /* ---------- Inputs: square, small-caps mono labels ---------- */
   .field-label {
     display: block;
@@ -641,6 +655,214 @@
     color: var(--muted);
     font-weight: 700;
   }
+
+  /* ---------- Registry rows (HCS-26, expandable ledger) ---------- */
+  .reg-head {
+    display: grid;
+    grid-template-columns: 76px minmax(180px, 1fr) 150px 170px 132px 22px;
+    gap: 16px;
+    padding: 0 16px 8px;
+    align-items: end;
+  }
+  .reg-head span {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .reg-item {
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    position: relative;
+  }
+  .reg-item:nth-child(even) {
+    background: var(--surface-raised);
+  }
+  .reg-item:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .reg-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -1px;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur) var(--ease);
+  }
+  .reg-item:hover {
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  }
+  .reg-item:hover::before {
+    transform: scaleY(1);
+  }
+  .reg-item.open::before {
+    transform: scaleY(1);
+  }
+
+  .reg-row {
+    display: grid;
+    grid-template-columns: 76px minmax(180px, 1fr) 150px 170px 132px 22px;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+    padding: 16px;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .reg-id {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .reg-name {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+  }
+  .reg-author {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .reg-desc {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .reg-type {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .reg-time {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-feature-settings: "tnum" 1;
+    font-size: 12px;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .reg-stamp-cell {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .reg-chev {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    transition: transform var(--dur) var(--ease);
+  }
+  .reg-item.open .reg-chev {
+    transform: rotate(90deg);
+  }
+
+  /* Expanded detail panel */
+  .reg-detail {
+    padding: 4px 16px 20px 16px;
+    border-top: 1px dashed var(--line);
+    margin: 0 16px;
+  }
+  .reg-kv {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 8px 16px;
+    align-items: baseline;
+    padding-top: 14px;
+  }
+  .reg-kv dt {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .reg-kv dd {
+    margin: 0;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--ink);
+    word-break: break-all;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .reg-copy {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 1px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  }
+  .reg-copy:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  .reg-copy.done {
+    color: var(--success);
+    border-color: var(--success);
+  }
+  .reg-versions {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+  }
+  .reg-versions-h {
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .reg-ver {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+    font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 12px;
+  }
+  .reg-ver .semver {
+    color: var(--ink);
+    font-weight: 700;
+    font-feature-settings: "tnum" 1;
+    min-width: 64px;
+  }
+  .reg-ver .seq {
+    color: var(--muted);
+    font-size: 11px;
+  }
 }
 
 @keyframes wire-pulse {
@@ -680,6 +902,40 @@
   .led-row .led-act {
     grid-area: acts;
     justify-content: flex-start;
+  }
+
+  /* Registry rows collapse to a stacked ledger card. */
+  .reg-head {
+    display: none;
+  }
+  .reg-row {
+    grid-template-columns: 56px 1fr;
+    grid-template-areas:
+      "id   main"
+      "id   type"
+      "id   time"
+      "id   stamp";
+    gap: 12px;
+    row-gap: 10px;
+  }
+  .reg-row .reg-id {
+    grid-area: id;
+  }
+  .reg-row .reg-main {
+    grid-area: main;
+  }
+  .reg-row .reg-type {
+    grid-area: type;
+  }
+  .reg-row .reg-time {
+    grid-area: time;
+  }
+  .reg-row .reg-stamp-cell {
+    grid-area: stamp;
+    justify-content: flex-start;
+  }
+  .reg-row .reg-chev {
+    display: none;
   }
 }
 

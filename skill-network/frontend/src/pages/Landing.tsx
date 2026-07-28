@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useSkillCount } from '../hooks/useSkillNFT'
+import { fetchRegistrations } from '../lib/hedera'
+import type { ParsedRegistration } from '../lib/hedera'
 
 // ---------------------------------------------------------------------------
 // External destinations & honest on-chain facts (Base Sepolia · chain 84532).
@@ -75,10 +78,24 @@ export function Landing() {
   const { data: total } = useSkillCount()
   const count = total === undefined ? null : Number(total)
 
+  // Live HCS-26 registry count, read straight from Hedera's public mirror node.
+  const { data: regs } = useQuery<ParsedRegistration[]>({
+    queryKey: ['hcs26-registrations'],
+    queryFn: fetchRegistrations,
+    staleTime: 60_000,
+  })
+  const regCount = regs?.length ?? null
+
+  // Keep the static registry segment while the mirror node read is in flight.
+  const regSeg =
+    regCount === null
+      ? `⬡ HCS-26 REGISTRY ${HCS26_TOPIC}`
+      : `⬡ ${regCount} ON HCS-26 REGISTRY ${HCS26_TOPIC}`
+
   const ticker =
     count === null
-      ? 'LIVE REGISTRY ON BASE SEPOLIA · ⬡ HCS-26 REGISTRY 0.0.8599076 · 200 SUB-CENT CALLS → 2 TXS · Σ CREDITED == PRICE, FUZZ-TESTED'
-      : `${count} SKILLS REGISTERED ON BASE SEPOLIA · ⬡ HCS-26 REGISTRY ${HCS26_TOPIC} · 200 SUB-CENT CALLS → 2 TXS · Σ CREDITED == PRICE, FUZZ-TESTED`
+      ? `LIVE REGISTRY ON BASE SEPOLIA · ${regSeg} · 200 SUB-CENT CALLS → 2 TXS · Σ CREDITED == PRICE, FUZZ-TESTED`
+      : `${count} SKILLS REGISTERED ON BASE SEPOLIA · ${regSeg} · 200 SUB-CENT CALLS → 2 TXS · Σ CREDITED == PRICE, FUZZ-TESTED`
 
   return (
     <div className="text-ink">
@@ -257,7 +274,14 @@ export function Landing() {
                 </tr>
               ))}
               <tr>
-                <td className="font-sans font-semibold text-ink">HCS-26 Topic</td>
+                <td className="font-sans font-semibold text-ink">
+                  <Link
+                    to="/registry"
+                    className="hover:text-accent-strong underline-offset-2 hover:underline transition-colors"
+                  >
+                    HCS-26 Topic →
+                  </Link>
+                </td>
                 <td className="font-mono text-[12px] text-muted">Hedera Testnet</td>
                 <td>
                   <a
