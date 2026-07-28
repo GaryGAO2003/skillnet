@@ -147,7 +147,13 @@ const state = {
   balances: { treasury: 0n, deployer: 0n, alice: 0n, bob: 0n, carol: 0n },  // BigInt wei — exact, withdrawable
   txLog:    [],
   creators: {},    // name -> { pubKey (base64url raw), privJwk } — Ed25519 identity per seeded creator
+  settlements: [], // on-chain settlement receipts (newest first, cap 50) — set by the settlement gateway
 }
+
+// Settlement gateway (settlement/gateway.mjs) — the on-chain shadow. Constructed in the async
+// boot block AFTER state is restored/seeded, so it captures the final skills/deps references and
+// excludes the pre-boot seed call history. Stays null until then; all touch-points guard on it.
+let gateway = null
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SkillNFT
@@ -325,6 +331,11 @@ function payForCall(skillId, value, caller) {
     },
   }
   state.txLog.unshift(tx)
+
+  // Feed the on-chain shadow engine (additive; does NOT touch state.balances above). Then a
+  // fire-and-forget threshold settle. Guarded on `gateway` so pre-boot seed calls are excluded.
+  if (gateway) gateway.onCall(skillId, valueWei, caller)
+
   return tx
 }
 
@@ -359,6 +370,10 @@ function serializeState() {
   for (const [name, v] of Object.entries(state.balances)) {
     balances[name] = (typeof v === 'bigint' ? v : toWei(v)).toString()   // BigInt wei → decimal string
   }
+  // Additive settlement keys (old snapshots without them still load fine):
+  //   settlement  — the gateway engine's cumulative + current-window state (all BigInts as strings)
+  //   settlements — on-chain settlement receipts (already plain/string-encoded)
+  const settlement = gateway ? gateway.serializeEngine() : (state._settlementRaw || undefined)
   return JSON.stringify({
     nextId:   state.nextId,
     skills:   state.skills,
@@ -368,6 +383,8 @@ function serializeState() {
     balances,
     txLog:    state.txLog,
     creators,
+    settlement,
+    settlements: state.settlements || [],
   })
 }
 
@@ -413,6 +430,8 @@ function loadState() {
     state.balances = snap.balances ? decodeBalances(snap.balances) : state.balances
     state.txLog    = snap.txLog    || []
     state.creators = snap.creators || {}
+    state.settlements    = snap.settlements || []   // on-chain settlement receipts
+    state._settlementRaw = snap.settlement  || null // consumed by gateway.hydrate() after construction
     return true
   } catch (e) {
     console.error('  ⚠ failed to load state snapshot, re-seeding:', e.message)
@@ -709,6 +728,28 @@ app.post('/api/withdraw', requireSignature, (req, res) => {
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
+// ─── Settlement gateway endpoints ─────────────────────────────────────────────
+
+/**
+ * Manual / cron settle trigger. Signature-gated in signature mode (same as other writes).
+ * Safe by construction: the gateway enforces its own mutex + min-interval. External cron can
+ * hit this to wake a sleeping Render instance and flush the batch.
+ */
+app.post('/api/settle', requireSignature, async (req, res) => {
+  try {
+    if (!gateway) return res.json({ enabled: false })
+    const result = await gateway.settle()
+    scheduleSave()
+    res.json(result)
+  } catch (e) { res.status(400).json({ error: e.message }) }
+})
+
+/** Public read: gateway status + pending accrual + recent on-chain settlement receipts. */
+app.get('/api/settlements', (_req, res) => {
+  if (!gateway) return res.json({ enabled: false })
+  res.json(gateway.publicStatus())
+})
+
 app.post('/api/upgrade-tier', requireSignature, (req, res) => {
   try {
     const skill = state.skills[+req.body.skillId]
@@ -993,6 +1034,28 @@ const PORT = process.env.PORT || 3000
     scheduleSave()
   }
   agentNetwork.seedAgents(state.creators.deployer?.pubKey)
+
+  // ── Settlement gateway ──────────────────────────────────────────────────────
+  // Constructed AFTER restore/seed so it captures the final skills/deps refs and excludes the
+  // pre-boot seed call history. A construction failure must NOT take down the demo — on error
+  // the gateway stays null (endpoints report {enabled:false}) and the demo runs exactly as today.
+  try {
+    const gatewayMod = await import(pathToFileURL(path.join(__dirname, 'gateway.mjs')).href)
+    gateway = new gatewayMod.SettlementGateway({ state, env: process.env, scheduleSave })
+    gateway.hydrate(state._settlementRaw)
+    if (gateway.enabled) {
+      console.log(`  → Settlement gateway: ENABLED (gateway ${gateway.gatewayAccount.address}, vault ${gateway.vaultAddress})`)
+      // Boot reconciliation — adopt on-chain spent where it exceeds local (chain is truth).
+      gateway.reconcile()
+        .then(r => { if (r.adopted) console.log(`  → Settlement reconcile: adopted chain spent for ${r.adopted} payer(s)`) })
+        .catch(err => console.error('  ⚠ settlement reconcile failed:', err.message))
+    } else {
+      console.log('  → Settlement gateway: disabled (set GATEWAY_PRIVATE_KEY/PRIVATE_KEY, BASE_SEPOLIA_RPC_URL, SETTLEMENT_VAULT_ADDRESS to enable)')
+    }
+  } catch (err) {
+    console.error('  ⚠ settlement gateway init failed (running without it):', err.message)
+    gateway = null
+  }
 
   app.listen(PORT, () => {
   console.log('\n╔══════════════════════════════════════╗')

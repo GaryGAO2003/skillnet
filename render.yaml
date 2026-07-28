@@ -27,3 +27,20 @@ services:
         sync: false
       - key: HCS26_DISCOVERY_TOPIC
         sync: false
+      # Settlement gateway (issue #2) — leave GATEWAY_PRIVATE_KEY empty to run
+      # with the gateway disabled (demo works as before, no on-chain settling).
+      # Fill it in the dashboard to enable batch settlement on Base Sepolia.
+      - key: GATEWAY_PRIVATE_KEY
+        sync: false
+      - key: DEMO_PAYER_SEED
+        sync: false
+      - key: BASE_SEPOLIA_RPC_URL
+        value: https://sepolia.base.org
+      - key: SETTLEMENT_VAULT_ADDRESS
+        value: "0xb6DECc3e5d3a4E8a0F64DdFC5Fe8A6128abeb8B8"
+      - key: TREASURY_ADDRESS
+        value: "0x7a549A1687f374715C74615748509aF976a3f32E"
+      # Settle when pending royalties reach this many wei (0.02 ETH), or when an
+      # external cron POSTs /api/settle (which also wakes the free-tier instance).
+      - key: SETTLE_THRESHOLD_WEI
+        value: "20000000000000000"
