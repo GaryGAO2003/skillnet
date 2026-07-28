@@ -42,7 +42,7 @@ export function ComposeSkill() {
       <div className="bg-surface border border-line rounded-sm p-6">
         <ComposeForm
           availableSkills={skills}
-          onSuccess={() => navigate('/')}
+          onSuccess={() => navigate('/marketplace')}
         />
       </div>
     </div>

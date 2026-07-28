@@ -49,7 +49,7 @@ export function SkillDetail() {
   return (
     <div className="max-w-content mx-auto px-6 py-10 space-y-10">
       <div>
-        <Link to="/" className="font-mono text-[12px] text-muted hover:text-ink transition-colors">← Back to Marketplace</Link>
+        <Link to="/marketplace" className="font-mono text-[12px] text-muted hover:text-ink transition-colors">← Back to Marketplace</Link>
       </div>
 
       {/* Header */}

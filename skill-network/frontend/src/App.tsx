@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, NavLink } from 'react-router-dom'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { Landing } from './pages/Landing'
 import { Marketplace } from './pages/Marketplace'
 import { SkillDetail } from './pages/SkillDetail'
 import { ComposeSkill } from './pages/ComposeSkill'
@@ -26,7 +27,7 @@ function Navbar() {
         </Link>
 
         <nav className="hidden sm:flex items-center justify-center gap-6">
-          <NavLink to="/" end className={linkClass}>Marketplace</NavLink>
+          <NavLink to="/marketplace" className={linkClass}>Marketplace</NavLink>
           <NavLink to="/compose" className={linkClass}>Compose</NavLink>
           <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
           <NavLink to="/vault" className={linkClass}>Vault</NavLink>
@@ -48,7 +49,8 @@ export function App() {
         <Navbar />
         <main>
           <Routes>
-            <Route path="/" element={<Marketplace />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/skill/:id" element={<SkillDetail />} />
             <Route path="/compose" element={<ComposeSkill />} />
             <Route path="/dashboard" element={<Dashboard />} />
