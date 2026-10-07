@@ -1,0 +1,58 @@
+{
+  "creators": [
+    { "id": "c1", "name": "剪映老司机", "handle": "jianying", "platform": "抖音", "fans": "12.3万", "bio": "专讲视频剪辑和短视频运营。", "claimed": true },
+    { "id": "c2", "name": "Momo画画中", "handle": "momo", "platform": "小红书", "fans": "8.6万", "bio": "插画师，爱分享小红书涨粉技巧。", "claimed": true }
+  ],
+  "skills": [
+    {
+      "id": "s1", "slug": "xhs-cover", "owner": "c2",
+      "name": "小红书封面标题", "glyph": "封面", "cat": "小红书",
+      "desc": "根据内容生成 10 个爆款封面标题和排版建议。",
+      "tags": ["封面", "标题", "排版", "爆款", "cover"],
+      "examples": [ { "you": "分享我的租房改造", "ai": "「月租 2k 的房子，被我改成了 ins 风」\n大字 + 前后对比拼图" } ],
+      "installs": 4410, "likes": 1980, "rating": 4.8, "ratingCount": 132, "verified": true,
+      "video": { "platform": "小红书", "title": "封面点击率提升 3 倍" },
+      "versions": [ { "v": "1.0", "date": "2026-10-05", "note": "首次发布" } ]
+    },
+    {
+      "id": "s2", "slug": "jy-subtitle", "owner": "c1",
+      "name": "剪映字幕生成", "glyph": "字幕", "cat": "视频剪辑",
+      "desc": "自动把口播转成花字字幕，支持断句和 srt 导出。",
+      "tags": ["字幕", "花字", "srt", "剪映"],
+      "examples": [ { "you": "帮我给这段视频加字幕", "ai": "已按语气断句，生成 36 条花字" } ],
+      "installs": 3200, "likes": 900, "rating": 4.6, "ratingCount": 88, "verified": true,
+      "video": { "platform": "抖音", "title": "字幕三连提升完播" },
+      "versions": [
+        { "v": "1.2", "date": "2026-09-20", "note": "支持 srt 导出" },
+        { "v": "1.0", "date": "2026-08-01", "note": "首次发布" }
+      ]
+    },
+    {
+      "id": "s3", "slug": "watercolor-palette", "owner": "c2",
+      "name": "水彩插画配色", "glyph": "配色", "cat": "插画美术",
+      "desc": "给水彩插画生成和谐的色卡与调色板建议。",
+      "tags": ["配色", "色卡", "水彩", "palette", "插画"],
+      "examples": [ { "you": "想画一只森系小鹿", "ai": "推荐 5 组低饱和森系色卡" } ],
+      "installs": 1500, "likes": 420, "rating": 4.7, "ratingCount": 40, "verified": false,
+      "versions": [ { "v": "1.0", "date": "2026-09-10", "note": "首次发布" } ]
+    },
+    {
+      "id": "s4", "slug": "voiceover-script", "owner": "c1",
+      "name": "口播稿写作", "glyph": "口播", "cat": "文案口播",
+      "desc": "把要点整理成适合口播的讲稿，自带钩子和节奏。",
+      "tags": ["口播", "口播稿", "讲稿", "文案"],
+      "examples": [ { "you": "讲讲用多邻国学西语", "ai": "开头钩子：你以为背单词最难" } ],
+      "installs": 2100, "likes": 600, "rating": 4.5, "ratingCount": 55, "verified": true,
+      "versions": [ { "v": "1.0", "date": "2026-09-15", "note": "首次发布" } ]
+    },
+    {
+      "id": "s5", "slug": "xhs-hook", "owner": "c2",
+      "name": "小红书爆款文案", "glyph": "爆款", "cat": "小红书",
+      "desc": "小红书正文爆款模板，自动套用钩子和话题标签。",
+      "tags": ["文案", "爆款", "种草"],
+      "examples": [ { "you": "推荐一家咖啡店", "ai": "标题：这家藏在巷子里的咖啡店" } ],
+      "installs": 99999, "likes": 30000, "rating": 5.0, "ratingCount": 900, "verified": true,
+      "versions": [ { "v": "2.0", "date": "2026-10-01", "note": "大更新" } ]
+    }
+  ]
+}

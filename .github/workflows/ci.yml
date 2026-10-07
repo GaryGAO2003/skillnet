@@ -60,3 +60,24 @@ jobs:
           else
             echo "no demo/test dir yet — skipping"
           fi
+
+  hub:
+    name: Node (creator hub)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: skill-network/hub
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: node --test
+        run: npm test
