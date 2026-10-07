@@ -1,7 +1,13 @@
-// catalog.js — load + unify skill records, and serve get/search/install/fileContent/categories.
+// catalog.js — load + unify skill records (platform, GitHub, and uploaded), and
+// serve get/search/install/fileContent/categories plus summary/detail shaping.
+//
+// When a `db` is supplied, dynamic data (likes, reviews/effective rating, claims,
+// ownership, per-user liked/library) is layered on top of the static records and
+// uploaded skills are registered into the live catalog. Without a db the catalog
+// still works (seed values only) — the pure search/install tests rely on that.
 
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
-import { join, sep } from 'node:path';
+import { join } from 'node:path';
 import { scanFiles } from './safety.js';
 import { search as runSearch, CATEGORIES } from './search.js';
 import { createStore } from './store.js';
@@ -31,7 +37,7 @@ function looksBinary(buf) {
   return false;
 }
 
-// Recursively list a skill's local files (text only, capped per file).
+// Recursively list a skill's local files (text inlined, capped per file).
 function walkSkillDir(root) {
   const out = [];
   const walk = (dir, base) => {
@@ -64,7 +70,10 @@ function readJson(path, fallback) {
   }
 }
 
-export function loadCatalog({ dataDir, stateFile, baseUrl }) {
+const round2 = (x) => Math.round(x * 100) / 100;
+function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+
+export function loadCatalog({ dataDir, stateFile, baseUrl, db = null }) {
   const base = (baseUrl || '').replace(/\/+$/, '');
   const store = createStore(stateFile);
   const records = [];
@@ -85,9 +94,11 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
     const versions = Array.isArray(s.versions) ? s.versions : [];
     records.push({
       source: 'skillnet',
+      uploaded: false,
       id: s.id,
       slug: s.slug,
       owner: s.owner,
+      ownerUserId: s.owner,
       name: s.name,
       glyph: s.glyph || (s.name || '').slice(0, 2),
       cat: s.cat,
@@ -97,6 +108,8 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
       seedInstalls: Number(s.installs) || 0,
       likes: Number(s.likes) || 0,
       rating: s.rating == null ? null : Number(s.rating),
+      seedRating: s.rating == null ? null : Number(s.rating),
+      seedRatingCount: Number(s.ratingCount) || 0,
       ratingCount: Number(s.ratingCount) || 0,
       verified: !!s.verified,
       video: s.video || null,
@@ -127,8 +140,10 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
     const login = (g.author && g.author.login) || g.repo && g.repo.split('/')[0] || 'unknown';
     records.push({
       source: 'github',
+      uploaded: false,
       id: g.id,
       slug: g.slug,
+      ownerUserId: null,
       name: g.name,
       glyph: (g.name || g.slug || 'GH').slice(0, 2),
       cat: g.cat,
@@ -138,6 +153,8 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
       seedInstalls: 0,
       likes: 0,
       rating: null,
+      seedRating: null,
+      seedRatingCount: 0,
       ratingCount: 0,
       verified: false,
       video: null,
@@ -146,6 +163,7 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
       updated: g.pushedAt || null,
       ref: g.ref || null,
       branch: g.branch || null,
+      repoPath: g.dir || '',
       creator: {
         name: login, handle: login, platform: 'GitHub', claimed: false,
         url: (g.author && g.author.url) || `https://github.com/${login}`,
@@ -172,13 +190,124 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
   const byId = new Map();
   const bySlug = new Map();
   const byHandleSlug = new Map();
-  for (const r of records) {
+  function indexRecord(r) {
     byId.set(r.id, r);
     if (!bySlug.has(r.slug)) bySlug.set(r.slug, r);
     if (r.creator && r.creator.handle) byHandleSlug.set(`${r.creator.handle}/${r.slug}`, r);
   }
+  for (const r of records) indexRecord(r);
+
+  // --- uploaded skills (from db, persisted across restarts) ---
+  function makeUploadedRecord(s) {
+    const root = join(dataDir, 'uploads', s.id, String(s.version));
+    const files = walkSkillDir(root);
+    const safety = scanFiles(files.map((f) => ({ path: f.path, content: f.content, binary: f.binary })));
+    const owner = db ? db.getUser(s.ownerUserId) : null;
+    const versions = Array.isArray(s.versions) ? s.versions : [];
+    return {
+      source: 'skillnet',
+      uploaded: true,
+      id: s.id,
+      slug: s.slug,
+      owner: s.ownerUserId,
+      ownerUserId: s.ownerUserId,
+      name: s.name,
+      glyph: s.glyph || (s.name || '').slice(0, 2),
+      cat: s.cat,
+      desc: s.desc,
+      tags: Array.isArray(s.tags) ? s.tags : [],
+      examples: Array.isArray(s.examples) ? s.examples : [],
+      seedInstalls: 0,
+      likes: 0,
+      rating: null,
+      seedRating: null,
+      seedRatingCount: 0,
+      ratingCount: 0,
+      verified: !!s.verified,
+      video: s.video || null,
+      versions,
+      version: s.version,
+      updated: s.updated || (versions[0] ? versions[0].date : null),
+      creator: owner
+        ? { name: owner.name, handle: owner.handle, platform: owner.platform || '', claimed: true, url: null, fans: owner.fans || null, bio: owner.bio || null }
+        : { name: s.ownerName || '作者', handle: s.ownerHandle || 'me', platform: '', claimed: true },
+      files,
+      fileList: files.map((f) => ({ path: f.path, size: f.size, binary: !!f.binary })),
+      safety,
+      requires: null,
+      stars: 0,
+      license: null,
+      sourceUrl: null,
+      descOriginal: null,
+      rawBase: null,
+      installs: 0,
+      createdAt: s.createdAt || null,
+    };
+  }
+  function addUploaded(meta) {
+    const r = makeUploadedRecord(meta);
+    const i = records.findIndex((x) => x.id === r.id);
+    if (i >= 0) records[i] = r; else records.push(r);
+    indexRecord(r);
+    return r;
+  }
+  if (db) for (const s of db.listUploadedSkills()) addUploaded(s);
 
   const effInstalls = (r) => r.seedInstalls + store.getInstalls(r.id);
+
+  // Effective rating + rating count, layering db reviews over seed values.
+  function ratingAgg(r) {
+    const reviews = db ? db.reviewsForSkill(r.id) : [];
+    const n = reviews.length;
+    const sum = reviews.reduce((a, x) => a + Number(x.rating || 0), 0);
+    if (r.source === 'skillnet' && !r.uploaded) {
+      const sc = r.seedRatingCount || 0;
+      const sr = r.seedRating != null ? Number(r.seedRating) : 0;
+      const total = sc + n;
+      return { rating: total > 0 ? round2((sr * sc + sum) / total) : null, count: total };
+    }
+    return { rating: n > 0 ? round2(sum / n) : null, count: n };
+  }
+
+  function palOf(r) {
+    if (r.source === 'skillnet' && !r.uploaded) {
+      const digits = String(r.id).replace(/\D/g, '');
+      if (digits) return Number(digits) % 8;
+    }
+    return hashStr(String(r.id)) % 8;
+  }
+
+  function ownerUserIdOf(r) {
+    if (r.source === 'skillnet') return r.ownerUserId || null;
+    if (r.source === 'github') { const c = db && db.getClaim(r.id); return c ? c.userId : null; }
+    return null;
+  }
+
+  function tippable(r) {
+    if (r.safety.level === 'block') return false;
+    return !!ownerUserIdOf(r);
+  }
+
+  // Creator as shown to users, accounting for a GitHub claim.
+  function creatorView(r) {
+    if (r.source === 'github') {
+      const claim = db && db.getClaim(r.id);
+      if (claim) {
+        const u = db.getUser(claim.userId);
+        if (u) return { name: u.name, handle: u.handle, platform: 'GitHub', claimed: true, url: r.creator.url, githubLogin: claim.githubLogin || r.creator.handle };
+      }
+    }
+    return r.creator;
+  }
+
+  function ownerSummary(r) {
+    const uid = ownerUserIdOf(r);
+    if (!uid) return null;
+    const u = db && db.getUser(uid);
+    if (u) return { handle: u.handle, name: u.name };
+    if (r.creator && r.creator.handle) return { handle: r.creator.handle, name: r.creator.name };
+    return null;
+  }
 
   function get(key) {
     if (key == null) return null;
@@ -197,37 +326,74 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
     return (r.files || []).map((f) => ({ path: f.path, url: `${base}/api/skills/${r.id}/files/${encodeSegments(f.path)}` }));
   }
 
-  function summary(r, extra = {}) {
+  // SkillSummary: the search summary plus the fields the SPA needs.
+  function summary(r, { score, matched, user } = {}) {
+    const cv = creatorView(r);
+    const agg = ratingAgg(r);
     return {
       id: r.id,
       slug: r.slug,
       name: r.name,
       cat: r.cat,
       desc: r.desc,
-      creator: { name: r.creator.name, handle: r.creator.handle, platform: r.creator.platform, claimed: r.creator.claimed },
+      creator: { name: cv.name, handle: cv.handle, platform: cv.platform, claimed: cv.claimed },
       source: r.source,
       installs: effInstalls(r),
-      rating: r.rating,
+      rating: agg.rating,
       verified: r.verified,
       safety: r.safety.level === 'block' ? 'block' : r.safety.level,
       stars: r.stars,
       requires: r.requires,
       page: `${base}/s/${r.id}`,
-      score: extra.score != null ? Math.round(extra.score * 10000) / 10000 : 0,
-      matched: extra.matched || [],
+      score: score != null ? Math.round(score * 10000) / 10000 : 0,
+      matched: matched || [],
+      glyph: r.glyph,
+      pal: palOf(r),
+      likes: (Number(r.likes) || 0) + (db ? db.likeCount(r.id) : 0),
+      liked: user ? (db ? db.hasLiked(r.id, user.id) : false) : null,
+      video: r.video || null,
+      version: r.version,
+      updated: r.updated,
+      pick: r.source === 'skillnet' && !r.uploaded && effInstalls(r) > 4000,
+      owner: ownerSummary(r),
     };
   }
 
-  function detail(r) {
+  function reviewsView(r) {
+    const list = db ? db.reviewsForSkill(r.id) : [];
+    return list
+      .slice()
+      .sort((a, b) => (a.ts < b.ts ? 1 : -1))
+      .slice(0, 20)
+      .map((rv) => {
+        let handle = null;
+        if (rv.userId && db) { const u = db.getUser(rv.userId); handle = u ? u.handle : null; }
+        return { name: rv.name, handle, rating: rv.rating, text: rv.text, ts: rv.ts };
+      });
+  }
+
+  function detail(r, { user } = {}) {
+    const cv = creatorView(r);
+    const agg = ratingAgg(r);
+    const uid = ownerUserIdOf(r);
     return {
-      ...summary(r),
+      ...summary(r, { user }),
       glyph: r.glyph,
-      owner: r.owner || null,
-      likes: r.likes,
-      ratingCount: r.ratingCount,
+      ownerId: r.owner || null,
+      likes: (Number(r.likes) || 0) + (db ? db.likeCount(r.id) : 0),
+      liked: user ? (db ? db.hasLiked(r.id, user.id) : false) : null,
+      inLibrary: user && db ? db.inLibrary(user.id, r.id) : false,
+      canTip: tippable(r) && !(user && uid && uid === user.id),
+      reviews: reviewsView(r),
+      ratingCount: agg.count,
+      rating: agg.rating,
+      qr: `${base}/api/skills/${r.id}/qr.svg`,
+      appUrl: `${base}/#/skill/${r.id}`,
+      githubLogin: cv.githubLogin || null,
+      examples: r.examples,
+      ratingCountSeed: r.seedRatingCount,
       updated: r.updated,
       version: r.version,
-      examples: r.examples,
       versions: r.versions,
       video: r.video,
       license: r.license,
@@ -244,7 +410,7 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
       zipUrl: r.source === 'skillnet' ? `${base}/api/skills/${r.id}/download.zip` : null,
       rawBase: r.rawBase,
       creatorFull: r.creator,
-      notice: r.source === 'github' ? `这个 skill 来自 GitHub 上的 @${r.creator.handle}，作者还没入驻，文件直接从 GitHub 下载。` : null,
+      notice: r.source === 'github' && !cv.claimed ? `这个 skill 来自 GitHub 上的 @${r.creator.handle}，作者还没入驻，文件直接从 GitHub 下载。` : null,
       installTargets: allTargets(r.slug),
       installApi: Object.fromEntries(['claude-code', 'codex', 'cursor', 'openclaw', 'claude-app', 'other']
         .map((c) => [c, `${base}/api/skills/${r.id}/install?client=${c}`])),
@@ -301,6 +467,8 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
     const newCount = store.recordInstall(r.id, target.client, ref);
     const installsEff = r.seedInstalls + newCount;
     const fileUrls = fileUrlsFor(r);
+    const cv = creatorView(r);
+    const canTip = tippable(r);
 
     const bundle = {
       ok: true,
@@ -321,7 +489,7 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
       steps: buildSteps(r, target),
       tryIt: (r.examples && r.examples[0] && r.examples[0].you) || null,
       safety: r.safety,
-      creator: { name: r.creator.name, claimed: r.creator.claimed, tipUrl: r.creator.claimed ? `${base}/s/${r.id}#tip` : null },
+      creator: { name: cv.name, claimed: cv.claimed, tipUrl: canTip ? `${base}/#/skill/${r.id}?tip=1` : null },
       notice: null,
       installs: installsEff,
     };
@@ -337,7 +505,7 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
       bundle.zipUrl = `${base}/api/skills/${r.id}/download.zip`;
     } else {
       bundle.files = null;
-      bundle.notice = `这个 skill 来自 GitHub 上的 @${r.creator.handle}，作者还没入驻，文件直接从 GitHub 下载。`;
+      if (!cv.claimed) bundle.notice = `这个 skill 来自 GitHub 上的 @${r.creator.handle}，作者还没入驻，文件直接从 GitHub 下载。`;
     }
     return bundle;
   }
@@ -377,10 +545,10 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
     return CATEGORIES.map((cat) => ({ cat, count: counts.get(cat) }));
   }
 
-  function search(query, { category = null, limit = 5 } = {}) {
-    for (const r of records) r.installs = effInstalls(r);
+  function search(query, { category = null, limit = 5, user = null } = {}) {
+    for (const r of records) { r.installs = effInstalls(r); r.rating = ratingAgg(r).rating; }
     const results = runSearch(records, query || '', { category, limit });
-    return results.map((res) => ({ record: res.record, summary: summary(res.record, { score: res.score, matched: res.matched }), score: res.score, matched: res.matched }));
+    return results.map((res) => ({ record: res.record, summary: summary(res.record, { score: res.score, matched: res.matched, user }), score: res.score, matched: res.matched }));
   }
 
   function counts() {
@@ -405,5 +573,13 @@ export function loadCatalog({ dataDir, stateFile, baseUrl }) {
     fileUrlsFor,
     resolveClient,
     effInstalls,
+    // dynamic / uploaded-skill helpers
+    addUploaded,
+    ratingAgg,
+    palOf,
+    tippable,
+    ownerUserIdOf,
+    creatorView,
+    ownerSummary,
   };
 }

@@ -1,7 +1,11 @@
 // pages.js — HTML + markdown renderers. Plain template strings, one shared CSS
 // block, tiny inline JS for copy buttons. All interpolated data is HTML-escaped.
+// The brand name is configurable; these SSR pages are fallback / SEO / utility
+// surfaces (the SPA under public/ is the primary UI).
 
 import { CATEGORIES } from './search.js';
+import { allTargets } from './clients.js';
+import { BRAND } from './brand.js';
 
 export function escapeHtml(s) {
   return String(s == null ? '' : s)
@@ -13,6 +17,12 @@ export function escapeHtml(s) {
 }
 
 const fmtNum = (n) => Number(n || 0).toLocaleString('en-US');
+
+// The wordmark keeps the SkillNet dot accent for the default brand, otherwise the
+// configured name is shown plainly.
+function brandMark(brand) {
+  return brand.name === 'SkillNet' ? 'Skill<span class="dot">Net</span>' : escapeHtml(brand.name);
+}
 
 // pre.light blocks (the copyable sentence, the agent instructions) are for people
 // to read, so they wrap long URLs; dark pre blocks stay unwrapped shell commands.
@@ -91,7 +101,7 @@ document.addEventListener('click',function(e){
 });
 </script>`;
 
-function doc({ title, body, head = '' }) {
+function doc({ title, body, head = '', brand = BRAND }) {
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -105,7 +115,7 @@ ${head}
 <body>
 <div class="wrap">
 ${body}
-<div class="foot">SkillNet · 创作者 AI 技能市场 · 安装前请先阅读 SKILL.md，绝不执行未知脚本。</div>
+<div class="foot">${brandMark(brand)} · ${escapeHtml(brand.tagline)} · 安装前请先阅读 SKILL.md，绝不执行未知脚本。</div>
 </div>
 ${COPY_JS}
 </body>
@@ -140,19 +150,19 @@ function cardFor(sm) {
   </div></div></div>`;
 }
 
-export function renderIndex({ q = '', cat = '', categories = [], results = [] }) {
-  const chips = ['<a class="chip' + (cat ? '' : ' on') + '" href="/">全部</a>']
-    .concat(categories.map((c) => `<a class="chip${c.cat === cat ? ' on' : ''}" href="/?cat=${encodeURIComponent(c.cat)}">${escapeHtml(c.cat)} ${c.count}</a>`))
+export function renderIndex({ q = '', cat = '', categories = [], results = [], brand = BRAND }) {
+  const chips = ['<a class="chip' + (cat ? '' : ' on') + '" href="/browse">全部</a>']
+    .concat(categories.map((c) => `<a class="chip${c.cat === cat ? ' on' : ''}" href="/browse?cat=${encodeURIComponent(c.cat)}">${escapeHtml(c.cat)} ${c.count}</a>`))
     .join('');
   const list = results.length
     ? results.map(cardFor).join('')
     : `<div class="card muted">没有找到匹配的技能。换更宽的关键词（只保留 2-4 个字）或点上面的分类看看。</div>`;
   const body = `
 <header class="top">
-  <div class="brand">Skill<span class="dot">Net</span></div>
-  <div class="tag">创作者的 AI 技能，一句话就能装进你的 AI 助手。视频剪辑 · 小红书 · 插画 · 配色 · 出图 · 音乐 · 修图 · UI/UX · 口播文案</div>
+  <div class="brand">${brandMark(brand)}</div>
+  <div class="tag">${escapeHtml(brand.tagline)}。视频剪辑 · 小红书 · 插画 · 配色 · 出图 · 音乐 · 修图 · UI/UX · 口播文案</div>
 </header>
-<form class="searchbox" method="get" action="/">
+<form class="searchbox" method="get" action="/browse">
   <input type="search" name="q" value="${escapeHtml(q)}" placeholder="想做什么？比如：小红书封面、剪映字幕、水彩插画配色" aria-label="搜索技能">
   ${cat ? `<input type="hidden" name="cat" value="${escapeHtml(cat)}">` : ''}
   <button class="btn pink" type="submit">搜索</button>
@@ -160,7 +170,7 @@ export function renderIndex({ q = '', cat = '', categories = [], results = [] })
 <div class="chips">${chips}</div>
 ${q ? `<div class="muted" style="margin-bottom:8px">「${escapeHtml(q)}」的结果（${results.length}）</div>` : ''}
 ${list}`;
-  return doc({ title: q ? `${q} · SkillNet` : 'SkillNet · 创作者 AI 技能市场', body });
+  return doc({ title: q ? `${q} · ${brand.name}` : `${brand.name} · ${brand.tagline}`, body, brand });
 }
 
 function curlLines(d) {
@@ -200,27 +210,27 @@ function agentBlock(d) {
   return lines.join('\n');
 }
 
-export function renderSkillPage(d) {
-  const sendSentence = `请帮我安装这个 skill：${d.page.replace('/s/' + d.id, '/s/' + d.id)}`;
-  const creatorLine = d.source === 'github'
+export function renderSkillPage(d, brand = BRAND) {
+  const sendSentence = `请帮我安装这个 skill：${d.page}`;
+  const creatorLine = d.source === 'github' && !d.creator.claimed
     ? `来自 GitHub · <a href="${escapeHtml(d.sourceUrl || '')}">@${escapeHtml(d.creator.handle)}</a> · 作者未入驻 · ★${escapeHtml(d.stars)}${d.license ? ` · ${escapeHtml(d.license)}` : ''}`
-    : `${escapeHtml(d.creator.name)}${d.creator.claimed ? ' <span class="pill ok">已认领</span>' : ''}${d.creatorFull.fans ? ` · 粉丝 ${escapeHtml(d.creatorFull.fans)}` : ''} · ${fmtNum(d.installs)} 人在用${d.rating != null ? ` · ★${escapeHtml(d.rating)}（${escapeHtml(d.ratingCount)}）` : ''}`;
+    : `${escapeHtml(d.creator.name)}${d.creator.claimed ? ' <span class="pill ok">已认领</span>' : ''}${d.githubLogin ? ` · GitHub @${escapeHtml(d.githubLogin)}` : ''}${d.creatorFull.fans ? ` · 粉丝 ${escapeHtml(d.creatorFull.fans)}` : ''} · ${fmtNum(d.installs)} 人在用${d.rating != null ? ` · ★${escapeHtml(d.rating)}（${escapeHtml(d.ratingCount)}）` : ''}`;
 
   const examples = (d.examples || []).map((e) => `<div class="ex"><div class="you">你说：${escapeHtml(e.you)}</div><div class="ai">它回：${escapeHtml(e.ai)}</div></div>`).join('');
   const findings = (d.safetyFindings || []).map((f) => `<li>[${escapeHtml(SEVERITY_ZH[f.severity] || f.severity)}] ${escapeHtml(f.label)}${f.file ? `<span class="muted">（${escapeHtml(f.file)}${f.line ? ':' + escapeHtml(f.line) : ''}）</span>` : ''}</li>`).join('');
   const versions = (d.versions || []).map((v) => `<li><b>${escapeHtml(v.v)}</b> <span class="muted">${escapeHtml(v.date)}</span> ${escapeHtml(v.note || '')}</li>`).join('');
 
-  const tipSection = d.creator.claimed ? `
+  // The SSR page no longer handles tips itself — it hands off to the SPA where
+  // tipping / reviewing / library live. Claimed creators get the tip wording.
+  const appUrl = d.appUrl || `/#/skill/${d.id}`;
+  const openSection = d.safetyLevel === 'block' ? '' : `
 <div class="sect" id="tip">
-  <h2>支持作者</h2>
-  <div class="tips">
-    <span class="tipchip">¥6</span><span class="tipchip">¥18</span><span class="tipchip">¥50</span>
-  </div>
-  <div class="muted" style="margin-top:8px">打赏功能即将上线</div>
-</div>` : '';
+  <h2>在 ${escapeHtml(brand.name)} 里打开</h2>
+  <a class="btn pink" href="${escapeHtml(appUrl)}">在 ${escapeHtml(brand.name)} 里打开：${d.creator.claimed ? '打赏 · ' : ''}评价 · 收藏</a>
+</div>`;
 
   const body = `
-<header class="top"><a href="/" class="meta" style="text-decoration:none">← SkillNet</a></header>
+<header class="top"><a href="/" class="meta" style="text-decoration:none">← ${escapeHtml(brand.name)}</a></header>
 <div class="card"><div class="row">
   <div class="glyph">${escapeHtml(d.glyph || (d.name || '').slice(0, 2))}</div>
   <div style="flex:1">
@@ -279,18 +289,18 @@ ${d.safetyLevel === 'block' ? `<div class="sect"><h2>无法安装</h2>
   <button class="copy" data-copy="${escapeHtml(agentBlock(d))}">复制</button>
 </div>`}
 
-${tipSection}
+${openSection}
 `;
   const head = `<link rel="alternate" type="text/markdown" href="/s/${escapeHtml(d.id)}.md">`;
-  return doc({ title: `${d.name} · SkillNet`, body, head });
+  return doc({ title: `${d.name} · ${brand.name}`, body, head, brand });
 }
 
-export function renderSkillMarkdown(d) {
+export function renderSkillMarkdown(d, brand = BRAND) {
   const L = [];
   L.push(`# ${d.name}`);
   L.push('');
-  if (d.source === 'github') L.push(`来自 GitHub @${d.creator.handle}（作者未入驻） · ★${d.stars}${d.license ? ` · ${d.license}` : ''} · 分类：${d.cat}`);
-  else L.push(`作者：${d.creator.name}${d.creator.claimed ? '（已认领）' : ''} · ${fmtNum(d.installs)} 人在用${d.rating != null ? ` · ★${d.rating}` : ''} · 分类：${d.cat}`);
+  if (d.source === 'github' && !d.creator.claimed) L.push(`来自 GitHub @${d.creator.handle}（作者未入驻） · ★${d.stars}${d.license ? ` · ${d.license}` : ''} · 分类：${d.cat}`);
+  else L.push(`作者：${d.creator.name}${d.creator.claimed ? '（已认领）' : ''}${d.githubLogin ? ` · GitHub @${d.githubLogin}` : ''} · ${fmtNum(d.installs)} 人在用${d.rating != null ? ` · ★${d.rating}` : ''} · 分类：${d.cat}`);
   L.push('');
   L.push(d.desc);
   if (d.requires) { L.push(''); L.push(`**依赖**：${d.requires}`); }
@@ -316,14 +326,53 @@ export function renderSkillMarkdown(d) {
   if (d.truncated) L.push(`- 共 ${d.fileCount} 个文件，请整包下载：${d.archiveUrl}（解压后取 ${d.archiveRoot}/）`);
   else for (const f of d.fileUrls) L.push(`- ${f.path}: ${f.url}`);
   if (d.notice) { L.push('', d.notice); }
+  if (d.appUrl) { L.push('', `在 ${brand.name} 里打开（打赏 · 评价 · 收藏）：${d.appUrl}`); }
   return L.join('\n') + '\n';
 }
 
-export function renderLlmsTxt({ baseUrl, counts }) {
-  const b = baseUrl;
-  return `# SkillNet Hub — llms.txt
+// SSR page encouraging users to install the skill-finder meta-skill.
+export function renderGetFinder({ brand = BRAND, baseUrl = '' } = {}) {
+  const base = String(baseUrl || '').replace(/\/+$/, '');
+  const sentence = `请帮我安装这个 skill：${base}/skill-finder/SKILL.md`;
+  const targets = allTargets('skill-finder').filter((t) => t.user || t.project);
+  const dirs = targets.map((t) => `  ${t.client}: 用户级 ${t.user || '-'}${t.project ? ` | 项目级 ${t.project}` : ''}`).join('\n');
+  const body = `
+<header class="top"><a href="/" class="meta" style="text-decoration:none">← ${escapeHtml(brand.name)}</a>
+  <h1 class="display" style="font-size:30px;margin:.2em 0">让你的 AI 自己来这里找 skill</h1>
+  <div class="tag">装上 skill-finder 这个「元技能」，以后直接对你的 AI 助手说想做什么，它会来 ${escapeHtml(brand.name)} 搜索、挑选并安装合适的创作者技能。</div>
+</header>
 
-SkillNet 是一个创作者 AI「技能（Agent Skills）」市场。普通创作者（视频剪辑、小红书、插画、音乐、摄影修图、UI/UX、文案口播…）把自己的 AI 技能（一个含 SKILL.md 的文件夹）分享给粉丝。你（AI 助手）可以搜索、查看并获取安装包。
+<div class="sect"><h2>1 · 最简单：发一句话</h2>
+  <div class="card">
+    <div class="muted" style="margin-bottom:6px">把这句话发给支持 Agent Skills 的 AI 助手（Claude Code、Codex、Cursor…）：</div>
+    <pre class="light"><code>${escapeHtml(sentence)}</code></pre>
+    <button class="copy" data-copy="${escapeHtml(sentence)}">复制这句话</button>
+  </div>
+</div>
+
+<div class="sect"><h2>2 · 下载压缩包</h2>
+  <div class="card">
+    <div class="muted" style="margin-bottom:6px">下载后解压到 skills 目录，或在 Claude 设置里上传。</div>
+    <a class="btn sky" href="/skill-finder.zip">下载 skill-finder.zip</a>
+    · <a class="btn ghost" href="/skill-finder/SKILL.md">查看 SKILL.md</a>
+  </div>
+</div>
+
+<div class="sect"><h2>3 · 手动安装位置（按客户端）</h2>
+  <div class="card">
+    <div class="muted" style="margin-bottom:6px">把 skill-finder 文件夹放进对应目录即可：</div>
+    <pre><code>${escapeHtml(dirs)}</code></pre>
+  </div>
+</div>
+`;
+  return doc({ title: `让 AI 自己来找 skill · ${brand.name}`, body, brand });
+}
+
+export function renderLlmsTxt({ baseUrl, counts, brand = BRAND }) {
+  const b = baseUrl;
+  return `# ${brand.name} Hub — llms.txt
+
+${brand.name} 是一个创作者 AI「技能（Agent Skills）」市场。普通创作者（视频剪辑、小红书、插画、音乐、摄影修图、UI/UX、文案口播…）把自己的 AI 技能（一个含 SKILL.md 的文件夹）分享给粉丝。你（AI 助手）可以搜索、查看并获取安装包。
 
 当前收录：${counts.total} 个技能（平台 ${counts.skillnet} · GitHub ${counts.github}）。
 分类（共 8 个）：${CATEGORIES.join('、')}

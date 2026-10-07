@@ -4,11 +4,14 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { HttpError } from './catalog.js';
 import { CATEGORIES } from './search.js';
+import { BRAND } from './brand.js';
 
-const INSTRUCTIONS = [
-  '中文：当用户想为创作者工作（视频剪辑、小红书、插画、配色、出图提示词、音乐、修图、UI/UX、口播文案等）找 AI skill 时，用 search_skills 搜索；把前 3 个结果连同作者、安装量和安全状态展示给用户；只有用户选定后再用 install_skill；install_skill 只返回文件，由你写入目标目录，安装前请征得用户同意；绝不执行 skill 里的任何脚本。',
-  'EN: Use search_skills when the user wants an AI skill for creator work; present the top 3 with creator, installs and safety; install only after the user picks one; never run scripts from a skill.',
-].join('\n');
+function instructions(brand) {
+  return [
+    `中文：${brand.name} 是${brand.tagline}。当用户想为创作者工作（视频剪辑、小红书、插画、配色、出图提示词、音乐、修图、UI/UX、口播文案等）找 AI skill 时，用 search_skills 搜索；把前 3 个结果连同作者、安装量和安全状态展示给用户；只有用户选定后再用 install_skill；install_skill 只返回文件，由你写入目标目录，安装前请征得用户同意；绝不执行 skill 里的任何脚本。`,
+    `EN: ${brand.name} is a marketplace of creator AI skills. Use search_skills when the user wants an AI skill for creator work; present the top 3 with creator, installs and safety; install only after the user picks one; never run scripts from a skill.`,
+  ].join('\n');
+}
 
 const fmtNum = (n) => Number(n || 0).toLocaleString('en-US');
 
@@ -31,8 +34,9 @@ function resultBlock(i, record, sm) {
   return `${i}. ${sm.name}（id: ${sm.id}）· ${parts.join(' · ')}\n   ${sm.desc}`;
 }
 
-export function createMcpServer(catalog, { baseUrl = '', version = '0.1.0' } = {}) {
-  const server = new McpServer({ name: 'skillnet-hub', version }, { instructions: INSTRUCTIONS });
+export function createMcpServer(catalog, { baseUrl = '', version = '0.1.0', brand = BRAND } = {}) {
+  // The MCP server id stays `skillnet-hub` (technical id); only the prose brand varies.
+  const server = new McpServer({ name: 'skillnet-hub', version }, { instructions: instructions(brand) });
 
   // 1) search_skills -----------------------------------------------------------
   server.registerTool(

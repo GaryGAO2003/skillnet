@@ -77,8 +77,9 @@ test('/s/:id.md 返回 markdown', async () => {
   assert.ok(md.startsWith('# 小红书封面标题'));
 });
 
-test('首页转义反射的 HTML 输入', async () => {
-  const h = await (await fetch(`${base}/?q=${encodeURIComponent('<script>x')}`)).text();
+test('SSR 列表页转义反射的 HTML 输入', async () => {
+  // The SSR index moved from / (now the SPA app shell) to /browse.
+  const h = await (await fetch(`${base}/browse?q=${encodeURIComponent('<script>x')}`)).text();
   assert.ok(h.includes('&lt;script&gt;x'));
   assert.ok(!h.includes('<script>x'));
 });

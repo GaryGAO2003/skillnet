@@ -66,5 +66,6 @@ test('claimed 技能带 tipUrl', () => {
   const c = loadCatalog({ dataDir, stateFile, baseUrl });
   const b = c.install('s2', { client: 'other' });
   assert.ok(b.creator.claimed);
-  assert.ok(b.creator.tipUrl && b.creator.tipUrl.endsWith('/s/s2#tip'));
+  // tip now opens the SPA tip flow (moved from the SSR #tip anchor to /#/skill/:id?tip=1)
+  assert.ok(b.creator.tipUrl && b.creator.tipUrl.endsWith('/#/skill/s2?tip=1'));
 });
