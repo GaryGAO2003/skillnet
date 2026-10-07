@@ -14,6 +14,8 @@ export function escapeHtml(s) {
 
 const fmtNum = (n) => Number(n || 0).toLocaleString('en-US');
 
+// pre.light blocks (the copyable sentence, the agent instructions) are for people
+// to read, so they wrap long URLs; dark pre blocks stay unwrapped shell commands.
 const CSS = `
 :root{
   --pink:#FF4D8D; --lemon:#E6FF4F; --sky:#5B8CFF; --mint:#2ED3A0;
@@ -32,10 +34,10 @@ const CSS = `
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans","Noto Sans SC",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 .wrap{max-width:860px;margin:0 auto;padding:0 16px 64px}
-.display{font-family:"Bricolage Grotesque","Noto Sans SC",system-ui,sans-serif;font-weight:800;letter-spacing:-.02em;line-height:1.08}
+.display{font-family:"Bricolage Grotesque","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,sans-serif;font-weight:800;letter-spacing:-.02em;line-height:1.08}
 header.top{padding:28px 0 8px}
 .brand{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px}
 .brand .dot{color:var(--pink)}
@@ -64,7 +66,7 @@ header.top{padding:28px 0 8px}
 .ex .you{font-weight:700}
 .ex .ai{color:var(--muted);white-space:pre-wrap;margin-top:4px}
 pre{background:var(--ink);color:#f7f5f2;padding:14px;border-radius:14px;overflow:auto;font-size:13px;line-height:1.5}
-pre.light{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+pre.light{background:var(--bg);color:var(--ink);border:1px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .copy{margin-left:8px;font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-weight:600}
 .sect{margin-top:26px}
@@ -75,7 +77,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .foot{margin-top:40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
 `;
 
-const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">';
+// Google Fonts is often blocked in mainland China, and a render-blocking
+// stylesheet on a dropped connection means a blank page until it times out.
+// Load it async (media=print swap) so pages paint at once with system fonts;
+// Chinese text always uses the system CJK fonts in the CSS stacks.
+const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media=\'all\'">';
 
 const COPY_JS = `<script>
 document.addEventListener('click',function(e){
@@ -105,6 +111,8 @@ ${COPY_JS}
 </body>
 </html>`;
 }
+
+const SEVERITY_ZH = { block: '拦截', review: '留意' };
 
 function safetyPill(level) {
   if (level === 'review') return '<span class="pill warn">⚠ 需要留意</span>';
@@ -199,7 +207,7 @@ export function renderSkillPage(d) {
     : `${escapeHtml(d.creator.name)}${d.creator.claimed ? ' <span class="pill ok">已认领</span>' : ''}${d.creatorFull.fans ? ` · 粉丝 ${escapeHtml(d.creatorFull.fans)}` : ''} · ${fmtNum(d.installs)} 人在用${d.rating != null ? ` · ★${escapeHtml(d.rating)}（${escapeHtml(d.ratingCount)}）` : ''}`;
 
   const examples = (d.examples || []).map((e) => `<div class="ex"><div class="you">你说：${escapeHtml(e.you)}</div><div class="ai">它回：${escapeHtml(e.ai)}</div></div>`).join('');
-  const findings = (d.safetyFindings || []).map((f) => `<li>[${escapeHtml(f.severity)}] ${escapeHtml(f.label)}${f.file ? `<span class="muted">（${escapeHtml(f.file)}${f.line ? ':' + escapeHtml(f.line) : ''}）</span>` : ''}</li>`).join('');
+  const findings = (d.safetyFindings || []).map((f) => `<li>[${escapeHtml(SEVERITY_ZH[f.severity] || f.severity)}] ${escapeHtml(f.label)}${f.file ? `<span class="muted">（${escapeHtml(f.file)}${f.line ? ':' + escapeHtml(f.line) : ''}）</span>` : ''}</li>`).join('');
   const versions = (d.versions || []).map((v) => `<li><b>${escapeHtml(v.v)}</b> <span class="muted">${escapeHtml(v.date)}</span> ${escapeHtml(v.note || '')}</li>`).join('');
 
   const tipSection = d.creator.claimed ? `
@@ -223,7 +231,7 @@ export function renderSkillPage(d) {
       ${d.verified ? '<span class="pill ok">实测可用</span>' : ''}
       ${d.source === 'github' ? '<span class="pill gh">GitHub</span>' : ''}
       ${safetyPill(d.safetyLevel)}
-      ${d.version ? `<span class="pill">v${escapeHtml(d.version)}</span>` : ''}
+      ${d.version ? `<span class="pill">${d.source === 'github' ? '提交 ' : 'v'}${escapeHtml(d.version)}</span>` : ''}
       ${d.requires ? `<span class="pill warn">需要：${escapeHtml(d.requires)}</span>` : ''}
     </div>
   </div>
@@ -292,7 +300,7 @@ export function renderSkillMarkdown(d) {
     for (const e of d.examples) { L.push('', `- 你说：${e.you}`, `  它回：${e.ai}`); }
   }
   L.push('', '## 安全检测', '', `级别：${d.safetyLevel}`);
-  for (const f of d.safetyFindings || []) L.push(`- [${f.severity}] ${f.label}${f.file ? `（${f.file}）` : ''}`);
+  for (const f of d.safetyFindings || []) L.push(`- [${SEVERITY_ZH[f.severity] || f.severity}] ${f.label}${f.file ? `（${f.file}）` : ''}`);
   if (d.versions && d.versions.length) {
     L.push('', '## 版本');
     for (const v of d.versions) L.push(`- ${v.v}（${v.date}）${v.note || ''}`);
