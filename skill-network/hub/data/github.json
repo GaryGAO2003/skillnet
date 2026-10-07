@@ -1,0 +1,3868 @@
+[
+  {
+    "id": "gh-188323a5",
+    "repo": "luoluoluo22/jianying-editor-skill",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "32c56928ded4f9e2c2b80e099dc7abb793d2c30b",
+    "branch": "main",
+    "slug": "jianying-editor",
+    "name": "剪映自动化剪辑",
+    "desc": "用自然语言让 AI 操作剪映：导入素材、加字幕配音和动效并导出草稿",
+    "descOriginal": "剪映 (JianYing) AI自动化剪辑的高级封装 API (JyWrapper)，提供开箱即用的 Python 接口，支持录屏、素材导入、字幕生成、Web 动效合成及项目导出。全面适配 MacOS (Apple Silicon/Intel) 与 Windows，支持 v5.9+ (draft_info.json) 架构、工程自修复、智能配音字幕及录屏变焦。",
+    "cat": "视频剪辑",
+    "tags": [
+      "剪映",
+      "自动剪辑",
+      "字幕",
+      "配音",
+      "vlog",
+      "草稿"
+    ],
+    "requires": "需要本机安装剪映专业版、Python 3 和 ffmpeg（另需 pip 安装若干依赖）",
+    "author": {
+      "login": "luoluoluo22",
+      "url": "https://github.com/luoluoluo22"
+    },
+    "stars": 3794,
+    "license": null,
+    "pushedAt": "2026-09-11T09:36:48Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 9968
+      },
+      {
+        "path": ".editorconfig",
+        "size": 230
+      },
+      {
+        "path": ".github/pull_request_template.md",
+        "size": 538
+      },
+      {
+        "path": ".gitignore",
+        "size": 307
+      },
+      {
+        "path": ".pre-commit-config.yaml",
+        "size": 450
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/config.json",
+        "size": 109
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/content.json",
+        "size": 283
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/effect.prefab",
+        "size": 3481
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/image/1.png",
+        "size": 23871
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/image/1.png.meta",
+        "size": 262
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/main.scene",
+        "size": 4392
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/material/effect.material",
+        "size": 440
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/material/shadow.material",
+        "size": 493
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/rt/outputTex.rt",
+        "size": 417
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/sticker.config",
+        "size": 374
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/texture/lieheng.png",
+        "size": 17914
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/texture/lieheng.png.meta",
+        "size": 262
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/xshader/depth.frag",
+        "size": 200
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/xshader/effect.frag",
+        "size": 12838
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/xshader/effect.vert",
+        "size": 956
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/xshader/effect.xshader",
+        "size": 2846
+      },
+      {
+        "path": "assets/artistEffect/7127669365423508767/ac476c738e3109c848bfe76f9df8eced/xshader/shadow.xshader",
+        "size": 2846
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/config.json",
+        "size": 109
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/content.json",
+        "size": 304
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/effect.prefab",
+        "size": 3110
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/image/红碎屑.png",
+        "size": 8666
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/image/红碎屑.png.meta",
+        "size": 262
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/main.scene",
+        "size": 4021
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/material/effect.material",
+        "size": 440
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/material/shadow.material",
+        "size": 493
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/rt/outputTex.rt",
+        "size": 417
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/sticker.config",
+        "size": 374
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/texture/122.texture",
+        "size": 325706
+      },
+      {
+        "path": "assets/artistEffect/7187739440347958589/266eb863a42498a72c5c67bb8845c24c/texture/lieheng.png",
+        "size": 17914
+      },
+      {
+        "path": "CHANGELOG.md",
+        "size": 2779
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "size": 823
+      },
+      {
+        "path": "LICENSE",
+        "size": 1551
+      },
+      {
+        "path": "README.md",
+        "size": 15866
+      },
+      {
+        "path": "SECURITY.md",
+        "size": 543
+      },
+      {
+        "path": "VERSION",
+        "size": 6
+      }
+    ],
+    "fileCount": 183,
+    "truncated": true,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "partial-scan",
+          "severity": "review",
+          "label": "文件太多（183 个），只静态检查了前 40 个",
+          "file": "",
+          "line": null,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/luoluoluo22/jianying-editor-skill/tree/32c56928ded4f9e2c2b80e099dc7abb793d2c30b",
+    "rawBase": "https://raw.githubusercontent.com/luoluoluo22/jianying-editor-skill/32c56928ded4f9e2c2b80e099dc7abb793d2c30b/",
+    "archiveUrl": "https://codeload.github.com/luoluoluo22/jianying-editor-skill/zip/32c56928ded4f9e2c2b80e099dc7abb793d2c30b",
+    "archiveRoot": "jianying-editor-skill-32c56928ded4f9e2c2b80e099dc7abb793d2c30b"
+  },
+  {
+    "id": "gh-bc5af3ad",
+    "repo": "zenstory-ai/drama-skills",
+    "path": "skills/short-drama-storyboard/SKILL.md",
+    "dir": "skills/short-drama-storyboard",
+    "ref": "c2426e03c0e7722bebcc6a488b6658dc38c65ac3",
+    "branch": "main",
+    "slug": "short-drama-storyboard",
+    "name": "短剧分镜与关键帧",
+    "desc": "把短剧剧本拆成有镜头职责的分镜表，并为每镜写冻结关键帧提示词",
+    "descOriginal": "把中文短剧剧本和视觉设定写成有戏剧职责、连续性边界与冻结关键帧提示词的分镜 Markdown。用户提出“拆分镜/设计镜头/做镜头表”“场次视觉计划/调度故事板”“比较导演方案”“写首帧/关键帧提示词”或检查轴线、站位、视线、持物连续性时使用；不生成媒体。",
+    "cat": "视频剪辑",
+    "tags": [
+      "短剧",
+      "漫剧",
+      "分镜",
+      "关键帧",
+      "镜头表",
+      "AI视频"
+    ],
+    "requires": null,
+    "author": {
+      "login": "zenstory-ai",
+      "url": "https://github.com/zenstory-ai"
+    },
+    "stars": 2578,
+    "license": "MIT",
+    "pushedAt": "2026-10-03T08:56:29Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 19365
+      },
+      {
+        "path": "agents/openai.yaml",
+        "size": 273
+      },
+      {
+        "path": "assets/coverage-audition.example.jsonl",
+        "size": 1985
+      },
+      {
+        "path": "assets/coverage-template.json",
+        "size": 1195
+      },
+      {
+        "path": "assets/keyframe-prompts.md",
+        "size": 1840
+      },
+      {
+        "path": "assets/keyframe-template.jsonl",
+        "size": 2401
+      },
+      {
+        "path": "assets/revision-lineage.fragment.json",
+        "size": 277
+      },
+      {
+        "path": "assets/scene-visual-plan.example.jsonl",
+        "size": 2837
+      },
+      {
+        "path": "assets/shot-template.jsonl",
+        "size": 3590
+      },
+      {
+        "path": "references/blocking-playbooks.md",
+        "size": 12676
+      },
+      {
+        "path": "references/comic-keyframe-lexicon.md",
+        "size": 11301
+      },
+      {
+        "path": "references/coverage-audition.md",
+        "size": 2128
+      },
+      {
+        "path": "references/keyframe-craft.md",
+        "size": 10255
+      },
+      {
+        "path": "references/lighting-craft.md",
+        "size": 2118
+      },
+      {
+        "path": "references/production-shot-grammar.md",
+        "size": 21788
+      },
+      {
+        "path": "references/review-and-fixtures.md",
+        "size": 3326
+      },
+      {
+        "path": "references/scene-visual-plan.md",
+        "size": 1826
+      },
+      {
+        "path": "references/screenplay-to-keyframe-example.md",
+        "size": 7882
+      },
+      {
+        "path": "references/shot-craft.md",
+        "size": 22545
+      },
+      {
+        "path": "references/shot-revision-identity.md",
+        "size": 1732
+      },
+      {
+        "path": "references/stage-contract.md",
+        "size": 12575
+      },
+      {
+        "path": "scripts/selftest.py",
+        "size": 6933
+      },
+      {
+        "path": "scripts/storyboard_check.py",
+        "size": 31133
+      }
+    ],
+    "fileCount": 23,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/selftest.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/storyboard_check.py",
+          "line": 1,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/zenstory-ai/drama-skills/tree/c2426e03c0e7722bebcc6a488b6658dc38c65ac3/skills/short-drama-storyboard",
+    "rawBase": "https://raw.githubusercontent.com/zenstory-ai/drama-skills/c2426e03c0e7722bebcc6a488b6658dc38c65ac3/skills/short-drama-storyboard/",
+    "archiveUrl": "https://codeload.github.com/zenstory-ai/drama-skills/zip/c2426e03c0e7722bebcc6a488b6658dc38c65ac3",
+    "archiveRoot": "drama-skills-c2426e03c0e7722bebcc6a488b6658dc38c65ac3/skills/short-drama-storyboard"
+  },
+  {
+    "id": "gh-753a4fd2",
+    "repo": "louisedesadeleer/clipify",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "5f6b75e6c0bfdce3cc9c78b850a67e23d65d9783",
+    "branch": "main",
+    "slug": "clipify",
+    "name": "长视频切短视频",
+    "desc": "自动找出笑点和高光片段剪成短视频，可转竖屏并烧录逐字字幕",
+    "descOriginal": "Find compelling moments in a video — funny dialogue OR repeated impact actions like axe chops, hits, throws, drumbeats — cut them as standalone clips, optionally reformat 16:9 ↔ 9:16, time-warp pans for tighter reveals, and burn opus-style word-by-word captions. Use when the user mentions \"clipify,\" \"cut clips from this video,\" \"make shorts from this,\" \"find funny moments,\" \"action montage,\" \"cut on each chop/hit/punch,\" \"reframe to 9:16,\" \"vertical clips,\" or pastes a video file path and wants social-ready cuts.",
+    "cat": "视频剪辑",
+    "tags": [
+      "长视频切片",
+      "短视频",
+      "逐字字幕",
+      "竖屏",
+      "播客",
+      "clip"
+    ],
+    "requires": "需要本机安装 ffmpeg 和 Whisper（本地运行，无需云 API）",
+    "author": {
+      "login": "louisedesadeleer",
+      "url": "https://github.com/louisedesadeleer"
+    },
+    "stars": 587,
+    "license": "MIT",
+    "pushedAt": "2026-08-24T16:24:43Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 14452
+      },
+      {
+        "path": ".gitignore",
+        "size": 67
+      },
+      {
+        "path": "assets/preview.png",
+        "size": 280420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1075
+      },
+      {
+        "path": "README.md",
+        "size": 3292
+      },
+      {
+        "path": "scripts/analyze.py",
+        "size": 2236
+      },
+      {
+        "path": "scripts/audio_align.py",
+        "size": 951
+      },
+      {
+        "path": "scripts/build_ass.py",
+        "size": 2699
+      },
+      {
+        "path": "scripts/build_pan.py",
+        "size": 524
+      },
+      {
+        "path": "scripts/detect_transients.py",
+        "size": 3781
+      }
+    ],
+    "fileCount": 10,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/analyze.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/audio_align.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/build_ass.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/build_pan.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/detect_transients.py",
+          "line": 1,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/louisedesadeleer/clipify/tree/5f6b75e6c0bfdce3cc9c78b850a67e23d65d9783",
+    "rawBase": "https://raw.githubusercontent.com/louisedesadeleer/clipify/5f6b75e6c0bfdce3cc9c78b850a67e23d65d9783/",
+    "archiveUrl": "https://codeload.github.com/louisedesadeleer/clipify/zip/5f6b75e6c0bfdce3cc9c78b850a67e23d65d9783",
+    "archiveRoot": "clipify-5f6b75e6c0bfdce3cc9c78b850a67e23d65d9783"
+  },
+  {
+    "id": "gh-fd69f25b",
+    "repo": "lcbuaaliu/ai-jian-koubo",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "e223b91ed82446182e52dc2806ee69d8bcab0485",
+    "branch": "main",
+    "slug": "ai-jian-koubo",
+    "name": "AI 剪口播",
+    "desc": "自动转录口播视频、识别口误和语气词，网页确认后导出可进剪映的工程",
+    "descOriginal": "口播视频转录和口误识别。生成审查稿和删除任务清单。触发词：剪口播、处理视频、识别口误",
+    "cat": "视频剪辑",
+    "tags": [
+      "剪口播",
+      "口误识别",
+      "字幕",
+      "剪映",
+      "口播视频",
+      "FCPXML"
+    ],
+    "requires": "需要火山引擎语音识别 API Key，并需本机安装 ffmpeg、Node.js 和 Python 3",
+    "author": {
+      "login": "lcbuaaliu",
+      "url": "https://github.com/lcbuaaliu"
+    },
+    "stars": 493,
+    "license": "AGPL-3.0",
+    "pushedAt": "2026-06-24T05:29:31Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 16974
+      },
+      {
+        "path": ".env.example",
+        "size": 815
+      },
+      {
+        "path": ".gitignore",
+        "size": 494
+      },
+      {
+        "path": "用户习惯/断行prompt.md",
+        "size": 1172
+      },
+      {
+        "path": "用户习惯/规则.md",
+        "size": 4048
+      },
+      {
+        "path": "用户习惯/经验规则.md",
+        "size": 1532
+      },
+      {
+        "path": "用户习惯/纠错prompt.md",
+        "size": 1462
+      },
+      {
+        "path": "assets/review-ui.png",
+        "size": 1410108
+      },
+      {
+        "path": "assets/volc-1-overview.png",
+        "size": 641083
+      },
+      {
+        "path": "assets/volc-2-enable.png",
+        "size": 449679
+      },
+      {
+        "path": "assets/volc-3-standard.png",
+        "size": 224167
+      },
+      {
+        "path": "assets/volc-4-flash.png",
+        "size": 247180
+      },
+      {
+        "path": "assets/volc-5-apikey.png",
+        "size": 382488
+      },
+      {
+        "path": "LICENSE",
+        "size": 34523
+      },
+      {
+        "path": "README.md",
+        "size": 5862
+      },
+      {
+        "path": "scripts/auto_filler.js",
+        "size": 4678
+      },
+      {
+        "path": "scripts/doctor.js",
+        "size": 11434
+      },
+      {
+        "path": "scripts/extract_text.js",
+        "size": 1009
+      },
+      {
+        "path": "scripts/gen_analysis.js",
+        "size": 1733
+      },
+      {
+        "path": "scripts/gen_word_detail.js",
+        "size": 1165
+      },
+      {
+        "path": "scripts/generate_review.js",
+        "size": 8123
+      },
+      {
+        "path": "scripts/generate_subtitles.js",
+        "size": 3581
+      },
+      {
+        "path": "scripts/lib/build_request.py",
+        "size": 1354
+      },
+      {
+        "path": "scripts/lib/compute_keeps.js",
+        "size": 6353
+      },
+      {
+        "path": "scripts/lib/fcpxml.js",
+        "size": 5212
+      },
+      {
+        "path": "scripts/lib/load_api_key.sh",
+        "size": 1201
+      },
+      {
+        "path": "scripts/lib/refine_boundaries.js",
+        "size": 5954
+      },
+      {
+        "path": "scripts/lib/volc_common.sh",
+        "size": 1569
+      },
+      {
+        "path": "scripts/merge_selections.js",
+        "size": 1855
+      },
+      {
+        "path": "scripts/review_server.js",
+        "size": 11883
+      },
+      {
+        "path": "scripts/run_transcribe.sh",
+        "size": 3933
+      },
+      {
+        "path": "scripts/serve_review.sh",
+        "size": 4595
+      },
+      {
+        "path": "scripts/templates/review.html",
+        "size": 76921
+      },
+      {
+        "path": "scripts/volcengine_flash_transcribe.sh",
+        "size": 3264
+      },
+      {
+        "path": "scripts/volcengine_v3_transcribe.sh",
+        "size": 4372
+      }
+    ],
+    "fileCount": 35,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "SKILL.md",
+          "line": 69,
+          "excerpt": "> API Key 的查找顺序见 [scripts/lib/load_api_key.sh](scripts/lib/load_api_key.sh)："
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": ".env.example",
+          "line": 2,
+          "excerpt": "# 也可以不建文件，直接 export VOLCENGINE_API_KEY=...（任何 agent / 安装位置都认）。"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "README.md",
+          "line": 54,
+          "excerpt": "![复制 API Key](assets/volc-5-apikey.png)"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/auto_filler.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/doctor.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "network-in-script",
+          "severity": "review",
+          "label": "脚本中包含网络请求",
+          "file": "scripts/doctor.js",
+          "line": 103,
+          "excerpt": "name: 'curl', ok: () => probe('curl', '--version'),"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/doctor.js",
+          "line": 122,
+          "excerpt": "const PLACEHOLDERS = ['your_api_key_here', 'your-api-key', 'xxx', '<your_api_key>', ''];"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/extract_text.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/gen_analysis.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/gen_word_detail.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/generate_review.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/generate_subtitles.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/lib/build_request.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/lib/compute_keeps.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/lib/fcpxml.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/lib/load_api_key.sh",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/lib/load_api_key.sh",
+          "line": 1,
+          "excerpt": "# 解析 VOLCENGINE_API_KEY —— 与具体 agent / 安装位置无关。"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/lib/refine_boundaries.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/lib/volc_common.sh",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/lib/volc_common.sh",
+          "line": 5,
+          "excerpt": "# 调用前需先 source load_api_key.sh，并设置 SCRIPT_DIR=本脚本所在目录（scripts/）。"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/merge_selections.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/review_server.js",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/run_transcribe.sh",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "network-in-script",
+          "severity": "review",
+          "label": "脚本中包含网络请求",
+          "file": "scripts/run_transcribe.sh",
+          "line": 44,
+          "excerpt": "for cmd in ffmpeg node python3 curl; do"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/serve_review.sh",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "network-in-script",
+          "severity": "review",
+          "label": "脚本中包含网络请求",
+          "file": "scripts/serve_review.sh",
+          "line": 86,
+          "excerpt": "if curl -sS \"$URL/\" -o /dev/null 2>&1; then READY=1; break; fi"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/volcengine_flash_transcribe.sh",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "network-in-script",
+          "severity": "review",
+          "label": "脚本中包含网络请求",
+          "file": "scripts/volcengine_flash_transcribe.sh",
+          "line": 56,
+          "excerpt": "HTTP_CODE=$(curl -s -o \"$OUT_DIR/volcengine_v3_result.json\" -D \"$HDR\" -w \"%{http_code}\" \\"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/volcengine_flash_transcribe.sh",
+          "line": 13,
+          "excerpt": "# - 单 X-Api-Key 认证（新版控制台），与标准版共用同一个 VOLCENGINE_API_KEY"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/volcengine_v3_transcribe.sh",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "network-in-script",
+          "severity": "review",
+          "label": "脚本中包含网络请求",
+          "file": "scripts/volcengine_v3_transcribe.sh",
+          "line": 53,
+          "excerpt": "HTTP_CODE=$(curl -s -L -D \"$SUB_HDR\" -o \"$SUB_BODY\" -w \"%{http_code}\" \\"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/volcengine_v3_transcribe.sh",
+          "line": 30,
+          "excerpt": ". \"$SCRIPT_DIR/lib/load_api_key.sh\""
+        }
+      ]
+    },
+    "url": "https://github.com/lcbuaaliu/ai-jian-koubo/tree/e223b91ed82446182e52dc2806ee69d8bcab0485",
+    "rawBase": "https://raw.githubusercontent.com/lcbuaaliu/ai-jian-koubo/e223b91ed82446182e52dc2806ee69d8bcab0485/",
+    "archiveUrl": "https://codeload.github.com/lcbuaaliu/ai-jian-koubo/zip/e223b91ed82446182e52dc2806ee69d8bcab0485",
+    "archiveRoot": "ai-jian-koubo-e223b91ed82446182e52dc2806ee69d8bcab0485"
+  },
+  {
+    "id": "gh-c8ce3619",
+    "repo": "xianyu110/ecommerce-video-skills",
+    "path": "skills/live-stream-clips/SKILL.md",
+    "dir": "skills/live-stream-clips",
+    "ref": "96c49b349b7d975bda8f05ce6669c1d33500c269",
+    "branch": "main",
+    "slug": "live-stream-clips",
+    "name": "直播切片",
+    "desc": "从直播录屏找高光，批量导出竖屏切片并自动加字幕、标题和开头钩子",
+    "descOriginal": "直播切片：从电商直播录屏中找出高光片段（按时间戳 / 按字幕关键词 / 按停顿自动提议），批量导出 9:16 竖屏切片，自动模糊填充横屏画面、烧录标题与字幕、响度标准化，并给切片写标题与开头钩子。Use when the user has a livestream recording and wants 直播切片, 切片, highlights, clips, 高光片段, repurpose a live stream into short videos for 抖音 / 视频号 / TikTok.",
+    "cat": "视频剪辑",
+    "tags": [
+      "直播切片",
+      "高光",
+      "竖屏",
+      "字幕",
+      "带货",
+      "ffmpeg"
+    ],
+    "requires": "需要本机安装 ffmpeg 和 Python 3",
+    "author": {
+      "login": "xianyu110",
+      "url": "https://github.com/xianyu110"
+    },
+    "stars": 38,
+    "license": "MIT",
+    "pushedAt": "2026-10-05T14:13:51Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 3851
+      },
+      {
+        "path": "scripts/live_clip.py",
+        "size": 5544
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/live_clip.py",
+          "line": 1,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/xianyu110/ecommerce-video-skills/tree/96c49b349b7d975bda8f05ce6669c1d33500c269/skills/live-stream-clips",
+    "rawBase": "https://raw.githubusercontent.com/xianyu110/ecommerce-video-skills/96c49b349b7d975bda8f05ce6669c1d33500c269/skills/live-stream-clips/",
+    "archiveUrl": "https://codeload.github.com/xianyu110/ecommerce-video-skills/zip/96c49b349b7d975bda8f05ce6669c1d33500c269",
+    "archiveRoot": "ecommerce-video-skills-96c49b349b7d975bda8f05ce6669c1d33500c269/skills/live-stream-clips"
+  },
+  {
+    "id": "gh-97fa58a1",
+    "repo": "ZJU-REAL/Easel",
+    "path": "skills/openclaw/skill-trend-rider/SKILL.md",
+    "dir": "skills/openclaw/skill-trend-rider",
+    "ref": "fb80ae6dd6fc26f5553efcb293ee6d93ef253f02",
+    "branch": "main",
+    "slug": "skill-trend-rider",
+    "name": "蹭热点内容方案",
+    "desc": "输入热点事件，结合账号定位给出切入角度、内容形式、标题和风险提醒",
+    "descOriginal": "给定一个热点事件或话题，结合创作者账号定位，输出蹭热点的具体内容方案。 包含切入角度、内容形式、标题建议、风险提醒。 当用户说\"这个热点怎么蹭\"、\"蹭热点\"、\"怎么结合\"、\"热点和我有关吗\"、 \"追热点\"、\"热点方案\"、\"借势\"、\"怎么追这个热点\"、\"热点怎么切\"时触发。 和 skill-trending-topics 的区别：trending-topics 发现和筛选热点， trend-rider 拿到一个具体热点后规划怎么蹭、怎么切内容。",
+    "cat": "短视频运营",
+    "tags": [
+      "蹭热点",
+      "热点",
+      "选题",
+      "标题",
+      "账号定位",
+      "小红书"
+    ],
+    "requires": null,
+    "author": {
+      "login": "ZJU-REAL",
+      "url": "https://github.com/ZJU-REAL"
+    },
+    "stars": 3201,
+    "license": "Apache-2.0",
+    "pushedAt": "2026-10-07T08:53:39Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 6478
+      },
+      {
+        "path": "EASEL-META.md",
+        "size": 596
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02/skills/openclaw/skill-trend-rider",
+    "rawBase": "https://raw.githubusercontent.com/ZJU-REAL/Easel/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02/skills/openclaw/skill-trend-rider/",
+    "archiveUrl": "https://codeload.github.com/ZJU-REAL/Easel/zip/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02",
+    "archiveRoot": "Easel-fb80ae6dd6fc26f5553efcb293ee6d93ef253f02/skills/openclaw/skill-trend-rider"
+  },
+  {
+    "id": "gh-f98d3c40",
+    "repo": "ZJU-REAL/Easel",
+    "path": "skills/openclaw/skill-livestream/SKILL.md",
+    "dir": "skills/openclaw/skill-livestream",
+    "ref": "fb80ae6dd6fc26f5553efcb293ee6d93ef253f02",
+    "branch": "main",
+    "slug": "skill-livestream",
+    "name": "直播策划与话术",
+    "desc": "生成直播主题、流程时间表，以及开场、过渡、催单、感谢等完整话术",
+    "descOriginal": "为直播生成完整方案：直播主题、流程时间表、开场白/过渡语/催单话术/感谢话术/互动话术。 适用于带货直播、知识分享直播、娱乐直播。 当用户说\"直播策划\"、\"直播方案\"、\"直播话术\"、\"开播前准备\"、\"直播流程\"、 \"直播脚本\"、\"带货直播\"、\"怎么开播\"、\"直播怎么做\"、\"直播排期\"、\"写个直播话术\"时触发。",
+    "cat": "短视频运营",
+    "tags": [
+      "直播",
+      "话术",
+      "带货直播",
+      "开场白",
+      "催单",
+      "直播脚本"
+    ],
+    "requires": null,
+    "author": {
+      "login": "ZJU-REAL",
+      "url": "https://github.com/ZJU-REAL"
+    },
+    "stars": 3201,
+    "license": "Apache-2.0",
+    "pushedAt": "2026-10-07T08:53:39Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 4047
+      },
+      {
+        "path": "EASEL-META.md",
+        "size": 705
+      },
+      {
+        "path": "references/livestream-playbook.md",
+        "size": 3488
+      },
+      {
+        "path": "references/output-template.md",
+        "size": 1495
+      }
+    ],
+    "fileCount": 4,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/ZJU-REAL/Easel/tree/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02/skills/openclaw/skill-livestream",
+    "rawBase": "https://raw.githubusercontent.com/ZJU-REAL/Easel/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02/skills/openclaw/skill-livestream/",
+    "archiveUrl": "https://codeload.github.com/ZJU-REAL/Easel/zip/fb80ae6dd6fc26f5553efcb293ee6d93ef253f02",
+    "archiveRoot": "Easel-fb80ae6dd6fc26f5553efcb293ee6d93ef253f02/skills/openclaw/skill-livestream"
+  },
+  {
+    "id": "gh-e73c6c56",
+    "repo": "alchaincyf/huashu-skills",
+    "path": "huashu-video-check/SKILL.md",
+    "dir": "huashu-video-check",
+    "ref": "2efea35738efa06abbfa9acaee923fcef0732a14",
+    "branch": "master",
+    "slug": "huashu-video-check",
+    "name": "视频封标钩子检查",
+    "desc": "参照 MrBeast 方法检查视频标题、封面和开头钩子，提升点击率与完播",
+    "descOriginal": "基于MrBeast策略检查视频标题、封面和开头钩子。当用户提到\"视频标题\"、\"封面图\"、\"点击率\"、\"CTR\"、\"观看时长\"时使用。",
+    "cat": "短视频运营",
+    "tags": [
+      "标题",
+      "封面",
+      "点击率",
+      "开头钩子",
+      "完播率",
+      "MrBeast"
+    ],
+    "requires": null,
+    "author": {
+      "login": "alchaincyf",
+      "url": "https://github.com/alchaincyf"
+    },
+    "stars": 1672,
+    "license": "MIT",
+    "pushedAt": "2026-09-22T15:52:24Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 11791
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/alchaincyf/huashu-skills/tree/2efea35738efa06abbfa9acaee923fcef0732a14/huashu-video-check",
+    "rawBase": "https://raw.githubusercontent.com/alchaincyf/huashu-skills/2efea35738efa06abbfa9acaee923fcef0732a14/huashu-video-check/",
+    "archiveUrl": "https://codeload.github.com/alchaincyf/huashu-skills/zip/2efea35738efa06abbfa9acaee923fcef0732a14",
+    "archiveRoot": "huashu-skills-2efea35738efa06abbfa9acaee923fcef0732a14/huashu-video-check"
+  },
+  {
+    "id": "gh-245d9141",
+    "repo": "liuxingqitd/content-risk-detector",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "f4eab1e77f806c7901503c06a3fc721d0924e6e6",
+    "branch": "main",
+    "slug": "content-risk-detector",
+    "name": "短视频合规检测",
+    "desc": "检查逐字稿是否违反抖音、小红书、视频号规范，给出分级风险与改法",
+    "descOriginal": "检测短视频逐字稿是否违反抖音、小红书、视频号的社区规范,识别违规风险点,提供分级风险报告和具体修改建议。触发词: \"内容合规检测\"、\"逐字稿检测\"、\"风险检测\"、\"短视频合规\"、\"平台规范检测\"",
+    "cat": "短视频运营",
+    "tags": [
+      "合规",
+      "违规检测",
+      "限流",
+      "逐字稿",
+      "抖音",
+      "视频号"
+    ],
+    "requires": null,
+    "author": {
+      "login": "liuxingqitd",
+      "url": "https://github.com/liuxingqitd"
+    },
+    "stars": 51,
+    "license": "MIT",
+    "pushedAt": "2026-09-14T04:14:44Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 4114
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/bug_report.md",
+        "size": 450
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/config.yml",
+        "size": 211
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+        "size": 486
+      },
+      {
+        "path": ".github/PULL_REQUEST_TEMPLATE.md",
+        "size": 343
+      },
+      {
+        "path": "CODE_OF_CONDUCT.md",
+        "size": 801
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "size": 1212
+      },
+      {
+        "path": "LICENSE",
+        "size": 1067
+      },
+      {
+        "path": "README.md",
+        "size": 4096
+      },
+      {
+        "path": "references/common-rules.md",
+        "size": 9213
+      },
+      {
+        "path": "references/douyin-specific.md",
+        "size": 5018
+      },
+      {
+        "path": "references/shipinhao-specific.md",
+        "size": 2294
+      },
+      {
+        "path": "references/xiaohongshu-specific.md",
+        "size": 3532
+      }
+    ],
+    "fileCount": 13,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/liuxingqitd/content-risk-detector/tree/f4eab1e77f806c7901503c06a3fc721d0924e6e6",
+    "rawBase": "https://raw.githubusercontent.com/liuxingqitd/content-risk-detector/f4eab1e77f806c7901503c06a3fc721d0924e6e6/",
+    "archiveUrl": "https://codeload.github.com/liuxingqitd/content-risk-detector/zip/f4eab1e77f806c7901503c06a3fc721d0924e6e6",
+    "archiveRoot": "content-risk-detector-f4eab1e77f806c7901503c06a3fc721d0924e6e6"
+  },
+  {
+    "id": "gh-9a1bcade",
+    "repo": "xianyu110/ecommerce-video-skills",
+    "path": "skills/hook-3s-script/SKILL.md",
+    "dir": "skills/hook-3s-script",
+    "ref": "96c49b349b7d975bda8f05ce6669c1d33500c269",
+    "branch": "main",
+    "slug": "hook-3s-script",
+    "name": "黄金3秒钩子脚本",
+    "desc": "为带货短视频一次写出多版前3秒开场（台词+画面+花字）并做合规自检",
+    "descOriginal": "3 秒钩子脚本：为电商短视频写前 3 秒开场（台词 + 画面 + 花字），按痛点/反差/结果先行/提问/数字/场景代入等钩子类型一次给出多版，并做合规自检。Use when the user asks for a hook, 开头, 黄金 3 秒, 前三秒, opening line, scroll-stopper, 完播率, or wants to rewrite a weak opening for 抖音 / TikTok Shop / 视频号 / Reels.",
+    "cat": "短视频运营",
+    "tags": [
+      "黄金3秒",
+      "钩子",
+      "带货",
+      "短视频脚本",
+      "花字",
+      "开场"
+    ],
+    "requires": null,
+    "author": {
+      "login": "xianyu110",
+      "url": "https://github.com/xianyu110"
+    },
+    "stars": 38,
+    "license": "MIT",
+    "pushedAt": "2026-10-05T14:13:51Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 6078
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/xianyu110/ecommerce-video-skills/tree/96c49b349b7d975bda8f05ce6669c1d33500c269/skills/hook-3s-script",
+    "rawBase": "https://raw.githubusercontent.com/xianyu110/ecommerce-video-skills/96c49b349b7d975bda8f05ce6669c1d33500c269/skills/hook-3s-script/",
+    "archiveUrl": "https://codeload.github.com/xianyu110/ecommerce-video-skills/zip/96c49b349b7d975bda8f05ce6669c1d33500c269",
+    "archiveRoot": "ecommerce-video-skills-96c49b349b7d975bda8f05ce6669c1d33500c269/skills/hook-3s-script"
+  },
+  {
+    "id": "gh-0b9cc62f",
+    "repo": "JimLiu/baoyu-skills",
+    "path": "skills/baoyu-xhs-images/SKILL.md",
+    "dir": "skills/baoyu-xhs-images",
+    "ref": "1567581c26ec29f4216c6e6835415bf30343b0e3",
+    "branch": "main",
+    "slug": "baoyu-xhs-images",
+    "name": "小红书图文卡片",
+    "desc": "把内容拆成1-10张卡通风信息图卡片，含12种风格、8种版式、3套配色",
+    "descOriginal": "Generates infographic image card series with 12 visual styles, 8 layouts, and 3 color palettes. Breaks content into 1-10 cartoon-style image cards optimized for social media engagement. Use when user mentions \"小红书图片\", \"小红书种草\", \"小绿书\", \"微信图文\", \"微信贴图\", \"image cards\", \"图片卡片\", baoyu-xhs-images, or wants social media infographic series.",
+    "cat": "小红书",
+    "tags": [
+      "小红书",
+      "图文卡片",
+      "信息图",
+      "配图",
+      "轮播",
+      "宝玉"
+    ],
+    "requires": "需要图像生成能力（Codex 内置生图，或 OpenAI / Google / 即梦等 API Key）",
+    "author": {
+      "login": "JimLiu",
+      "url": "https://github.com/JimLiu"
+    },
+    "stars": 26395,
+    "license": "MIT",
+    "pushedAt": "2026-09-10T15:13:43Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 29570
+      },
+      {
+        "path": "references/codex-imagegen.md",
+        "size": 3717
+      },
+      {
+        "path": "references/config/first-time-setup.md",
+        "size": 3456
+      },
+      {
+        "path": "references/config/preferences-schema.md",
+        "size": 4017
+      },
+      {
+        "path": "references/config/watermark-guide.md",
+        "size": 1977
+      },
+      {
+        "path": "references/confirmation.md",
+        "size": 3929
+      },
+      {
+        "path": "references/elements/canvas.md",
+        "size": 3727
+      },
+      {
+        "path": "references/elements/decorations.md",
+        "size": 5049
+      },
+      {
+        "path": "references/elements/image-effects.md",
+        "size": 2990
+      },
+      {
+        "path": "references/elements/typography.md",
+        "size": 3258
+      },
+      {
+        "path": "references/palettes/macaron.md",
+        "size": 1437
+      },
+      {
+        "path": "references/palettes/neon.md",
+        "size": 1271
+      },
+      {
+        "path": "references/palettes/warm.md",
+        "size": 1225
+      },
+      {
+        "path": "references/presets/bold.md",
+        "size": 1577
+      },
+      {
+        "path": "references/presets/chalkboard.md",
+        "size": 2324
+      },
+      {
+        "path": "references/presets/cute.md",
+        "size": 1565
+      },
+      {
+        "path": "references/presets/fresh.md",
+        "size": 1496
+      },
+      {
+        "path": "references/presets/minimal.md",
+        "size": 1418
+      },
+      {
+        "path": "references/presets/notion.md",
+        "size": 1591
+      },
+      {
+        "path": "references/presets/pop.md",
+        "size": 1528
+      },
+      {
+        "path": "references/presets/retro.md",
+        "size": 1483
+      },
+      {
+        "path": "references/presets/screen-print.md",
+        "size": 2680
+      },
+      {
+        "path": "references/presets/sketch-notes.md",
+        "size": 3216
+      },
+      {
+        "path": "references/presets/study-notes.md",
+        "size": 2977
+      },
+      {
+        "path": "references/presets/warm.md",
+        "size": 1476
+      },
+      {
+        "path": "references/style-presets.md",
+        "size": 1899
+      },
+      {
+        "path": "references/workflows/analysis-framework.md",
+        "size": 7235
+      },
+      {
+        "path": "references/workflows/outline-template.md",
+        "size": 6101
+      },
+      {
+        "path": "references/workflows/prompt-assembly.md",
+        "size": 10328
+      }
+    ],
+    "fileCount": 29,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "references/codex-imagegen.md",
+          "line": 48,
+          "excerpt": "- **Authentication**: the wrapper uses the user's Codex subscription — no `OPENAI_API_KEY` is read or sent."
+        }
+      ]
+    },
+    "url": "https://github.com/JimLiu/baoyu-skills/tree/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-xhs-images",
+    "rawBase": "https://raw.githubusercontent.com/JimLiu/baoyu-skills/1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-xhs-images/",
+    "archiveUrl": "https://codeload.github.com/JimLiu/baoyu-skills/zip/1567581c26ec29f4216c6e6835415bf30343b0e3",
+    "archiveRoot": "baoyu-skills-1567581c26ec29f4216c6e6835415bf30343b0e3/skills/baoyu-xhs-images"
+  },
+  {
+    "id": "gh-b830d564",
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "xhs-Skills/space-xhs-title/SKILL.md",
+    "dir": "xhs-Skills/space-xhs-title",
+    "ref": "edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "branch": "main",
+    "slug": "space-xhs-title",
+    "name": "小红书爆款标题",
+    "desc": "按15种标题方法批量出候选并评分，标合规风险，给 A/B 测试建议",
+    "descOriginal": "小红书爆款标题生成器。输入一个主题、一篇笔记草稿，或一条现成标题，先建内容简报，再按小红书特有的 15 种标题方法批量产出候选，逐条评分（含搜索词覆盖、人群指向性、收藏动机）、标合规风险、按用途分角色推荐，并给 A/B 测试建议。当用户说\"小红书标题\"\"起个笔记标题\"\"帮我想小红书爆款标题\"\"这条笔记叫什么好\"\"标题优化/改写\"\"标题没人点\"\"怎么让人搜到我\"\"标题评分\"时触发。区别于公众号标题：更短、更口语、强搜索、强人群标签、emoji 标配。",
+    "cat": "小红书",
+    "tags": [
+      "小红书",
+      "标题",
+      "爆款标题",
+      "A/B测试",
+      "搜索词",
+      "种草"
+    ],
+    "requires": null,
+    "author": {
+      "login": "SpaceZephyr",
+      "url": "https://github.com/SpaceZephyr"
+    },
+    "stars": 1585,
+    "license": null,
+    "pushedAt": "2026-08-26T08:49:06Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 23763
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/SpaceZephyr/creator-buddy/tree/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-title",
+    "rawBase": "https://raw.githubusercontent.com/SpaceZephyr/creator-buddy/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-title/",
+    "archiveUrl": "https://codeload.github.com/SpaceZephyr/creator-buddy/zip/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "archiveRoot": "creator-buddy-edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-title"
+  },
+  {
+    "id": "gh-ba29bfd3",
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "xhs-Skills/space-xhs-writer/SKILL.md",
+    "dir": "xhs-Skills/space-xhs-writer",
+    "ref": "edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "branch": "main",
+    "slug": "space-xhs-writer",
+    "name": "小红书笔记写作",
+    "desc": "按7种笔记类型写出可直接发布的正文：开头、骨架、互动结尾、标签",
+    "descOriginal": "小红书笔记正文撰写。输入主题/产品/经历/素材，产出可直接发布的小红书正文（含开头 3 行、分段骨架、结尾互动、标签组合、合规自检）。覆盖种草测评、干货教程、个人故事、合集清单、避雷拔草、好物分享、经验复盘 7 种笔记类型。当用户说\"写小红书\"\"小红书文案\"\"发笔记\"\"笔记正文\"\"种草文\"\"种草笔记\"\"避雷帖\"\"干货笔记\"\"帮我写篇小红书\"\"这个怎么发小红书\"\"小红书怎么写\"\"笔记体检\"\"改成小红书风格\"时触发。标题批量生成交给 space-xhs-title，封面/配图交给 xhs-html。",
+    "cat": "小红书",
+    "tags": [
+      "小红书",
+      "笔记",
+      "种草",
+      "文案",
+      "标签",
+      "测评"
+    ],
+    "requires": null,
+    "author": {
+      "login": "SpaceZephyr",
+      "url": "https://github.com/SpaceZephyr"
+    },
+    "stars": 1585,
+    "license": null,
+    "pushedAt": "2026-08-26T08:49:06Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 33974
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/SpaceZephyr/creator-buddy/tree/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-writer",
+    "rawBase": "https://raw.githubusercontent.com/SpaceZephyr/creator-buddy/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-writer/",
+    "archiveUrl": "https://codeload.github.com/SpaceZephyr/creator-buddy/zip/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "archiveRoot": "creator-buddy-edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-writer"
+  },
+  {
+    "id": "gh-d81c7db1",
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "xhs-Skills/space-xhs-positioning/SKILL.md",
+    "dir": "xhs-Skills/space-xhs-positioning",
+    "ref": "edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "branch": "main",
+    "slug": "space-xhs-positioning",
+    "name": "小红书起号定位",
+    "desc": "引导式对话定下赛道、定位句、人设三件套，并给前20篇选题和冷启动路径",
+    "descOriginal": "小红书起号定位顾问。用引导式对话帮真人创作者定下\"做什么方向、给谁看、靠什么活下去\"，产出赛道选择、定位句、人设三件套（账号名/简介/视觉）、内容支柱与前 20 篇选题、冷启动路径。当用户说\"想做小红书但不知道做什么\"\"帮我定位\"\"起号\"\"小红书发什么方向\"\"账号定位\"\"不知道发什么\"\"从零开始做小红书\"\"我适合做什么赛道\"\"小红书怎么起步\"\"重新定位一下账号\"时触发。也适用于用户只丢来一句自我介绍（职业/爱好/资源）并问\"我能做小红书吗\"。不做批量起号、矩阵养号、虚假人设。",
+    "cat": "小红书",
+    "tags": [
+      "小红书",
+      "起号",
+      "账号定位",
+      "人设",
+      "选题",
+      "冷启动"
+    ],
+    "requires": null,
+    "author": {
+      "login": "SpaceZephyr",
+      "url": "https://github.com/SpaceZephyr"
+    },
+    "stars": 1585,
+    "license": null,
+    "pushedAt": "2026-08-26T08:49:06Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 29620
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/SpaceZephyr/creator-buddy/tree/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-positioning",
+    "rawBase": "https://raw.githubusercontent.com/SpaceZephyr/creator-buddy/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-positioning/",
+    "archiveUrl": "https://codeload.github.com/SpaceZephyr/creator-buddy/zip/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "archiveRoot": "creator-buddy-edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/xhs-Skills/space-xhs-positioning"
+  },
+  {
+    "id": "gh-931a194c",
+    "repo": "ziguishian/xhs-visual-director-skill",
+    "path": "skill/SKILL.md",
+    "dir": "skill",
+    "ref": "5c730c688f2c7e64f798d611608997ffba43813d",
+    "branch": "main",
+    "slug": "xhs-visual-director",
+    "name": "小红书视觉导演",
+    "desc": "规划与评审小红书图文：选封面与逐页视觉风格，并输出生图提示词",
+    "descOriginal": "Use this skill when planning, redesigning, or reviewing Xiaohongshu carousel visuals, covers, 3:4 image posts, page-by-page visual direction, image-generation prompts, style selection, layout critique, or XHS captions. It acts as a senior visual director for 小红书图文, not a generic copywriting assistant.",
+    "cat": "小红书",
+    "tags": [
+      "小红书",
+      "封面",
+      "图文",
+      "轮播",
+      "视觉",
+      "生图提示词"
+    ],
+    "requires": null,
+    "author": {
+      "login": "ziguishian",
+      "url": "https://github.com/ziguishian"
+    },
+    "stars": 1384,
+    "license": "MIT",
+    "pushedAt": "2026-07-03T12:13:33Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 20247
+      },
+      {
+        "path": "agents/openai.yaml",
+        "size": 385
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/ziguishian/xhs-visual-director-skill/tree/5c730c688f2c7e64f798d611608997ffba43813d/skill",
+    "rawBase": "https://raw.githubusercontent.com/ziguishian/xhs-visual-director-skill/5c730c688f2c7e64f798d611608997ffba43813d/skill/",
+    "archiveUrl": "https://codeload.github.com/ziguishian/xhs-visual-director-skill/zip/5c730c688f2c7e64f798d611608997ffba43813d",
+    "archiveRoot": "xhs-visual-director-skill-5c730c688f2c7e64f798d611608997ffba43813d/skill"
+  },
+  {
+    "id": "gh-7b168b79",
+    "repo": "anthropics/skills",
+    "path": "skills/canvas-design/SKILL.md",
+    "dir": "skills/canvas-design",
+    "ref": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
+    "branch": "main",
+    "slug": "canvas-design",
+    "name": "海报与视觉设计",
+    "desc": "用设计哲学创作 PNG/PDF 海报与静态视觉作品，强调原创构图、字体与留白",
+    "descOriginal": "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations.",
+    "cat": "插画美术",
+    "tags": [
+      "海报",
+      "视觉设计",
+      "排版",
+      "插画",
+      "PNG",
+      "canvas"
+    ],
+    "requires": "需要能运行代码并输出 PNG/PDF 的 Agent 环境（通常是 Python）",
+    "author": {
+      "login": "anthropics",
+      "url": "https://github.com/anthropics"
+    },
+    "stars": 180037,
+    "license": null,
+    "pushedAt": "2026-10-05T13:46:45Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 11939
+      },
+      {
+        "path": "canvas-fonts/ArsenalSC-OFL.txt",
+        "size": 4373
+      },
+      {
+        "path": "canvas-fonts/ArsenalSC-Regular.ttf",
+        "size": 165848
+      },
+      {
+        "path": "canvas-fonts/BigShoulders-Bold.ttf",
+        "size": 94528
+      },
+      {
+        "path": "canvas-fonts/BigShoulders-OFL.txt",
+        "size": 4397
+      },
+      {
+        "path": "canvas-fonts/BigShoulders-Regular.ttf",
+        "size": 94396
+      },
+      {
+        "path": "canvas-fonts/Boldonse-OFL.txt",
+        "size": 4390
+      },
+      {
+        "path": "canvas-fonts/Boldonse-Regular.ttf",
+        "size": 77168
+      },
+      {
+        "path": "canvas-fonts/BricolageGrotesque-Bold.ttf",
+        "size": 90952
+      },
+      {
+        "path": "canvas-fonts/BricolageGrotesque-OFL.txt",
+        "size": 4403
+      },
+      {
+        "path": "canvas-fonts/BricolageGrotesque-Regular.ttf",
+        "size": 90920
+      },
+      {
+        "path": "canvas-fonts/CrimsonPro-Bold.ttf",
+        "size": 107352
+      },
+      {
+        "path": "canvas-fonts/CrimsonPro-Italic.ttf",
+        "size": 108828
+      },
+      {
+        "path": "canvas-fonts/CrimsonPro-OFL.txt",
+        "size": 4394
+      },
+      {
+        "path": "canvas-fonts/CrimsonPro-Regular.ttf",
+        "size": 106696
+      },
+      {
+        "path": "canvas-fonts/DMMono-OFL.txt",
+        "size": 4392
+      },
+      {
+        "path": "canvas-fonts/DMMono-Regular.ttf",
+        "size": 48852
+      },
+      {
+        "path": "canvas-fonts/EricaOne-OFL.txt",
+        "size": 4410
+      },
+      {
+        "path": "canvas-fonts/EricaOne-Regular.ttf",
+        "size": 24872
+      },
+      {
+        "path": "canvas-fonts/GeistMono-Bold.ttf",
+        "size": 78304
+      },
+      {
+        "path": "canvas-fonts/GeistMono-OFL.txt",
+        "size": 4388
+      },
+      {
+        "path": "canvas-fonts/GeistMono-Regular.ttf",
+        "size": 78232
+      },
+      {
+        "path": "canvas-fonts/Gloock-OFL.txt",
+        "size": 4381
+      },
+      {
+        "path": "canvas-fonts/Gloock-Regular.ttf",
+        "size": 95156
+      },
+      {
+        "path": "canvas-fonts/IBMPlexMono-Bold.ttf",
+        "size": 136008
+      },
+      {
+        "path": "canvas-fonts/IBMPlexMono-OFL.txt",
+        "size": 4363
+      },
+      {
+        "path": "canvas-fonts/IBMPlexMono-Regular.ttf",
+        "size": 133796
+      },
+      {
+        "path": "canvas-fonts/IBMPlexSerif-Bold.ttf",
+        "size": 161000
+      },
+      {
+        "path": "canvas-fonts/IBMPlexSerif-BoldItalic.ttf",
+        "size": 169840
+      },
+      {
+        "path": "canvas-fonts/IBMPlexSerif-Italic.ttf",
+        "size": 170004
+      },
+      {
+        "path": "canvas-fonts/IBMPlexSerif-Regular.ttf",
+        "size": 160380
+      },
+      {
+        "path": "canvas-fonts/InstrumentSans-Bold.ttf",
+        "size": 68084
+      },
+      {
+        "path": "canvas-fonts/InstrumentSans-BoldItalic.ttf",
+        "size": 70004
+      },
+      {
+        "path": "canvas-fonts/InstrumentSans-Italic.ttf",
+        "size": 69900
+      },
+      {
+        "path": "canvas-fonts/InstrumentSans-OFL.txt",
+        "size": 4403
+      },
+      {
+        "path": "canvas-fonts/InstrumentSans-Regular.ttf",
+        "size": 68028
+      },
+      {
+        "path": "canvas-fonts/InstrumentSerif-Italic.ttf",
+        "size": 70868
+      },
+      {
+        "path": "canvas-fonts/InstrumentSerif-Regular.ttf",
+        "size": 69312
+      },
+      {
+        "path": "canvas-fonts/Italiana-OFL.txt",
+        "size": 4394
+      },
+      {
+        "path": "LICENSE.txt",
+        "size": 11345
+      }
+    ],
+    "fileCount": 83,
+    "truncated": true,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "partial-scan",
+          "severity": "review",
+          "label": "文件太多（83 个），只静态检查了前 40 个",
+          "file": "",
+          "line": null,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/anthropics/skills/tree/683bc88e56f3e09ba94f7055977f3d3aa499f202/skills/canvas-design",
+    "rawBase": "https://raw.githubusercontent.com/anthropics/skills/683bc88e56f3e09ba94f7055977f3d3aa499f202/skills/canvas-design/",
+    "archiveUrl": "https://codeload.github.com/anthropics/skills/zip/683bc88e56f3e09ba94f7055977f3d3aa499f202",
+    "archiveRoot": "skills-683bc88e56f3e09ba94f7055977f3d3aa499f202/skills/canvas-design"
+  },
+  {
+    "id": "gh-54127a00",
+    "repo": "yang0/handraw-style",
+    "path": "skills/handdraw-style-prompter/SKILL.md",
+    "dir": "skills/handdraw-style-prompter",
+    "ref": "4eb29e2fcea3d9595d2f67b363e30ffdea338027",
+    "branch": "master",
+    "slug": "handdraw-style-prompter",
+    "name": "327种手绘风格提示词",
+    "desc": "按编号挑选手绘风格和主题色，生成中英双语生图提示词，附风格图库",
+    "descOriginal": "Turn a 001–327 hand-drawn style number and image theme into bilingual prompts, using model capability data to decide when core traits and a numbered reference image are required.",
+    "cat": "插画美术",
+    "tags": [
+      "手绘",
+      "插画风格",
+      "风格图库",
+      "双语提示词",
+      "配色",
+      "生图提示词"
+    ],
+    "requires": null,
+    "author": {
+      "login": "yang0",
+      "url": "https://github.com/yang0"
+    },
+    "stars": 4534,
+    "license": null,
+    "pushedAt": "2026-10-07T14:15:43Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 27611
+      },
+      {
+        "path": "agents/openai.yaml",
+        "size": 319
+      },
+      {
+        "path": "gallery/assets.html",
+        "size": 41940
+      },
+      {
+        "path": "gallery/characters.html",
+        "size": 322
+      },
+      {
+        "path": "gallery/colors.html",
+        "size": 55167
+      },
+      {
+        "path": "gallery/index.html",
+        "size": 350375
+      },
+      {
+        "path": "gallery/layouts.html",
+        "size": 368649
+      },
+      {
+        "path": "gallery/tutorials.html",
+        "size": 201705
+      },
+      {
+        "path": "references/attribution.json",
+        "size": 1417
+      },
+      {
+        "path": "references/characters.json",
+        "size": 265
+      },
+      {
+        "path": "references/colors.json",
+        "size": 18242
+      },
+      {
+        "path": "references/contact_sheet_state.json",
+        "size": 95
+      },
+      {
+        "path": "references/layouts.json",
+        "size": 66869
+      },
+      {
+        "path": "references/layouts/EC-001.md",
+        "size": 1491
+      },
+      {
+        "path": "references/layouts/EC-002.md",
+        "size": 1505
+      },
+      {
+        "path": "references/layouts/EC-003.md",
+        "size": 1483
+      },
+      {
+        "path": "references/layouts/EC-004.md",
+        "size": 1426
+      },
+      {
+        "path": "references/layouts/EC-005.md",
+        "size": 1611
+      },
+      {
+        "path": "references/layouts/EC-006.md",
+        "size": 1615
+      },
+      {
+        "path": "references/layouts/EC-007.md",
+        "size": 1693
+      },
+      {
+        "path": "references/layouts/EC-008.md",
+        "size": 1727
+      },
+      {
+        "path": "references/layouts/EC-009.md",
+        "size": 1590
+      },
+      {
+        "path": "references/layouts/EC-010.md",
+        "size": 1569
+      },
+      {
+        "path": "references/layouts/EC-011.md",
+        "size": 1583
+      },
+      {
+        "path": "references/layouts/EC-012.md",
+        "size": 1573
+      },
+      {
+        "path": "references/layouts/EC-013.md",
+        "size": 1716
+      },
+      {
+        "path": "references/layouts/EC-014.md",
+        "size": 1401
+      },
+      {
+        "path": "references/layouts/EC-015.md",
+        "size": 1706
+      },
+      {
+        "path": "references/layouts/EC-016.md",
+        "size": 1505
+      },
+      {
+        "path": "references/layouts/EC-017.md",
+        "size": 1543
+      },
+      {
+        "path": "references/layouts/EC-018.md",
+        "size": 1549
+      },
+      {
+        "path": "references/layouts/EC-019.md",
+        "size": 1432
+      },
+      {
+        "path": "references/layouts/EC-020.md",
+        "size": 1438
+      },
+      {
+        "path": "references/layouts/EC-021.md",
+        "size": 1618
+      },
+      {
+        "path": "references/layouts/EC-022.md",
+        "size": 1637
+      },
+      {
+        "path": "references/layouts/EC-023.md",
+        "size": 1795
+      },
+      {
+        "path": "references/layouts/EC-024.md",
+        "size": 2154
+      },
+      {
+        "path": "references/layouts/IG-001.md",
+        "size": 455
+      },
+      {
+        "path": "references/layouts/IG-002.md",
+        "size": 469
+      },
+      {
+        "path": "references/layouts/IG-003.md",
+        "size": 1551
+      }
+    ],
+    "fileCount": 201,
+    "truncated": true,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "partial-scan",
+          "severity": "review",
+          "label": "文件太多（201 个），只静态检查了前 40 个",
+          "file": "",
+          "line": null,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/yang0/handraw-style/tree/4eb29e2fcea3d9595d2f67b363e30ffdea338027/skills/handdraw-style-prompter",
+    "rawBase": "https://raw.githubusercontent.com/yang0/handraw-style/4eb29e2fcea3d9595d2f67b363e30ffdea338027/skills/handdraw-style-prompter/",
+    "archiveUrl": "https://codeload.github.com/yang0/handraw-style/zip/4eb29e2fcea3d9595d2f67b363e30ffdea338027",
+    "archiveRoot": "handraw-style-4eb29e2fcea3d9595d2f67b363e30ffdea338027/skills/handdraw-style-prompter"
+  },
+  {
+    "id": "gh-a8724f08",
+    "repo": "pyang5166/gbro-cover-design",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "8d1a0a5487e9ee6539b2b0a471b58469aadfedd6",
+    "branch": "main",
+    "slug": "gbro-cover-design",
+    "name": "公众号小红书封面",
+    "desc": "生成3:4封面提示词：10种构图风格，支持真人出镜与多参考图保持人脸一致",
+    "descOriginal": "公众号/小红书封面设计。固定3:4竖版，10种构图风格可选，真人出镜，生成可直接用于图片生成模型的提示词。支持多参考图：图1固定为人脸，图2起为UI截图、产品图等素材。关键词：封面设计、提示词生成、公众号封面、小红书封面。",
+    "cat": "插画美术",
+    "tags": [
+      "封面设计",
+      "公众号封面",
+      "小红书封面",
+      "提示词",
+      "人脸一致",
+      "构图"
+    ],
+    "requires": "只产出提示词；出图需自备生图模型（如即梦、Nano Banana）",
+    "author": {
+      "login": "pyang5166",
+      "url": "https://github.com/pyang5166"
+    },
+    "stars": 886,
+    "license": null,
+    "pushedAt": "2026-07-15T13:36:54Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 8226
+      },
+      {
+        "path": ".gitignore",
+        "size": 37
+      },
+      {
+        "path": "assets/.gitkeep",
+        "size": 0
+      },
+      {
+        "path": "assets/examples/01-让AI做我老板.webp",
+        "size": 247394
+      },
+      {
+        "path": "assets/examples/02-下一代Agent来了.webp",
+        "size": 195656
+      },
+      {
+        "path": "assets/examples/03-3个Skills一个运营部.webp",
+        "size": 244034
+      },
+      {
+        "path": "assets/examples/04-别再自己操作电脑了.webp",
+        "size": 254232
+      },
+      {
+        "path": "assets/examples/05-我真不该做这期视频.webp",
+        "size": 312586
+      },
+      {
+        "path": "assets/examples/06-一键制作拼贴动画.webp",
+        "size": 427298
+      },
+      {
+        "path": "assets/examples/07-养Agent晚了还有救吗.webp",
+        "size": 212876
+      },
+      {
+        "path": "assets/examples/08-AI生视频不是模型.webp",
+        "size": 255814
+      },
+      {
+        "path": "LICENSE",
+        "size": 1148
+      },
+      {
+        "path": "README.md",
+        "size": 3723
+      },
+      {
+        "path": "references/examples.md",
+        "size": 9910
+      },
+      {
+        "path": "references/style-01-深色渐变风.md",
+        "size": 1581
+      },
+      {
+        "path": "references/style-02-纯色扁平风.md",
+        "size": 1446
+      },
+      {
+        "path": "references/style-03-产品主视觉风.md",
+        "size": 1610
+      },
+      {
+        "path": "references/style-04-对比卡片风.md",
+        "size": 1658
+      },
+      {
+        "path": "references/style-05-极简留白风.md",
+        "size": 1375
+      },
+      {
+        "path": "references/style-06-海报拼贴风.md",
+        "size": 1588
+      },
+      {
+        "path": "references/style-07-人物侧置留白风.md",
+        "size": 1335
+      },
+      {
+        "path": "references/style-08-背影构图风.md",
+        "size": 1366
+      },
+      {
+        "path": "references/style-09-局部出镜风.md",
+        "size": 1425
+      },
+      {
+        "path": "references/style-10-正面对视风.md",
+        "size": 1562
+      }
+    ],
+    "fileCount": 24,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/pyang5166/gbro-cover-design/tree/8d1a0a5487e9ee6539b2b0a471b58469aadfedd6",
+    "rawBase": "https://raw.githubusercontent.com/pyang5166/gbro-cover-design/8d1a0a5487e9ee6539b2b0a471b58469aadfedd6/",
+    "archiveUrl": "https://codeload.github.com/pyang5166/gbro-cover-design/zip/8d1a0a5487e9ee6539b2b0a471b58469aadfedd6",
+    "archiveRoot": "gbro-cover-design-8d1a0a5487e9ee6539b2b0a471b58469aadfedd6"
+  },
+  {
+    "id": "gh-e2ddd9b3",
+    "repo": "op7418/Document-illustrator-skill",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "8344815d407cc25cc04c327557f36ed839f0aaef",
+    "branch": "main",
+    "slug": "document-illustrator",
+    "name": "文档智能配图",
+    "desc": "按文章结构提炼要点，为每个主题生成统一风格的配图，支持16:9和3:4",
+    "descOriginal": "基于文档内容自动生成配图。AI 智能分析文档结构，归纳核心要点， 为每个主题生成符合特定风格的配图。支持封面图生成和自定义图片比例。 使用场景：当用户需要为文档、文章、笔记生成配图时。 关键词：配图、插图、illustration、generate images、document images",
+    "cat": "插画美术",
+    "tags": [
+      "配图",
+      "文章插图",
+      "封面",
+      "小红书",
+      "公众号",
+      "Nano Banana"
+    ],
+    "requires": "需要 Gemini API Key，并需 pip 安装 google-genai、pillow",
+    "author": {
+      "login": "op7418",
+      "url": "https://github.com/op7418"
+    },
+    "stars": 599,
+    "license": "MIT",
+    "pushedAt": "2026-01-21T09:47:26Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 11648
+      },
+      {
+        "path": ".gitignore",
+        "size": 514
+      },
+      {
+        "path": "examples/README.md",
+        "size": 2221
+      },
+      {
+        "path": "LICENSE",
+        "size": 1063
+      },
+      {
+        "path": "README.md",
+        "size": 15105
+      },
+      {
+        "path": "scripts/generate_illustrations.py",
+        "size": 23225
+      },
+      {
+        "path": "scripts/generate_single_image.py",
+        "size": 8232
+      },
+      {
+        "path": "styles/gradient-glass.md",
+        "size": 2356
+      },
+      {
+        "path": "styles/ticket.md",
+        "size": 2092
+      },
+      {
+        "path": "styles/vector-illustration.md",
+        "size": 2061
+      }
+    ],
+    "fileCount": 10,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "SKILL.md",
+          "line": 307,
+          "excerpt": "- 或设置环境变量 `GEMINI_API_KEY`"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "README.md",
+          "line": 125,
+          "excerpt": "1. 获取 Gemini API 密钥：[Google AI Studio](https://makersuite.google.com/app/apikey)"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/generate_illustrations.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/generate_illustrations.py",
+          "line": 478,
+          "excerpt": "api_key = os.environ.get(\"GEMINI_API_KEY\")"
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/generate_single_image.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "scripts/generate_single_image.py",
+          "line": 104,
+          "excerpt": "api_key = os.environ.get(\"GEMINI_API_KEY\")"
+        }
+      ]
+    },
+    "url": "https://github.com/op7418/Document-illustrator-skill/tree/8344815d407cc25cc04c327557f36ed839f0aaef",
+    "rawBase": "https://raw.githubusercontent.com/op7418/Document-illustrator-skill/8344815d407cc25cc04c327557f36ed839f0aaef/",
+    "archiveUrl": "https://codeload.github.com/op7418/Document-illustrator-skill/zip/8344815d407cc25cc04c327557f36ed839f0aaef",
+    "archiveRoot": "Document-illustrator-skill-8344815d407cc25cc04c327557f36ed839f0aaef"
+  },
+  {
+    "id": "gh-fa5e6f14",
+    "repo": "jijiutong/ai-visual-director",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "b47f664ca00c50539c5365109e9360f82170972d",
+    "branch": "main",
+    "slug": "ai-visual-director",
+    "name": "AI 视觉导演",
+    "desc": "把故事转成角色卡、场景图、故事板、海报和视频提示词，保持角色一致",
+    "descOriginal": "AI视觉导演主控路由。用于 /create /avd/create 故事到视频、角色卡、场景图、故事板、分镜图、视频 Prompt、海报、Prompt QC、状态锁定和子技能分发。普通故事默认 /create standard。",
+    "cat": "插画美术",
+    "tags": [
+      "角色设计",
+      "分镜",
+      "故事板",
+      "海报",
+      "风格",
+      "角色一致性"
+    ],
+    "requires": null,
+    "author": {
+      "login": "jijiutong",
+      "url": "https://github.com/jijiutong"
+    },
+    "stars": 175,
+    "license": "MIT",
+    "pushedAt": "2026-07-19T14:53:06Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 6458
+      },
+      {
+        "path": ".gitignore",
+        "size": 69
+      },
+      {
+        "path": "api-config.template.env",
+        "size": 6994
+      },
+      {
+        "path": "demo/demo-script.md",
+        "size": 4289
+      },
+      {
+        "path": "demo/zero-to-one-demo.md",
+        "size": 37437
+      },
+      {
+        "path": "docs/capabilities.md",
+        "size": 8119
+      },
+      {
+        "path": "docs/commands.md",
+        "size": 1795
+      },
+      {
+        "path": "docs/README.md",
+        "size": 2190
+      },
+      {
+        "path": "docs/system-architecture.md",
+        "size": 3733
+      },
+      {
+        "path": "docs/usage.md",
+        "size": 7381
+      },
+      {
+        "path": "engines/act-structure.md",
+        "size": 1439
+      },
+      {
+        "path": "engines/aesthetic-director.md",
+        "size": 7279
+      },
+      {
+        "path": "engines/asset-plan.md",
+        "size": 11501
+      },
+      {
+        "path": "engines/auto-repair.md",
+        "size": 8760
+      },
+      {
+        "path": "engines/batch-chapter.md",
+        "size": 3453
+      },
+      {
+        "path": "engines/color-narrative.md",
+        "size": 1690
+      },
+      {
+        "path": "engines/command-gate.md",
+        "size": 10391
+      },
+      {
+        "path": "engines/consistency-engine.md",
+        "size": 11481
+      },
+      {
+        "path": "engines/consistency-trigger.md",
+        "size": 14840
+      },
+      {
+        "path": "engines/dialogue-engine.md",
+        "size": 5768
+      },
+      {
+        "path": "engines/emotion-curve.md",
+        "size": 2846
+      },
+      {
+        "path": "engines/fusion.md",
+        "size": 3845
+      },
+      {
+        "path": "engines/incremental-update.md",
+        "size": 10959
+      },
+      {
+        "path": "engines/knowledge-retrieval.md",
+        "size": 7505
+      },
+      {
+        "path": "engines/layout-styles.md",
+        "size": 2157
+      },
+      {
+        "path": "engines/mood-slider.md",
+        "size": 1679
+      },
+      {
+        "path": "engines/motion-physics.md",
+        "size": 4579
+      },
+      {
+        "path": "engines/multi-version.md",
+        "size": 3027
+      },
+      {
+        "path": "engines/pacing.md",
+        "size": 2253
+      },
+      {
+        "path": "engines/project-graph.md",
+        "size": 8323
+      },
+      {
+        "path": "engines/project-manager.md",
+        "size": 5666
+      },
+      {
+        "path": "engines/prompt-compression.md",
+        "size": 3142
+      },
+      {
+        "path": "engines/prompt-declutter.md",
+        "size": 8123
+      },
+      {
+        "path": "engines/prompt-scorer.md",
+        "size": 3063
+      },
+      {
+        "path": "engines/README.md",
+        "size": 9304
+      },
+      {
+        "path": "engines/reference-anchor.md",
+        "size": 9114
+      },
+      {
+        "path": "engines/relationships.md",
+        "size": 3147
+      },
+      {
+        "path": "LICENSE",
+        "size": 1088
+      },
+      {
+        "path": "README.md",
+        "size": 10358
+      },
+      {
+        "path": "README.zh-CN.md",
+        "size": 9187
+      }
+    ],
+    "fileCount": 205,
+    "truncated": true,
+    "safety": {
+      "level": "block",
+      "findings": [
+        {
+          "rule": "pipe-to-shell",
+          "severity": "block",
+          "label": "把下载内容直接管道给 shell 执行",
+          "file": "README.md",
+          "line": 90,
+          "excerpt": "curl -fsSL https://raw.githubusercontent.com/jijiutong/ai-visual-director/main/install.sh | sh"
+        },
+        {
+          "rule": "pipe-to-shell",
+          "severity": "block",
+          "label": "把下载内容直接管道给 shell 执行",
+          "file": "README.zh-CN.md",
+          "line": 90,
+          "excerpt": "curl -fsSL https://raw.githubusercontent.com/jijiutong/ai-visual-director/main/install.sh | sh"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "api-config.template.env",
+          "line": 20,
+          "excerpt": "OPENAI_API_KEY=***"
+        },
+        {
+          "rule": "partial-scan",
+          "severity": "review",
+          "label": "文件太多（205 个），只静态检查了前 40 个",
+          "file": "",
+          "line": null,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/jijiutong/ai-visual-director/tree/b47f664ca00c50539c5365109e9360f82170972d",
+    "rawBase": "https://raw.githubusercontent.com/jijiutong/ai-visual-director/b47f664ca00c50539c5365109e9360f82170972d/",
+    "archiveUrl": "https://codeload.github.com/jijiutong/ai-visual-director/zip/b47f664ca00c50539c5365109e9360f82170972d",
+    "archiveRoot": "ai-visual-director-b47f664ca00c50539c5365109e9360f82170972d"
+  },
+  {
+    "id": "gh-f55f292e",
+    "repo": "jtydhr88/music-composition-skills",
+    "path": "plugins/music-composition/skills/mc-style-chinese-pop/SKILL.md",
+    "dir": "plugins/music-composition/skills/mc-style-chinese-pop",
+    "ref": "7adca0c321db602deb3c94d79b04037cf339e5d2",
+    "branch": "main",
+    "slug": "mc-style-chinese-pop",
+    "name": "华语流行编曲风格",
+    "desc": "讲清华语流行（国语/粤语）编曲的特有规则，以及哪些日系欧美手法能借用",
+    "descOriginal": "Mandarin and Cantonese pop as a style layer (华语流行风格层). What is actually specific to Chinese-language pop rather than borrowed wholesale from J-pop and Anglo-American pop, the transfer table for what may and may not be carried in or out, the tone-melody constraint that shapes Mandarin and Cantonese melody writing and why it belongs to the lyrics library, what the corpus can currently support and what it cannot, and the declared gaps. Use when writing or arranging Mandarin or Cantonese pop, when deciding whether a J-pop or Western device fits, when a melody fights the words, or when choosing references. 华语流行、中文流行、国语、粤语、倒字、协音、华语编曲。",
+    "cat": "音乐",
+    "tags": [
+      "华语流行",
+      "编曲",
+      "作曲",
+      "粤语",
+      "流行歌",
+      "风格"
+    ],
+    "requires": null,
+    "author": {
+      "login": "jtydhr88",
+      "url": "https://github.com/jtydhr88"
+    },
+    "stars": 150,
+    "license": "MIT",
+    "pushedAt": "2026-09-22T14:55:36Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 11495
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/jtydhr88/music-composition-skills/tree/7adca0c321db602deb3c94d79b04037cf339e5d2/plugins/music-composition/skills/mc-style-chinese-pop",
+    "rawBase": "https://raw.githubusercontent.com/jtydhr88/music-composition-skills/7adca0c321db602deb3c94d79b04037cf339e5d2/plugins/music-composition/skills/mc-style-chinese-pop/",
+    "archiveUrl": "https://codeload.github.com/jtydhr88/music-composition-skills/zip/7adca0c321db602deb3c94d79b04037cf339e5d2",
+    "archiveRoot": "music-composition-skills-7adca0c321db602deb3c94d79b04037cf339e5d2/plugins/music-composition/skills/mc-style-chinese-pop"
+  },
+  {
+    "id": "gh-4f561ffb",
+    "repo": "jtydhr88/lyric-writing-skills",
+    "path": "plugins/lyric-writing/skills/lw-mandarin/SKILL.md",
+    "dir": "plugins/lyric-writing/skills/lw-mandarin",
+    "ref": "61c907495197f8fd041dbfc0849baa67da1368bc",
+    "branch": "main",
+    "slug": "lw-mandarin",
+    "name": "普通话作词",
+    "desc": "讲清十三辙、平仄、字数与顿、易唱性，解决声调与旋律冲突，写出能唱的词",
+    "descOriginal": "The Mandarin language layer for lyric writing (普通话作词的语言层). What Chinese as a language adds to the job: tone is phonemic, so the melody that enters a syllable can change which word is heard; one character is one syllable, so syllable count is character count; the thirteen rhyme families (十三辙) with their finals, example characters, wide-versus-narrow reach and loudness grades; how to pick a rhyme family, when to switch, and which families borrow from each other; level-and-oblique (平仄) and how much looser a lyric is than classical verse; the two- and three-character feet that make a Chinese line scan; and what makes a line easy or hard to sing. Use when writing or checking Mandarin lyrics, when choosing or changing a rhyme family, when a line is a tongue-twister or a high note lands on a closed vowel, when someone asks what 十三辙 is, or when LYR-LINT check 8 says the song sits on one or two wide families. 普通话、中文作词、十三辙、辙口、韵部、平仄、字调、易唱、绕口、开口音闭口音、什么是十三辙。",
+    "cat": "音乐",
+    "tags": [
+      "作词",
+      "歌词",
+      "十三辙",
+      "押韵",
+      "倒字",
+      "填词"
+    ],
+    "requires": null,
+    "author": {
+      "login": "jtydhr88",
+      "url": "https://github.com/jtydhr88"
+    },
+    "stars": 98,
+    "license": "MIT",
+    "pushedAt": "2026-09-22T14:56:19Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 37964
+      },
+      {
+        "path": "reference.md",
+        "size": 17974
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/jtydhr88/lyric-writing-skills/tree/61c907495197f8fd041dbfc0849baa67da1368bc/plugins/lyric-writing/skills/lw-mandarin",
+    "rawBase": "https://raw.githubusercontent.com/jtydhr88/lyric-writing-skills/61c907495197f8fd041dbfc0849baa67da1368bc/plugins/lyric-writing/skills/lw-mandarin/",
+    "archiveUrl": "https://codeload.github.com/jtydhr88/lyric-writing-skills/zip/61c907495197f8fd041dbfc0849baa67da1368bc",
+    "archiveRoot": "lyric-writing-skills-61c907495197f8fd041dbfc0849baa67da1368bc/plugins/lyric-writing/skills/lw-mandarin"
+  },
+  {
+    "id": "gh-cc39079b",
+    "repo": "jtydhr88/lyric-writing-skills",
+    "path": "plugins/lyric-writing/skills/lw-chinese-style/SKILL.md",
+    "dir": "plugins/lyric-writing/skills/lw-chinese-style",
+    "ref": "61c907495197f8fd041dbfc0849baa67da1368bc",
+    "branch": "main",
+    "slug": "lw-chinese-style",
+    "name": "中国风歌词",
+    "desc": "让中国风歌词的中国味“长出来”：词汇、修辞手法、意象成套和用典分寸",
+    "descOriginal": "The Chinese-style layer for lyric writing (中国风歌词). What makes a lyric read as 中国风 rather than merely decorated - the vocabulary families it draws on (place, dynasty, object, craft, plant), the sixteen rhetorical devices Fang Wen-shan catalogues inside his own lyrics, each with a book example and a failure condition, why every image must belong to one material world and how one out-of-period object breaks it, the four grades of borrowing from classical verse and where borrowing becomes copying, what to do when the listener will not catch the allusion, what the words promise the arrangement when they name an instrument, and the three ways this style usually dies - ornament with no event, images unrelated to what the song says, and archaism for its own sake. Use when writing or auditing a 中国风 or 古风 lyric, when a draft is full of beautiful old words but says nothing, when checking an allusion, when images from different eras collide, or when the words name an instrument. 中国风、古风、典故、化用、文字游戏、修辞、意象成套、方文山、穿帮。",
+    "cat": "音乐",
+    "tags": [
+      "中国风",
+      "古风",
+      "歌词",
+      "意象",
+      "用典",
+      "填词"
+    ],
+    "requires": null,
+    "author": {
+      "login": "jtydhr88",
+      "url": "https://github.com/jtydhr88"
+    },
+    "stars": 98,
+    "license": "MIT",
+    "pushedAt": "2026-09-22T14:56:19Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 37131
+      },
+      {
+        "path": "reference.md",
+        "size": 16551
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/jtydhr88/lyric-writing-skills/tree/61c907495197f8fd041dbfc0849baa67da1368bc/plugins/lyric-writing/skills/lw-chinese-style",
+    "rawBase": "https://raw.githubusercontent.com/jtydhr88/lyric-writing-skills/61c907495197f8fd041dbfc0849baa67da1368bc/plugins/lyric-writing/skills/lw-chinese-style/",
+    "archiveUrl": "https://codeload.github.com/jtydhr88/lyric-writing-skills/zip/61c907495197f8fd041dbfc0849baa67da1368bc",
+    "archiveRoot": "lyric-writing-skills-61c907495197f8fd041dbfc0849baa67da1368bc/plugins/lyric-writing/skills/lw-chinese-style"
+  },
+  {
+    "id": "gh-81912817",
+    "repo": "all666666all/miaoxiang-music.skill",
+    "path": "skill/miaoxiang-music/SKILL.md",
+    "dir": "skill/miaoxiang-music",
+    "ref": "1447ff68be4a544a61354377592f345a9216ff1f",
+    "branch": "main",
+    "slug": "miaoxiang-music",
+    "name": "妙响 AI 音乐创作",
+    "desc": "为妙响（汽水音乐）平台写结构化提示词：曲风公式、歌词金句、BGM 模板",
+    "descOriginal": "Create AI music on 妙响 (MUSE SONG) — 汽水音乐 / 抖音音乐创作实验室's AI music platform. Use this skill WHENEVER the user wants to write music-generation prompts (提示词/structured prompts), pick or fuse a 曲风/genre (国风/民族国韵, EDM/电子, 动感流行, Rap/嘻哈, 禅意/ambient/梦核/纯音乐 BGM), write or refine song lyrics (歌词/金句/押韵/诗词句式), choose a generation model (Sway, SeedMusic, Mureka, MiniMax, TemPolor, Sodance, 音潮), troubleshoot AI output (唱错字/咬字/乱发挥), or optimize a track for 汽水 cold-start traffic (冷启/起量/完播率/30s跳出率/被选用/BGM). Trigger even when the user only describes the *outcome* (e.g. \"help me make a creepy ambient BGM\", \"write me a viral hook\", \"why won't my new song get plays\") without naming 妙响. Also trigger for batch/工作流/搬砖 music-generation planning.",
+    "cat": "音乐",
+    "tags": [
+      "AI音乐",
+      "妙响",
+      "汽水音乐",
+      "曲风",
+      "歌词",
+      "BGM"
+    ],
+    "requires": "需要妙响（汽水音乐）账号来生成音频；skill 只负责提示词与歌词",
+    "author": {
+      "login": "all666666all",
+      "url": "https://github.com/all666666all"
+    },
+    "stars": 12,
+    "license": null,
+    "pushedAt": "2026-06-19T07:49:30Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 8753
+      },
+      {
+        "path": "references/distribution.md",
+        "size": 7731
+      },
+      {
+        "path": "references/genres.md",
+        "size": 12219
+      },
+      {
+        "path": "references/lyrics.md",
+        "size": 8958
+      },
+      {
+        "path": "references/platform.md",
+        "size": 6732
+      },
+      {
+        "path": "references/prompt-engineering.md",
+        "size": 9217
+      }
+    ],
+    "fileCount": 6,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/all666666all/miaoxiang-music.skill/tree/1447ff68be4a544a61354377592f345a9216ff1f/skill/miaoxiang-music",
+    "rawBase": "https://raw.githubusercontent.com/all666666all/miaoxiang-music.skill/1447ff68be4a544a61354377592f345a9216ff1f/skill/miaoxiang-music/",
+    "archiveUrl": "https://codeload.github.com/all666666all/miaoxiang-music.skill/zip/1447ff68be4a544a61354377592f345a9216ff1f",
+    "archiveRoot": "miaoxiang-music.skill-1447ff68be4a544a61354377592f345a9216ff1f/skill/miaoxiang-music"
+  },
+  {
+    "id": "gh-2ca0c3f8",
+    "repo": "2998980-hue/surreal-pop-collage",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "5bcf6f52592b3c83a384e5314556d2eac804dcc0",
+    "branch": "main",
+    "slug": "surreal-pop-collage",
+    "name": "超现实波普拼贴",
+    "desc": "把风景、人物或城市照片去色，配平涂色块和一个不可能的巨物，做成梦境海报",
+    "descOriginal": "把照片变成超现实波普拼贴画(surreal pop collage)——照片去色保留为\"现实锚\"，背景替换为巨大平涂色形，全图只有一个\"不可能的巨物\"。当用户想要超现实拼贴、现实超现实化、小红书/抖音超现实海报、黑白照片+平涂色块的梦境感图片，或要把风景/人物/城市照做成超现实艺术时使用。",
+    "cat": "摄影修图",
+    "tags": [
+      "照片改造",
+      "波普拼贴",
+      "超现实",
+      "海报",
+      "小红书",
+      "抖音"
+    ],
+    "requires": "需要图像生成服务（图生图）",
+    "author": {
+      "login": "2998980-hue",
+      "url": "https://github.com/2998980-hue"
+    },
+    "stars": 335,
+    "license": "MIT",
+    "pushedAt": "2026-08-08T18:11:19Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 5932
+      },
+      {
+        "path": "agents/openai.yaml",
+        "size": 425
+      },
+      {
+        "path": "examples/README.md",
+        "size": 320
+      },
+      {
+        "path": "LICENSE",
+        "size": 1056
+      },
+      {
+        "path": "README.md",
+        "size": 2593
+      }
+    ],
+    "fileCount": 5,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/2998980-hue/surreal-pop-collage/tree/5bcf6f52592b3c83a384e5314556d2eac804dcc0",
+    "rawBase": "https://raw.githubusercontent.com/2998980-hue/surreal-pop-collage/5bcf6f52592b3c83a384e5314556d2eac804dcc0/",
+    "archiveUrl": "https://codeload.github.com/2998980-hue/surreal-pop-collage/zip/5bcf6f52592b3c83a384e5314556d2eac804dcc0",
+    "archiveRoot": "surreal-pop-collage-5bcf6f52592b3c83a384e5314556d2eac804dcc0"
+  },
+  {
+    "id": "gh-92bd0fe0",
+    "repo": "liuzihe849-png/ai-editorial-print-studio",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "ac19559bcdf0ad3f3acce08750b6c6099d45d93d",
+    "branch": "main",
+    "slug": "editorial-illustration-generator",
+    "name": "照片转复古印刷插画",
+    "desc": "把上传的照片重绘成复古编辑印刷风插画，并检查几何一致性与画质",
+    "descOriginal": "Transform any user-uploaded photo into a vintage editorial print illustration—not a photo filter. Use for food, beverage, landscape, architecture, portrait, or product images that need Japanese archive print, mid-century graphic, risograph, specimen-sheet, or handmade editorial-art direction while preserving source aspect ratio, composition, and subject relationships.",
+    "cat": "摄影修图",
+    "tags": [
+      "照片转插画",
+      "复古印刷",
+      "美食摄影",
+      "风景",
+      "产品图",
+      "风格化"
+    ],
+    "requires": "需要 Agent 内置生图能力（如 Codex image_gen）和 Python",
+    "author": {
+      "login": "liuzihe849-png",
+      "url": "https://github.com/liuzihe849-png"
+    },
+    "stars": 56,
+    "license": "MIT",
+    "pushedAt": "2026-08-10T16:38:07Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 12236
+      },
+      {
+        "path": ".gitignore",
+        "size": 67
+      },
+      {
+        "path": "agents/openai.yaml",
+        "size": 282
+      },
+      {
+        "path": "LICENSE",
+        "size": 1066
+      },
+      {
+        "path": "prompts/food.md",
+        "size": 4055
+      },
+      {
+        "path": "prompts/image-analysis.md",
+        "size": 1840
+      },
+      {
+        "path": "prompts/landscape.md",
+        "size": 4396
+      },
+      {
+        "path": "prompts/portrait.md",
+        "size": 3769
+      },
+      {
+        "path": "prompts/product.md",
+        "size": 3508
+      },
+      {
+        "path": "prompts/visual-review.md",
+        "size": 5369
+      },
+      {
+        "path": "README.md",
+        "size": 2879
+      },
+      {
+        "path": "references/composition-controller-rules.json",
+        "size": 895
+      },
+      {
+        "path": "references/deconstructed-editorial-direction.md",
+        "size": 1773
+      },
+      {
+        "path": "references/example-failed-visual-review.json",
+        "size": 480
+      },
+      {
+        "path": "references/example-food-over-limit-analysis.json",
+        "size": 229
+      },
+      {
+        "path": "references/example-image-analysis.json",
+        "size": 237
+      },
+      {
+        "path": "references/example-passed-visual-review.json",
+        "size": 486
+      },
+      {
+        "path": "references/image-analysis-schema.json",
+        "size": 1084
+      },
+      {
+        "path": "references/observational-editorial-balance.md",
+        "size": 1635
+      },
+      {
+        "path": "references/relaxed-editorial-print-direction.md",
+        "size": 1588
+      },
+      {
+        "path": "references/visual-review-schema.json",
+        "size": 1288
+      },
+      {
+        "path": "references/visual-rules.json",
+        "size": 5139
+      },
+      {
+        "path": "scripts/build_composition_controls.py",
+        "size": 4293
+      },
+      {
+        "path": "scripts/build_editorial_prompt.py",
+        "size": 9237
+      },
+      {
+        "path": "scripts/build_regeneration_prompt.py",
+        "size": 5253
+      },
+      {
+        "path": "scripts/extract_image_metadata.py",
+        "size": 1836
+      },
+      {
+        "path": "scripts/inspect_image.py",
+        "size": 1676
+      },
+      {
+        "path": "scripts/validate_editorial_output.py",
+        "size": 2650
+      },
+      {
+        "path": "scripts/validate_image_analysis.py",
+        "size": 2429
+      },
+      {
+        "path": "scripts/validate_visual_review.py",
+        "size": 1985
+      }
+    ],
+    "fileCount": 30,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/build_composition_controls.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/build_editorial_prompt.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/build_regeneration_prompt.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/extract_image_metadata.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/inspect_image.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/validate_editorial_output.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/validate_image_analysis.py",
+          "line": 1,
+          "excerpt": ""
+        },
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/validate_visual_review.py",
+          "line": 1,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/liuzihe849-png/ai-editorial-print-studio/tree/ac19559bcdf0ad3f3acce08750b6c6099d45d93d",
+    "rawBase": "https://raw.githubusercontent.com/liuzihe849-png/ai-editorial-print-studio/ac19559bcdf0ad3f3acce08750b6c6099d45d93d/",
+    "archiveUrl": "https://codeload.github.com/liuzihe849-png/ai-editorial-print-studio/zip/ac19559bcdf0ad3f3acce08750b6c6099d45d93d",
+    "archiveRoot": "ai-editorial-print-studio-ac19559bcdf0ad3f3acce08750b6c6099d45d93d"
+  },
+  {
+    "id": "gh-2df9d55f",
+    "repo": "geegl/directorskills",
+    "path": "output/books/cinematography-brown/cinematography-zone-system/SKILL.md",
+    "dir": "output/books/cinematography-brown/cinematography-zone-system",
+    "ref": "57d2ef52de61b926bdcac13fe27d07c17bc36516",
+    "branch": "main",
+    "slug": "cinematography-zone-system",
+    "name": "分区曝光系统",
+    "desc": "用分区曝光与中灰18%控制影调，让画面中的物体看起来更亮或更暗",
+    "descOriginal": "用户提到分区曝光、定位、第V区、中灰18%、我想让这个物体看起来更亮/更暗",
+    "cat": "摄影修图",
+    "tags": [
+      "分区曝光",
+      "曝光",
+      "测光",
+      "中灰",
+      "用光",
+      "影调"
+    ],
+    "requires": null,
+    "author": {
+      "login": "geegl",
+      "url": "https://github.com/geegl"
+    },
+    "stars": 54,
+    "license": "MIT",
+    "pushedAt": "2026-06-08T13:25:11Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 6187
+      },
+      {
+        "path": "test-prompts.json",
+        "size": 1119
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/geegl/directorskills/tree/57d2ef52de61b926bdcac13fe27d07c17bc36516/output/books/cinematography-brown/cinematography-zone-system",
+    "rawBase": "https://raw.githubusercontent.com/geegl/directorskills/57d2ef52de61b926bdcac13fe27d07c17bc36516/output/books/cinematography-brown/cinematography-zone-system/",
+    "archiveUrl": "https://codeload.github.com/geegl/directorskills/zip/57d2ef52de61b926bdcac13fe27d07c17bc36516",
+    "archiveRoot": "directorskills-57d2ef52de61b926bdcac13fe27d07c17bc36516/output/books/cinematography-brown/cinematography-zone-system"
+  },
+  {
+    "id": "gh-c321de67",
+    "repo": "geegl/directorskills",
+    "path": "output/books/color-grading/color-grading-primary-workflow/SKILL.md",
+    "dir": "output/books/color-grading/color-grading-primary-workflow",
+    "ref": "57d2ef52de61b926bdcac13fe27d07c17bc36516",
+    "branch": "main",
+    "slug": "color-grading-primary-workflow",
+    "name": "一级校色工作流",
+    "desc": "先用 Lift/Gamma/Gain 调对比度，再平衡色彩，最后调饱和度",
+    "descOriginal": "当用户需要对视频/影片进行一级校色时调用。核心工作流：先调对比度（Lift/Gamma/Gain）建立良好的黑位和白位，再调色彩平衡校正偏色，最后微调饱和度。三个步骤有强交互性需迭代调整。",
+    "cat": "摄影修图",
+    "tags": [
+      "调色",
+      "校色",
+      "对比度",
+      "饱和度",
+      "色彩平衡",
+      "视频调色"
+    ],
+    "requires": null,
+    "author": {
+      "login": "geegl",
+      "url": "https://github.com/geegl"
+    },
+    "stars": 54,
+    "license": "MIT",
+    "pushedAt": "2026-06-08T13:25:11Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 6038
+      },
+      {
+        "path": "test-prompts.json",
+        "size": 1590
+      }
+    ],
+    "fileCount": 2,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/geegl/directorskills/tree/57d2ef52de61b926bdcac13fe27d07c17bc36516/output/books/color-grading/color-grading-primary-workflow",
+    "rawBase": "https://raw.githubusercontent.com/geegl/directorskills/57d2ef52de61b926bdcac13fe27d07c17bc36516/output/books/color-grading/color-grading-primary-workflow/",
+    "archiveUrl": "https://codeload.github.com/geegl/directorskills/zip/57d2ef52de61b926bdcac13fe27d07c17bc36516",
+    "archiveRoot": "directorskills-57d2ef52de61b926bdcac13fe27d07c17bc36516/output/books/color-grading/color-grading-primary-workflow"
+  },
+  {
+    "id": "gh-f68a7303",
+    "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "path": ".claude/skills/ui-ux-pro-max/SKILL.md",
+    "dir": ".claude/skills/ui-ux-pro-max",
+    "ref": "477bcb28c9812b385cb51a4605ddf30d7b2266e2",
+    "branch": "main",
+    "slug": "ui-ux-pro-max",
+    "name": "UI/UX 设计智能库",
+    "desc": "按产品类型检索配色、字体搭配、风格与 UX 准则，生成整套设计系统建议",
+    "descOriginal": "UI/UX design intelligence for web, mobile, and desktop. This skill should be used when designing, building, reviewing, or fixing interfaces, including pages, components, design systems, accessibility, interaction, responsive layout, typography, color, charts, and stack-specific UI implementation. Searchable local data: 79 searchable styles (50 active), 192 product palettes and reasoning profiles, 74 font pairings, 119 UX guidelines, 105 icons, 17 GSAP presets, 25 chart types, and 22 stacks.",
+    "cat": "UI/UX",
+    "tags": [
+      "UI设计",
+      "配色",
+      "字体搭配",
+      "设计系统",
+      "UX准则",
+      "color palette"
+    ],
+    "requires": "需要本机安装 Python 3（运行内置检索脚本）",
+    "author": {
+      "login": "nextlevelbuilder",
+      "url": "https://github.com/nextlevelbuilder"
+    },
+    "stars": 133801,
+    "license": "MIT",
+    "pushedAt": "2026-10-03T16:05:26Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 15969
+      },
+      {
+        "path": "data/app-interface.csv",
+        "size": 11046
+      },
+      {
+        "path": "data/catalog-summary.json",
+        "size": 2392
+      },
+      {
+        "path": "data/charts.csv",
+        "size": 23365
+      },
+      {
+        "path": "data/colors.csv",
+        "size": 37940
+      },
+      {
+        "path": "data/data-provenance.json",
+        "size": 36686
+      },
+      {
+        "path": "data/google-font-licenses.json",
+        "size": 433127
+      },
+      {
+        "path": "data/google-fonts.csv",
+        "size": 747241
+      },
+      {
+        "path": "data/icons.csv",
+        "size": 57945
+      },
+      {
+        "path": "data/landing.csv",
+        "size": 25449
+      },
+      {
+        "path": "data/motion.csv",
+        "size": 14679
+      },
+      {
+        "path": "data/phosphor-icons-upstream.json",
+        "size": 823933
+      },
+      {
+        "path": "data/products.csv",
+        "size": 75623
+      },
+      {
+        "path": "data/react-performance.csv",
+        "size": 15080
+      },
+      {
+        "path": "data/stacks/angular.csv",
+        "size": 19863
+      },
+      {
+        "path": "data/stacks/astro.csv",
+        "size": 14591
+      },
+      {
+        "path": "data/stacks/avalonia.csv",
+        "size": 27327
+      },
+      {
+        "path": "data/stacks/flutter.csv",
+        "size": 14192
+      },
+      {
+        "path": "data/stacks/html-tailwind.csv",
+        "size": 16551
+      },
+      {
+        "path": "data/stacks/javafx.csv",
+        "size": 33577
+      },
+      {
+        "path": "data/stacks/jetpack-compose.csv",
+        "size": 12295
+      },
+      {
+        "path": "data/stacks/laravel.csv",
+        "size": 20163
+      },
+      {
+        "path": "data/stacks/nextjs.csv",
+        "size": 18687
+      },
+      {
+        "path": "data/stacks/nuxt-ui.csv",
+        "size": 28700
+      },
+      {
+        "path": "data/stacks/nuxtjs.csv",
+        "size": 23014
+      },
+      {
+        "path": "data/stacks/react-native.csv",
+        "size": 14049
+      },
+      {
+        "path": "data/stacks/react.csv",
+        "size": 21166
+      },
+      {
+        "path": "data/stacks/shadcn.csv",
+        "size": 23184
+      },
+      {
+        "path": "data/stacks/svelte.csv",
+        "size": 15078
+      },
+      {
+        "path": "data/stacks/swiftui.csv",
+        "size": 15323
+      },
+      {
+        "path": "data/stacks/threejs.csv",
+        "size": 46769
+      },
+      {
+        "path": "data/stacks/uno.csv",
+        "size": 30091
+      },
+      {
+        "path": "data/stacks/uwp.csv",
+        "size": 24692
+      },
+      {
+        "path": "data/stacks/vue.csv",
+        "size": 12813
+      },
+      {
+        "path": "data/stacks/winui.csv",
+        "size": 27890
+      },
+      {
+        "path": "data/stacks/wpf.csv",
+        "size": 24158
+      },
+      {
+        "path": "data/styles.csv",
+        "size": 149478
+      },
+      {
+        "path": "data/typography.csv",
+        "size": 49997
+      },
+      {
+        "path": "data/ui-reasoning.csv",
+        "size": 77360
+      },
+      {
+        "path": "data/ux-guidelines.csv",
+        "size": 27516
+      }
+    ],
+    "fileCount": 73,
+    "truncated": true,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "data/stacks/angular.csv",
+          "line": 22,
+          "excerpt": "21,Forms,Use typed reactive forms,FormGroup/FormControl with explicit generics for compile-time safety,FormBuilder with "
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "data/stacks/nextjs.csv",
+          "line": 36,
+          "excerpt": "35,Environment,Use NEXT_PUBLIC prefix,Client-accessible env vars need prefix,NEXT_PUBLIC_ for client vars,Server vars ex"
+        },
+        {
+          "rule": "credential-mention",
+          "severity": "review",
+          "label": "提到密钥/令牌/密码等敏感信息",
+          "file": "data/stacks/nuxtjs.csv",
+          "line": 53,
+          "excerpt": "52,Environment,Use runtimeConfig for env vars,Access environment variables safely,runtimeConfig in nuxt.config,process.e"
+        },
+        {
+          "rule": "partial-scan",
+          "severity": "review",
+          "label": "文件太多（73 个），只静态检查了前 40 个",
+          "file": "",
+          "line": null,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/477bcb28c9812b385cb51a4605ddf30d7b2266e2/.claude/skills/ui-ux-pro-max",
+    "rawBase": "https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/477bcb28c9812b385cb51a4605ddf30d7b2266e2/.claude/skills/ui-ux-pro-max/",
+    "archiveUrl": "https://codeload.github.com/nextlevelbuilder/ui-ux-pro-max-skill/zip/477bcb28c9812b385cb51a4605ddf30d7b2266e2",
+    "archiveRoot": "ui-ux-pro-max-skill-477bcb28c9812b385cb51a4605ddf30d7b2266e2/.claude/skills/ui-ux-pro-max"
+  },
+  {
+    "id": "gh-d801ba8a",
+    "repo": "anthropics/knowledge-work-plugins",
+    "path": "design/skills/design-critique/SKILL.md",
+    "dir": "design/skills/design-critique",
+    "ref": "ae1513ea94dcb74a7f1505ddcf3b0ec3fab327f1",
+    "branch": "main",
+    "slug": "design-critique",
+    "name": "设计评审反馈",
+    "desc": "对界面稿从可用性、视觉层级和一致性给出结构化的设计反馈",
+    "descOriginal": "Get structured design feedback on usability, hierarchy, and consistency. Trigger with \"review this design\", \"critique this mockup\", \"what do you think of this screen?\", or when sharing a Figma link or screenshot for feedback at any stage from exploration to final polish.",
+    "cat": "UI/UX",
+    "tags": [
+      "设计评审",
+      "UX review",
+      "可用性",
+      "视觉层级",
+      "一致性",
+      "critique"
+    ],
+    "requires": null,
+    "author": {
+      "login": "anthropics",
+      "url": "https://github.com/anthropics"
+    },
+    "stars": 27093,
+    "license": "Apache-2.0",
+    "pushedAt": "2026-10-07T16:48:55Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 3923
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/anthropics/knowledge-work-plugins/tree/ae1513ea94dcb74a7f1505ddcf3b0ec3fab327f1/design/skills/design-critique",
+    "rawBase": "https://raw.githubusercontent.com/anthropics/knowledge-work-plugins/ae1513ea94dcb74a7f1505ddcf3b0ec3fab327f1/design/skills/design-critique/",
+    "archiveUrl": "https://codeload.github.com/anthropics/knowledge-work-plugins/zip/ae1513ea94dcb74a7f1505ddcf3b0ec3fab327f1",
+    "archiveRoot": "knowledge-work-plugins-ae1513ea94dcb74a7f1505ddcf3b0ec3fab327f1/design/skills/design-critique"
+  },
+  {
+    "id": "gh-1e3b9d7a",
+    "repo": "ColourCloudSky/review-ui-design-skill",
+    "path": "review-ui-design/SKILL.md",
+    "dir": "review-ui-design",
+    "ref": "4fb0bfaddfb57a9eb3e5bfb7bcd478cb98c1f23f",
+    "branch": "main",
+    "slug": "review-ui-design",
+    "name": "UI 设计评审报告",
+    "desc": "从视觉、交互、设计系统三方面评审设计稿，输出问题标注图与优化建议",
+    "descOriginal": "评审单份或一组产品 UI 设计稿，像资深设计专家团一样从视觉质量、交互体验、设计系统三个方面发现问题并给出具体、可执行、按优先级排序的优化建议；在可行时默认生成与报告编号对应的问题标注图和优化建议图，并支持修改稿增量复评。Use when the user provides UI screenshots, icon sets, screen recordings, product flows, or Figma links and asks for 设计评审、设计自检、专家评审、UI/视觉/体验评审、走查、挑毛病、提意见、看看怎么样、design review、提升设计质量或改稿复查。适用于 App、Web、桌面端和后台产品 UI；默认只读，不用于纯产品需求或代码审查，也不用于单纯比较设计稿与开发截图的还原偏差。",
+    "cat": "UI/UX",
+    "tags": [
+      "UI评审",
+      "设计走查",
+      "问题标注",
+      "优化建议",
+      "视觉",
+      "交互"
+    ],
+    "requires": "对比度检查脚本需要 Python 3",
+    "author": {
+      "login": "ColourCloudSky",
+      "url": "https://github.com/ColourCloudSky"
+    },
+    "stars": 119,
+    "license": "MIT",
+    "pushedAt": "2026-07-26T13:49:41Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 13802
+      },
+      {
+        "path": "agents/openai.yaml",
+        "size": 300
+      },
+      {
+        "path": "references/design-system-quality.md",
+        "size": 4565
+      },
+      {
+        "path": "references/icon-quality.md",
+        "size": 5574
+      },
+      {
+        "path": "references/interaction-quality.md",
+        "size": 6040
+      },
+      {
+        "path": "references/report-template.md",
+        "size": 5173
+      },
+      {
+        "path": "references/sources.md",
+        "size": 7492
+      },
+      {
+        "path": "references/visual-quality.md",
+        "size": 11441
+      },
+      {
+        "path": "scripts/contrast.py",
+        "size": 2749
+      }
+    ],
+    "fileCount": 9,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "scripts/contrast.py",
+          "line": 1,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/ColourCloudSky/review-ui-design-skill/tree/4fb0bfaddfb57a9eb3e5bfb7bcd478cb98c1f23f/review-ui-design",
+    "rawBase": "https://raw.githubusercontent.com/ColourCloudSky/review-ui-design-skill/4fb0bfaddfb57a9eb3e5bfb7bcd478cb98c1f23f/review-ui-design/",
+    "archiveUrl": "https://codeload.github.com/ColourCloudSky/review-ui-design-skill/zip/4fb0bfaddfb57a9eb3e5bfb7bcd478cb98c1f23f",
+    "archiveRoot": "review-ui-design-skill-4fb0bfaddfb57a9eb3e5bfb7bcd478cb98c1f23f/review-ui-design"
+  },
+  {
+    "id": "gh-0a099d37",
+    "repo": "op7418/Humanizer-zh",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "f4518a8eab97b8bfebc66a89d34320a89bef6930",
+    "branch": "main",
+    "slug": "humanizer-zh",
+    "name": "中文去AI味润色",
+    "desc": "编辑中文文章与评论里的空话套话，让文字自然，同时保留事实和作者声音",
+    "descOriginal": "编辑中文文章、评论和文档中的空话、重复及模板化表达，让文字更自然，同时保留事实、确定程度和作者声音。适用于润色已有文本，不用于判断作者身份或保证通过 AI 检测器。",
+    "cat": "文案口播",
+    "tags": [
+      "去AI味",
+      "润色",
+      "改写",
+      "文案",
+      "公众号",
+      "小红书"
+    ],
+    "requires": null,
+    "author": {
+      "login": "op7418",
+      "url": "https://github.com/op7418"
+    },
+    "stars": 19065,
+    "license": "MIT",
+    "pushedAt": "2026-09-23T02:24:28Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 20527
+      },
+      {
+        "path": ".gitignore",
+        "size": 128
+      },
+      {
+        "path": "CHANGELOG.md",
+        "size": 1482
+      },
+      {
+        "path": "LICENSE",
+        "size": 1063
+      },
+      {
+        "path": "README.md",
+        "size": 6459
+      },
+      {
+        "path": "tests/check_structure.py",
+        "size": 1373
+      },
+      {
+        "path": "tests/fixtures/cases.json",
+        "size": 5297
+      },
+      {
+        "path": "tests/fixtures/structure.md",
+        "size": 852
+      },
+      {
+        "path": "tests/README.md",
+        "size": 2292
+      }
+    ],
+    "fileCount": 9,
+    "truncated": false,
+    "safety": {
+      "level": "review",
+      "findings": [
+        {
+          "rule": "executable-file",
+          "severity": "review",
+          "label": "可执行脚本/二进制文件，安装前请人工检查",
+          "file": "tests/check_structure.py",
+          "line": 1,
+          "excerpt": ""
+        }
+      ]
+    },
+    "url": "https://github.com/op7418/Humanizer-zh/tree/f4518a8eab97b8bfebc66a89d34320a89bef6930",
+    "rawBase": "https://raw.githubusercontent.com/op7418/Humanizer-zh/f4518a8eab97b8bfebc66a89d34320a89bef6930/",
+    "archiveUrl": "https://codeload.github.com/op7418/Humanizer-zh/zip/f4518a8eab97b8bfebc66a89d34320a89bef6930",
+    "archiveRoot": "Humanizer-zh-f4518a8eab97b8bfebc66a89d34320a89bef6930"
+  },
+  {
+    "id": "gh-3e7e9d3b",
+    "repo": "alchaincyf/huashu-skills",
+    "path": "huashu-script-polish/SKILL.md",
+    "dir": "huashu-script-polish",
+    "ref": "2efea35738efa06abbfa9acaee923fcef0732a14",
+    "branch": "master",
+    "slug": "huashu-script-polish",
+    "name": "口播脚本口语化",
+    "desc": "把书面腔脚本改成能念出口的口语，去掉 AI 味，适合直接录制",
+    "descOriginal": "视频脚本口语化审校，去书面腔让脚本适合说出来。当用户提到\"口语化\"、\"太书面了\"、\"像说话一样\"、\"脚本审校\"时使用。",
+    "cat": "文案口播",
+    "tags": [
+      "口播",
+      "口语化",
+      "视频脚本",
+      "去书面腔",
+      "脚本审校",
+      "配音稿"
+    ],
+    "requires": null,
+    "author": {
+      "login": "alchaincyf",
+      "url": "https://github.com/alchaincyf"
+    },
+    "stars": 1672,
+    "license": "MIT",
+    "pushedAt": "2026-09-22T15:52:24Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 2130
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/alchaincyf/huashu-skills/tree/2efea35738efa06abbfa9acaee923fcef0732a14/huashu-script-polish",
+    "rawBase": "https://raw.githubusercontent.com/alchaincyf/huashu-skills/2efea35738efa06abbfa9acaee923fcef0732a14/huashu-script-polish/",
+    "archiveUrl": "https://codeload.github.com/alchaincyf/huashu-skills/zip/2efea35738efa06abbfa9acaee923fcef0732a14",
+    "archiveRoot": "huashu-skills-2efea35738efa06abbfa9acaee923fcef0732a14/huashu-script-polish"
+  },
+  {
+    "id": "gh-ef840b09",
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "video-Skills/space-video-script/SKILL.md",
+    "dir": "video-Skills/space-video-script",
+    "ref": "edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "branch": "main",
+    "slug": "space-video-script",
+    "name": "去AI味口播脚本",
+    "desc": "把AI腔改成真人口语，并把模糊想法写成精确到秒的分镜脚本",
+    "descOriginal": "视频口播脚本撰写，两大特色——(1) 去 AI 味，把书面/AI 腔改成能念出口的真人口语；(2) 把模糊想法逼成一份精确到秒的分镜脚本（每个镜头讲什么、怎么呈现、停多久、怎么切）。当用户说「写口播脚本」「这段太 AI 了改成人话」「口播稿」「分镜脚本」「精确到秒」「script」「改成能念的」时触发。输入可以是选题正文、一段草稿，或一句模糊描述。",
+    "cat": "文案口播",
+    "tags": [
+      "口播稿",
+      "分镜脚本",
+      "去AI味",
+      "视频脚本",
+      "口语化",
+      "短视频"
+    ],
+    "requires": null,
+    "author": {
+      "login": "SpaceZephyr",
+      "url": "https://github.com/SpaceZephyr"
+    },
+    "stars": 1585,
+    "license": null,
+    "pushedAt": "2026-08-26T08:49:06Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 3718
+      }
+    ],
+    "fileCount": 1,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/SpaceZephyr/creator-buddy/tree/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/video-Skills/space-video-script",
+    "rawBase": "https://raw.githubusercontent.com/SpaceZephyr/creator-buddy/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/video-Skills/space-video-script/",
+    "archiveUrl": "https://codeload.github.com/SpaceZephyr/creator-buddy/zip/edf46c567ff54b72ee2157d06f3a02dbd67aaa9c",
+    "archiveRoot": "creator-buddy-edf46c567ff54b72ee2157d06f3a02dbd67aaa9c/video-Skills/space-video-script"
+  },
+  {
+    "id": "gh-55215287",
+    "repo": "BigPengSays/bigpeng-hot-gzh",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "8967879bbd59bfacfeb2d66214f095dc92b6f6bc",
+    "branch": "main",
+    "slug": "bigpeng-hot-gzh",
+    "name": "公众号爆款选题标题",
+    "desc": "用7个爆款选题公式生成公众号选题方向和多条候选标题",
+    "descOriginal": "为微信公众号生成爆款选题方向和候选标题。有明确选题、文章描述、草稿或草稿标题时，输出多条不同公式的候选标题；只有关键词、简单想法或未给输入时，先给选题方向再配标题。 用于用户提到爆款标题、公众号标题、起标题、选题、不知道写什么、候选标题、公众号选题、爆款公众号时。 只做选题和标题，不写正文。",
+    "cat": "文案口播",
+    "tags": [
+      "公众号",
+      "爆款标题",
+      "选题",
+      "标题公式",
+      "起标题",
+      "涨粉"
+    ],
+    "requires": null,
+    "author": {
+      "login": "BigPengSays",
+      "url": "https://github.com/BigPengSays"
+    },
+    "stars": 265,
+    "license": "MIT",
+    "pushedAt": "2026-08-19T02:25:37Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 4142
+      },
+      {
+        "path": ".gitignore",
+        "size": 32
+      },
+      {
+        "path": "assets/author-wechat-v2.png",
+        "size": 143888
+      },
+      {
+        "path": "assets/author-wechat.png",
+        "size": 143888
+      },
+      {
+        "path": "examples/prompts.md",
+        "size": 3280
+      },
+      {
+        "path": "LICENSE",
+        "size": 1064
+      },
+      {
+        "path": "README.md",
+        "size": 5764
+      },
+      {
+        "path": "references/qa-checklist.md",
+        "size": 1527
+      },
+      {
+        "path": "references/title-corpus.md",
+        "size": 3607
+      },
+      {
+        "path": "references/title-formulas.md",
+        "size": 4710
+      },
+      {
+        "path": "references/topic-templates.md",
+        "size": 4949
+      }
+    ],
+    "fileCount": 11,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/BigPengSays/bigpeng-hot-gzh/tree/8967879bbd59bfacfeb2d66214f095dc92b6f6bc",
+    "rawBase": "https://raw.githubusercontent.com/BigPengSays/bigpeng-hot-gzh/8967879bbd59bfacfeb2d66214f095dc92b6f6bc/",
+    "archiveUrl": "https://codeload.github.com/BigPengSays/bigpeng-hot-gzh/zip/8967879bbd59bfacfeb2d66214f095dc92b6f6bc",
+    "archiveRoot": "bigpeng-hot-gzh-8967879bbd59bfacfeb2d66214f095dc92b6f6bc"
+  },
+  {
+    "id": "gh-dca1e69c",
+    "repo": "imfangli/mediastorm-copywriter",
+    "path": "SKILL.md",
+    "dir": "",
+    "ref": "1d91abdff0b1bf0dfef8d6c73e0970ed39ae6403",
+    "branch": "main",
+    "slug": "mediastorm-copywriter",
+    "name": "影视飓风式口播稿",
+    "desc": "按影视飓风的口播结构，写开门见山的科技评测、科普和 vlog 口播稿",
+    "descOriginal": "生成「影视飓风(Mediastorm)」风格的中文口播稿。当用户需要写视频口播稿、解说词、 短视频文案、科技评测/科普/vlog 旁白,或明确要求「影视飓风风格/Tim 风格/飓风口播」时使用。 基于对影视飓风最新 19 条视频字幕的结构化分析,产出开门见山的钩子、分点主体、 数据+类比、自然的合作方植入、金句升华与固定 CTA 结尾的完整成稿。 适用触发词:口播稿、解说词、视频文案、旁白、影视飓风风格、科技评测文案、科普脚本。",
+    "cat": "文案口播",
+    "tags": [
+      "口播稿",
+      "影视飓风",
+      "视频脚本",
+      "解说词",
+      "科技评测",
+      "vlog"
+    ],
+    "requires": null,
+    "author": {
+      "login": "imfangli",
+      "url": "https://github.com/imfangli"
+    },
+    "stars": 103,
+    "license": "MIT",
+    "pushedAt": "2026-07-14T13:53:45Z",
+    "fork": false,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "size": 3362
+      },
+      {
+        "path": "LICENSE",
+        "size": 1065
+      },
+      {
+        "path": "README.md",
+        "size": 1897
+      },
+      {
+        "path": "references/examples.md",
+        "size": 2678
+      },
+      {
+        "path": "references/hooks.md",
+        "size": 2401
+      },
+      {
+        "path": "references/structure.md",
+        "size": 2424
+      },
+      {
+        "path": "references/style-guide.md",
+        "size": 2983
+      },
+      {
+        "path": "references/transitions.md",
+        "size": 2393
+      }
+    ],
+    "fileCount": 8,
+    "truncated": false,
+    "safety": {
+      "level": "pass",
+      "findings": []
+    },
+    "url": "https://github.com/imfangli/mediastorm-copywriter/tree/1d91abdff0b1bf0dfef8d6c73e0970ed39ae6403",
+    "rawBase": "https://raw.githubusercontent.com/imfangli/mediastorm-copywriter/1d91abdff0b1bf0dfef8d6c73e0970ed39ae6403/",
+    "archiveUrl": "https://codeload.github.com/imfangli/mediastorm-copywriter/zip/1d91abdff0b1bf0dfef8d6c73e0970ed39ae6403",
+    "archiveRoot": "mediastorm-copywriter-1d91abdff0b1bf0dfef8d6c73e0970ed39ae6403"
+  }
+]

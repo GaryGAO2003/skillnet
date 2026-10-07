@@ -1,0 +1,22 @@
+{
+  "name": "skillnet-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local backend (search + accounts + uploads + tips + remote MCP) for a Chinese creator AI Agent-Skills marketplace.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "import:github": "node scripts/import-github.mjs",
+    "demo:activity": "node scripts/demo-activity.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "fflate": "^0.8.2",
+    "uqr": "^0.1.3",
+    "zod": "^4.0.0"
+  }
+}

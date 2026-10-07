@@ -1,0 +1,476 @@
+{
+  "creators": [
+    {
+      "id": "c1",
+      "name": "阿杰拍片日记",
+      "handle": "ajie",
+      "platform": "B站",
+      "fans": "12.4万",
+      "bio": "Vlog 博主，视频里用的剪辑和字幕 skill 都在这里，拿去就能用。",
+      "claimed": true
+    },
+    {
+      "id": "c2",
+      "name": "Momo画画中",
+      "handle": "momo",
+      "platform": "小红书",
+      "fans": "8.6万",
+      "bio": "插画师 / 平面设计。把我的配色和出图流程做成了 skill。",
+      "claimed": true
+    },
+    {
+      "id": "c3",
+      "name": "Leo做音乐",
+      "handle": "leo",
+      "platform": "抖音",
+      "fans": "21万",
+      "bio": "独立音乐人，写歌、编曲、起歌名，AI 是我的乐队成员。",
+      "claimed": true
+    },
+    {
+      "id": "c4",
+      "name": "一只UI喵",
+      "handle": "uimiao",
+      "platform": "B站",
+      "fans": "4.3万",
+      "bio": "UI/UX 设计师，分享设计评审和用户访谈的 AI 工作流。",
+      "claimed": true
+    }
+  ],
+  "skills": [
+    {
+      "id": "s1",
+      "slug": "vlog-script",
+      "owner": "c1",
+      "name": "Vlog 脚本搭子",
+      "glyph": "Vlog",
+      "cat": "视频剪辑",
+      "desc": "给它一句话主题，生成分镜、口播稿和 B-roll 清单。",
+      "tags": [
+        "vlog",
+        "脚本",
+        "分镜",
+        "口播稿",
+        "B-roll",
+        "拍摄清单"
+      ],
+      "examples": [
+        {
+          "you": "周末去了趟海边，想拍个 vlog",
+          "ai": "00:00 开场 · 海浪空镜 + 口播「这周我逃离了城市」\n00:08 B-roll · 骑车、买椰子\n00:25 主体 · 三个瞬间……"
+        }
+      ],
+      "installs": 8421,
+      "likes": 1932,
+      "rating": 4.8,
+      "ratingCount": 241,
+      "verified": true,
+      "video": {
+        "platform": "B站",
+        "title": "我的 Vlog 都是这样策划的"
+      },
+      "versions": [
+        {
+          "v": "1.3",
+          "date": "2026-09-28",
+          "note": "新增抖音竖屏模板"
+        },
+        {
+          "v": "1.0",
+          "date": "2026-08-10",
+          "note": "首次发布"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "slug": "subtitle-pro",
+      "owner": "c1",
+      "name": "爆款字幕包装",
+      "glyph": "字幕",
+      "cat": "视频剪辑",
+      "desc": "把字幕改写成有节奏的花字文案，标注强调词和音效点。",
+      "tags": [
+        "字幕",
+        "花字",
+        "爆款字幕",
+        "剪映",
+        "SRT",
+        "subtitle"
+      ],
+      "examples": [
+        {
+          "you": "今天我们来聊聊怎么省钱",
+          "ai": "【今天】聊个狠的💥\n省钱，但不抠门 ✦ 音效：叮\n……"
+        }
+      ],
+      "installs": 1204,
+      "likes": 640,
+      "rating": 4.6,
+      "ratingCount": 37,
+      "verified": true,
+      "video": {
+        "platform": "B站",
+        "title": "播放量翻倍的字幕技巧"
+      },
+      "versions": [
+        {
+          "v": "2.1",
+          "date": "2026-10-01",
+          "note": "支持剪映导入格式"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "slug": "palette-muse",
+      "owner": "c2",
+      "name": "灵感配色师",
+      "glyph": "配色",
+      "cat": "插画美术",
+      "desc": "描述一种情绪，给你 5 套配色和用法说明，附色值。",
+      "tags": [
+        "配色",
+        "配色方案",
+        "色卡",
+        "莫兰迪",
+        "palette",
+        "色值"
+      ],
+      "examples": [
+        {
+          "you": "夏夜、汽水、有点怀旧",
+          "ai": "① 汽水蓝 #4FC3F7 主色\n② 西瓜红 #FF6B6B 点缀\n③ 月光黄 #FFE08A 高光……"
+        }
+      ],
+      "installs": 6230,
+      "likes": 2510,
+      "rating": 4.9,
+      "ratingCount": 187,
+      "verified": true,
+      "video": {
+        "platform": "小红书",
+        "title": "再也不愁配色了"
+      },
+      "versions": [
+        {
+          "v": "1.4",
+          "date": "2026-09-30",
+          "note": "新增莫兰迪系列"
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "slug": "mj-prompt",
+      "owner": "c2",
+      "name": "出图咒语大全",
+      "glyph": "咒语",
+      "cat": "插画美术",
+      "desc": "把你的想法翻译成 Midjourney / 即梦能听懂的提示词。",
+      "tags": [
+        "提示词",
+        "咒语",
+        "Midjourney",
+        "即梦",
+        "AI绘画",
+        "prompt"
+      ],
+      "examples": [
+        {
+          "you": "一只在便利店打工的猫",
+          "ai": "a cat working at a convenience store at night, warm neon, film grain, 35mm, cozy, anime film style, glowing dusk sky --ar 3:4"
+        }
+      ],
+      "installs": 2988,
+      "likes": 1720,
+      "rating": 4.7,
+      "ratingCount": 89,
+      "verified": true,
+      "video": {
+        "platform": "小红书",
+        "title": "我的 AI 出图工作流"
+      },
+      "versions": [
+        {
+          "v": "1.1",
+          "date": "2026-09-18",
+          "note": "支持即梦 3.0"
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "slug": "song-title",
+      "owner": "c3",
+      "name": "歌名和歌词灵感",
+      "glyph": "♪",
+      "cat": "音乐",
+      "desc": "给它一段旋律情绪，生成歌名、副歌歌词和押韵表。",
+      "tags": [
+        "歌名",
+        "歌词",
+        "押韵",
+        "十三辙",
+        "写歌",
+        "lyrics"
+      ],
+      "examples": [
+        {
+          "you": "失恋但不想太丧",
+          "ai": "歌名候选：《晚风不负责》《下一站是我》\n副歌：「风把你吹远，我把自己吹干……」"
+        }
+      ],
+      "installs": 5104,
+      "likes": 2204,
+      "rating": 4.8,
+      "ratingCount": 158,
+      "verified": true,
+      "video": {
+        "platform": "抖音",
+        "title": "3 分钟写完一首歌"
+      },
+      "versions": [
+        {
+          "v": "0.9",
+          "date": "2026-09-25",
+          "note": "新增粤语押韵"
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "slug": "mix-coach",
+      "owner": "c3",
+      "name": "编曲混音教练",
+      "glyph": "Mix",
+      "cat": "音乐",
+      "desc": "描述你的 demo，给出编曲结构、乐器分配和混音建议。",
+      "tags": [
+        "编曲",
+        "混音",
+        "EQ",
+        "压缩",
+        "LUFS",
+        "mixing"
+      ],
+      "examples": [
+        {
+          "you": "lofi，92bpm，只有钢琴和鼓",
+          "ai": "结构：Intro 4 → A 8 → B 8\n加入：Rhodes 铺底、黑胶噪声 -24dB\n鼓：kick 低切 30Hz……"
+        }
+      ],
+      "installs": 688,
+      "likes": 431,
+      "rating": 4.6,
+      "ratingCount": 21,
+      "verified": true,
+      "video": {
+        "platform": "抖音",
+        "title": "卧室制作人进阶"
+      },
+      "versions": [
+        {
+          "v": "3.0",
+          "date": "2026-10-03",
+          "note": "新增混音检查清单"
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "slug": "ux-review",
+      "owner": "c4",
+      "name": "设计稿毒舌评审",
+      "glyph": "UX",
+      "cat": "UI/UX",
+      "desc": "上传设计稿描述，按可用性原则给出问题和改法。",
+      "tags": [
+        "设计评审",
+        "可用性",
+        "UX",
+        "启发式评估",
+        "WCAG",
+        "design review"
+      ],
+      "examples": [
+        {
+          "you": "登录页：手机号 + 密码 + 三个第三方登录",
+          "ai": "问题 1：主按钮对比度不足（3.1:1）\n问题 2：第三方登录抢了主路径……"
+        }
+      ],
+      "installs": 3104,
+      "likes": 1288,
+      "rating": 4.7,
+      "ratingCount": 96,
+      "verified": true,
+      "video": {
+        "platform": "B站",
+        "title": "让 AI 帮你过设计评审"
+      },
+      "versions": [
+        {
+          "v": "1.2",
+          "date": "2026-09-20",
+          "note": "新增移动端规范"
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "slug": "xhs-cover",
+      "owner": "c2",
+      "name": "小红书封面标题",
+      "glyph": "封面",
+      "cat": "小红书",
+      "desc": "根据内容生成 10 个爆款封面标题和排版建议。",
+      "tags": [
+        "封面",
+        "标题",
+        "爆款",
+        "小红书",
+        "排版",
+        "cover"
+      ],
+      "examples": [
+        {
+          "you": "分享我的租房改造",
+          "ai": "「月租 2k 的房子，被我改成了 ins 风」\n大字 + 前后对比拼图……"
+        }
+      ],
+      "installs": 4410,
+      "likes": 1980,
+      "rating": 4.8,
+      "ratingCount": 132,
+      "verified": true,
+      "video": {
+        "platform": "小红书",
+        "title": "封面点击率提升 3 倍"
+      },
+      "versions": [
+        {
+          "v": "1.0",
+          "date": "2026-10-05",
+          "note": "首次发布"
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "slug": "topic-radar",
+      "owner": "c1",
+      "name": "抖音选题雷达",
+      "glyph": "选题",
+      "cat": "短视频运营",
+      "desc": "输入你的账号定位，给出 10 个近期能蹭的选题和开头 3 秒钩子。",
+      "tags": [
+        "选题",
+        "抖音",
+        "热点",
+        "钩子",
+        "黄金3秒",
+        "topic"
+      ],
+      "examples": [
+        {
+          "you": "美食探店账号，坐标成都",
+          "ai": "选题 1：「人均 30 吃遍春熙路」\n钩子：「这家店老板说，不好吃不要钱」……"
+        }
+      ],
+      "installs": 7012,
+      "likes": 2830,
+      "rating": 4.7,
+      "ratingCount": 214,
+      "verified": true,
+      "video": {
+        "platform": "B站",
+        "title": "我是怎么想选题的"
+      },
+      "versions": [
+        {
+          "v": "2.0",
+          "date": "2026-10-02",
+          "note": "接入近 7 天热点"
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "slug": "portrait-retouch",
+      "owner": "c2",
+      "name": "人像修图参数",
+      "glyph": "修图",
+      "cat": "摄影修图",
+      "desc": "描述照片和想要的感觉，给出醒图 / Lightroom 的具体参数。",
+      "tags": [
+        "修图",
+        "人像",
+        "调色",
+        "胶片感",
+        "醒图",
+        "Lightroom"
+      ],
+      "examples": [
+        {
+          "you": "阴天户外人像，想要日系通透",
+          "ai": "曝光 +0.3 · 对比 -12 · 高光 -30\n阴影 +20 · 色温 -6 · 橙色饱和 -10……"
+        }
+      ],
+      "installs": 3820,
+      "likes": 1650,
+      "rating": 4.8,
+      "ratingCount": 118,
+      "verified": true,
+      "video": {
+        "platform": "小红书",
+        "title": "手机拍出胶片感"
+      },
+      "versions": [
+        {
+          "v": "1.1",
+          "date": "2026-09-22",
+          "note": "新增醒图参数"
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "slug": "voiceover-polish",
+      "owner": "c3",
+      "name": "口播稿润色",
+      "glyph": "口播",
+      "cat": "文案口播",
+      "desc": "把书面稿改成好念、有节奏的口播稿，标出停顿和重音。",
+      "tags": [
+        "口播",
+        "口播稿",
+        "润色",
+        "停顿",
+        "重音",
+        "voiceover"
+      ],
+      "examples": [
+        {
+          "you": "本产品采用先进技术，能有效提升效率",
+          "ai": "说真的 / 这个东西 // 帮我每天省了「一小时」……"
+        }
+      ],
+      "installs": 1560,
+      "likes": 720,
+      "rating": 4.5,
+      "ratingCount": 47,
+      "verified": true,
+      "video": {
+        "platform": "抖音",
+        "title": "口播不卡壳的秘诀"
+      },
+      "versions": [
+        {
+          "v": "1.0",
+          "date": "2026-09-15",
+          "note": "首次发布"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,614 @@
+[
+  {
+    "repo": "lcbuaaliu/ai-jian-koubo",
+    "path": "SKILL.md",
+    "cat": "视频剪辑",
+    "title_zh": "AI 剪口播",
+    "summary_zh": "自动转录口播视频、识别口误和语气词，网页确认后导出可进剪映的工程",
+    "tags": [
+      "剪口播",
+      "口误识别",
+      "字幕",
+      "剪映",
+      "口播视频",
+      "FCPXML"
+    ],
+    "requires": "需要火山引擎语音识别 API Key，并需本机安装 ffmpeg、Node.js 和 Python 3",
+    "why": "493★ AGPL-3.0｜脚本随仓库自带、无需下载二进制；AGPL 为强 copyleft，上架前请确认"
+  },
+  {
+    "repo": "luoluoluo22/jianying-editor-skill",
+    "path": "SKILL.md",
+    "cat": "视频剪辑",
+    "title_zh": "剪映自动化剪辑",
+    "summary_zh": "用自然语言让 AI 操作剪映：导入素材、加字幕配音和动效并导出草稿",
+    "tags": [
+      "剪映",
+      "自动剪辑",
+      "字幕",
+      "配音",
+      "vlog",
+      "草稿"
+    ],
+    "requires": "需要本机安装剪映专业版、Python 3 和 ffmpeg（另需 pip 安装若干依赖）",
+    "why": "3.8k★ MIT｜操作本地剪映草稿文件；SKILL.md 在仓库根目录，整个仓库（含特效资源）即 skill 目录"
+  },
+  {
+    "repo": "xianyu110/ecommerce-video-skills",
+    "path": "skills/live-stream-clips/SKILL.md",
+    "cat": "视频剪辑",
+    "title_zh": "直播切片",
+    "summary_zh": "从直播录屏找高光，批量导出竖屏切片并自动加字幕、标题和开头钩子",
+    "tags": [
+      "直播切片",
+      "高光",
+      "竖屏",
+      "字幕",
+      "带货",
+      "ffmpeg"
+    ],
+    "requires": "需要本机安装 ffmpeg 和 Python 3",
+    "why": "38★ MIT｜自带 live_clip.py，可按字幕关键词或停顿自动提议高光段"
+  },
+  {
+    "repo": "louisedesadeleer/clipify",
+    "path": "SKILL.md",
+    "cat": "视频剪辑",
+    "title_zh": "长视频切短视频",
+    "summary_zh": "自动找出笑点和高光片段剪成短视频，可转竖屏并烧录逐字字幕",
+    "tags": [
+      "长视频切片",
+      "短视频",
+      "逐字字幕",
+      "竖屏",
+      "播客",
+      "clip"
+    ],
+    "requires": "需要本机安装 ffmpeg 和 Whisper（本地运行，无需云 API）",
+    "why": "587★ MIT｜原仓库（Easel 等收录的是副本）；英文 SKILL.md"
+  },
+  {
+    "repo": "zenstory-ai/drama-skills",
+    "path": "skills/short-drama-storyboard/SKILL.md",
+    "cat": "视频剪辑",
+    "title_zh": "短剧分镜与关键帧",
+    "summary_zh": "把短剧剧本拆成有镜头职责的分镜表，并为每镜写冻结关键帧提示词",
+    "tags": [
+      "短剧",
+      "漫剧",
+      "分镜",
+      "关键帧",
+      "镜头表",
+      "AI视频"
+    ],
+    "requires": null,
+    "why": "2.6k★ MIT｜drama-skills 套件之一，可独立使用；套件另有剧本/资产/视频提示词等配套 skill"
+  },
+  {
+    "repo": "alchaincyf/huashu-skills",
+    "path": "huashu-video-check/SKILL.md",
+    "cat": "短视频运营",
+    "title_zh": "视频封标钩子检查",
+    "summary_zh": "参照 MrBeast 方法检查视频标题、封面和开头钩子，提升点击率与完播",
+    "tags": [
+      "标题",
+      "封面",
+      "点击率",
+      "开头钩子",
+      "完播率",
+      "MrBeast"
+    ],
+    "requires": null,
+    "why": "1.7k★ MIT｜花叔 huashu-skills 合集；409 行检查清单，无外部依赖"
+  },
+  {
+    "repo": "xianyu110/ecommerce-video-skills",
+    "path": "skills/hook-3s-script/SKILL.md",
+    "cat": "短视频运营",
+    "title_zh": "黄金3秒钩子脚本",
+    "summary_zh": "为带货短视频一次写出多版前3秒开场（台词+画面+花字）并做合规自检",
+    "tags": [
+      "黄金3秒",
+      "钩子",
+      "带货",
+      "短视频脚本",
+      "花字",
+      "开场"
+    ],
+    "requires": null,
+    "why": "38★ MIT｜中文；按痛点/反差/结果先行等钩子类型出多版"
+  },
+  {
+    "repo": "ZJU-REAL/Easel",
+    "path": "skills/openclaw/skill-trend-rider/SKILL.md",
+    "cat": "短视频运营",
+    "title_zh": "蹭热点内容方案",
+    "summary_zh": "输入热点事件，结合账号定位给出切入角度、内容形式、标题和风险提醒",
+    "tags": [
+      "蹭热点",
+      "热点",
+      "选题",
+      "标题",
+      "账号定位",
+      "小红书"
+    ],
+    "requires": null,
+    "why": "3.2k★ Apache-2.0｜Easel 为国内社媒创作者设计；有无账号画像都能用，不依赖 Easel 运行环境"
+  },
+  {
+    "repo": "ZJU-REAL/Easel",
+    "path": "skills/openclaw/skill-livestream/SKILL.md",
+    "cat": "短视频运营",
+    "title_zh": "直播策划与话术",
+    "summary_zh": "生成直播主题、流程时间表，以及开场、过渡、催单、感谢等完整话术",
+    "tags": [
+      "直播",
+      "话术",
+      "带货直播",
+      "开场白",
+      "催单",
+      "直播脚本"
+    ],
+    "requires": null,
+    "why": "3.2k★ Apache-2.0｜Easel；纯文本策划，自带 livestream-playbook 参考资料"
+  },
+  {
+    "repo": "liuxingqitd/content-risk-detector",
+    "path": "SKILL.md",
+    "cat": "短视频运营",
+    "title_zh": "短视频合规检测",
+    "summary_zh": "检查逐字稿是否违反抖音、小红书、视频号规范，给出分级风险与改法",
+    "tags": [
+      "合规",
+      "违规检测",
+      "限流",
+      "逐字稿",
+      "抖音",
+      "视频号"
+    ],
+    "requires": null,
+    "why": "51★ MIT｜只读逐字稿文本，不触碰账号或平台接口"
+  },
+  {
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "xhs-Skills/space-xhs-title/SKILL.md",
+    "cat": "小红书",
+    "title_zh": "小红书爆款标题",
+    "summary_zh": "按15种标题方法批量出候选并评分，标合规风险，给 A/B 测试建议",
+    "tags": [
+      "小红书",
+      "标题",
+      "爆款标题",
+      "A/B测试",
+      "搜索词",
+      "种草"
+    ],
+    "requires": null,
+    "why": "1.6k★ MIT(README声明)｜creator-buddy 套件；纯文本，无外部依赖"
+  },
+  {
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "xhs-Skills/space-xhs-writer/SKILL.md",
+    "cat": "小红书",
+    "title_zh": "小红书笔记写作",
+    "summary_zh": "按7种笔记类型写出可直接发布的正文：开头、骨架、互动结尾、标签",
+    "tags": [
+      "小红书",
+      "笔记",
+      "种草",
+      "文案",
+      "标签",
+      "测评"
+    ],
+    "requires": null,
+    "why": "1.6k★ MIT(README声明)｜818 行，覆盖种草、干货、避雷等 7 类笔记，含合规自检"
+  },
+  {
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "xhs-Skills/space-xhs-positioning/SKILL.md",
+    "cat": "小红书",
+    "title_zh": "小红书起号定位",
+    "summary_zh": "引导式对话定下赛道、定位句、人设三件套，并给前20篇选题和冷启动路径",
+    "tags": [
+      "小红书",
+      "起号",
+      "账号定位",
+      "人设",
+      "选题",
+      "冷启动"
+    ],
+    "requires": null,
+    "why": "1.6k★ MIT(README声明)｜纯对话式咨询，无外部依赖"
+  },
+  {
+    "repo": "ziguishian/xhs-visual-director-skill",
+    "path": "skill/SKILL.md",
+    "cat": "小红书",
+    "title_zh": "小红书视觉导演",
+    "summary_zh": "规划与评审小红书图文：选封面与逐页视觉风格，并输出生图提示词",
+    "tags": [
+      "小红书",
+      "封面",
+      "图文",
+      "轮播",
+      "视觉",
+      "生图提示词"
+    ],
+    "requires": null,
+    "why": "1.4k★ MIT｜559 行；只做视觉规划与提示词，不自动发布"
+  },
+  {
+    "repo": "JimLiu/baoyu-skills",
+    "path": "skills/baoyu-xhs-images/SKILL.md",
+    "cat": "小红书",
+    "title_zh": "小红书图文卡片",
+    "summary_zh": "把内容拆成1-10张卡通风信息图卡片，含12种风格、8种版式、3套配色",
+    "tags": [
+      "小红书",
+      "图文卡片",
+      "信息图",
+      "配图",
+      "轮播",
+      "宝玉"
+    ],
+    "requires": "需要图像生成能力（Codex 内置生图，或 OpenAI / Google / 即梦等 API Key）",
+    "why": "26k★ MIT｜宝玉 baoyu-skills；英文 SKILL.md；本 skill 不含自动发布（该仓库的发布类 skill 已排除）"
+  },
+  {
+    "repo": "anthropics/skills",
+    "path": "skills/canvas-design/SKILL.md",
+    "cat": "插画美术",
+    "title_zh": "海报与视觉设计",
+    "summary_zh": "用设计哲学创作 PNG/PDF 海报与静态视觉作品，强调原创构图、字体与留白",
+    "tags": [
+      "海报",
+      "视觉设计",
+      "排版",
+      "插画",
+      "PNG",
+      "canvas"
+    ],
+    "requires": "需要能运行代码并输出 PNG/PDF 的 Agent 环境（通常是 Python）",
+    "why": "180k★ Apache-2.0｜Anthropic 官方 skills 仓库；英文；随附字体文件"
+  },
+  {
+    "repo": "yang0/handraw-style",
+    "path": "skills/handdraw-style-prompter/SKILL.md",
+    "cat": "插画美术",
+    "title_zh": "327种手绘风格提示词",
+    "summary_zh": "按编号挑选手绘风格和主题色，生成中英双语生图提示词，附风格图库",
+    "tags": [
+      "手绘",
+      "插画风格",
+      "风格图库",
+      "双语提示词",
+      "配色",
+      "生图提示词"
+    ],
+    "requires": null,
+    "why": "4.5k★ MIT(需署名)｜默认只出提示词、不调用生图工具；skill 目录含约 1.8MB 风格图库；MIT 需署名"
+  },
+  {
+    "repo": "pyang5166/gbro-cover-design",
+    "path": "SKILL.md",
+    "cat": "插画美术",
+    "title_zh": "公众号小红书封面",
+    "summary_zh": "生成3:4封面提示词：10种构图风格，支持真人出镜与多参考图保持人脸一致",
+    "tags": [
+      "封面设计",
+      "公众号封面",
+      "小红书封面",
+      "提示词",
+      "人脸一致",
+      "构图"
+    ],
+    "requires": "只产出提示词；出图需自备生图模型（如即梦、Nano Banana）",
+    "why": "886★ MIT｜不调用任何模型或 API"
+  },
+  {
+    "repo": "op7418/Document-illustrator-skill",
+    "path": "SKILL.md",
+    "cat": "插画美术",
+    "title_zh": "文档智能配图",
+    "summary_zh": "按文章结构提炼要点，为每个主题生成统一风格的配图，支持16:9和3:4",
+    "tags": [
+      "配图",
+      "文章插图",
+      "封面",
+      "小红书",
+      "公众号",
+      "Nano Banana"
+    ],
+    "requires": "需要 Gemini API Key，并需 pip 安装 google-genai、pillow",
+    "why": "599★ MIT｜歸藏出品；内置多种配图风格；479 行"
+  },
+  {
+    "repo": "jijiutong/ai-visual-director",
+    "path": "SKILL.md",
+    "cat": "插画美术",
+    "title_zh": "AI 视觉导演",
+    "summary_zh": "把故事转成角色卡、场景图、故事板、海报和视频提示词，保持角色一致",
+    "tags": [
+      "角色设计",
+      "分镜",
+      "故事板",
+      "海报",
+      "风格",
+      "角色一致性"
+    ],
+    "requires": null,
+    "why": "175★ MIT｜根目录即技能包，含 53 种视觉风格和 8 个子技能（角色/场景/分镜/海报/视频等）"
+  },
+  {
+    "repo": "jtydhr88/lyric-writing-skills",
+    "path": "plugins/lyric-writing/skills/lw-mandarin/SKILL.md",
+    "cat": "音乐",
+    "title_zh": "普通话作词",
+    "summary_zh": "讲清十三辙、平仄、字数与顿、易唱性，解决声调与旋律冲突，写出能唱的词",
+    "tags": [
+      "作词",
+      "歌词",
+      "十三辙",
+      "押韵",
+      "倒字",
+      "填词"
+    ],
+    "requires": null,
+    "why": "98★ MIT｜作词库系列（含倒字检测、说唱、粤语等姊妹 skill）；正文中文；633 行"
+  },
+  {
+    "repo": "jtydhr88/lyric-writing-skills",
+    "path": "plugins/lyric-writing/skills/lw-chinese-style/SKILL.md",
+    "cat": "音乐",
+    "title_zh": "中国风歌词",
+    "summary_zh": "让中国风歌词的中国味“长出来”：词汇、修辞手法、意象成套和用典分寸",
+    "tags": [
+      "中国风",
+      "古风",
+      "歌词",
+      "意象",
+      "用典",
+      "填词"
+    ],
+    "requires": null,
+    "why": "98★ MIT｜同一作词库；正文中文；538 行"
+  },
+  {
+    "repo": "jtydhr88/music-composition-skills",
+    "path": "plugins/music-composition/skills/mc-style-chinese-pop/SKILL.md",
+    "cat": "音乐",
+    "title_zh": "华语流行编曲风格",
+    "summary_zh": "讲清华语流行（国语/粤语）编曲的特有规则，以及哪些日系欧美手法能借用",
+    "tags": [
+      "华语流行",
+      "编曲",
+      "作曲",
+      "粤语",
+      "流行歌",
+      "风格"
+    ],
+    "requires": null,
+    "why": "150★ MIT｜作曲编曲库；正文中文，每条结论标注依据，不编造风格论断；220 行"
+  },
+  {
+    "repo": "all666666all/miaoxiang-music.skill",
+    "path": "skill/miaoxiang-music/SKILL.md",
+    "cat": "音乐",
+    "title_zh": "妙响 AI 音乐创作",
+    "summary_zh": "为妙响（汽水音乐）平台写结构化提示词：曲风公式、歌词金句、BGM 模板",
+    "tags": [
+      "AI音乐",
+      "妙响",
+      "汽水音乐",
+      "曲风",
+      "歌词",
+      "BGM"
+    ],
+    "requires": "需要妙响（汽水音乐）账号来生成音频；skill 只负责提示词与歌词",
+    "why": "12★ MIT｜非官方；覆盖国内 AI 音乐平台；只写提示词和歌词，不自动登录"
+  },
+  {
+    "repo": "geegl/directorskills",
+    "path": "output/books/cinematography-brown/cinematography-zone-system/SKILL.md",
+    "cat": "摄影修图",
+    "title_zh": "分区曝光系统",
+    "summary_zh": "用分区曝光与中灰18%控制影调，让画面中的物体看起来更亮或更暗",
+    "tags": [
+      "分区曝光",
+      "曝光",
+      "测光",
+      "中灰",
+      "用光",
+      "影调"
+    ],
+    "requires": null,
+    "why": "54★ MIT｜中文；由影视书籍拆解成的单一方法 skill（95 行）"
+  },
+  {
+    "repo": "geegl/directorskills",
+    "path": "output/books/color-grading/color-grading-primary-workflow/SKILL.md",
+    "cat": "摄影修图",
+    "title_zh": "一级校色工作流",
+    "summary_zh": "先用 Lift/Gamma/Gain 调对比度，再平衡色彩，最后调饱和度",
+    "tags": [
+      "调色",
+      "校色",
+      "对比度",
+      "饱和度",
+      "色彩平衡",
+      "视频调色"
+    ],
+    "requires": null,
+    "why": "54★ MIT｜中文；由调色类书籍拆解成的单一方法 skill（89 行）"
+  },
+  {
+    "repo": "2998980-hue/surreal-pop-collage",
+    "path": "SKILL.md",
+    "cat": "摄影修图",
+    "title_zh": "超现实波普拼贴",
+    "summary_zh": "把风景、人物或城市照片去色，配平涂色块和一个不可能的巨物，做成梦境海报",
+    "tags": [
+      "照片改造",
+      "波普拼贴",
+      "超现实",
+      "海报",
+      "小红书",
+      "抖音"
+    ],
+    "requires": "需要图像生成服务（图生图）",
+    "why": "335★ MIT｜96 行；照片只作参考图发给生图服务"
+  },
+  {
+    "repo": "liuzihe849-png/ai-editorial-print-studio",
+    "path": "SKILL.md",
+    "cat": "摄影修图",
+    "title_zh": "照片转复古印刷插画",
+    "summary_zh": "把上传的照片重绘成复古编辑印刷风插画，并检查几何一致性与画质",
+    "tags": [
+      "照片转插画",
+      "复古印刷",
+      "美食摄影",
+      "风景",
+      "产品图",
+      "风格化"
+    ],
+    "requires": "需要 Agent 内置生图能力（如 Codex image_gen）和 Python",
+    "why": "56★ MIT｜164 行；含几何校验脚本；英文 SKILL.md"
+  },
+  {
+    "repo": "anthropics/knowledge-work-plugins",
+    "path": "design/skills/design-critique/SKILL.md",
+    "cat": "UI/UX",
+    "title_zh": "设计评审反馈",
+    "summary_zh": "对界面稿从可用性、视觉层级和一致性给出结构化的设计反馈",
+    "tags": [
+      "设计评审",
+      "UX review",
+      "可用性",
+      "视觉层级",
+      "一致性",
+      "critique"
+    ],
+    "requires": null,
+    "why": "27k★ Apache-2.0｜Anthropic 官方 knowledge-work-plugins；英文；可选连接 Figma 等设计工具"
+  },
+  {
+    "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "path": ".claude/skills/ui-ux-pro-max/SKILL.md",
+    "cat": "UI/UX",
+    "title_zh": "UI/UX 设计智能库",
+    "summary_zh": "按产品类型检索配色、字体搭配、风格与 UX 准则，生成整套设计系统建议",
+    "tags": [
+      "UI设计",
+      "配色",
+      "字体搭配",
+      "设计系统",
+      "UX准则",
+      "color palette"
+    ],
+    "requires": "需要本机安装 Python 3（运行内置检索脚本）",
+    "why": "134k★ MIT｜英文；数据与检索脚本随 skill 自带，除 Python 外无外部依赖"
+  },
+  {
+    "repo": "ColourCloudSky/review-ui-design-skill",
+    "path": "review-ui-design/SKILL.md",
+    "cat": "UI/UX",
+    "title_zh": "UI 设计评审报告",
+    "summary_zh": "从视觉、交互、设计系统三方面评审设计稿，输出问题标注图与优化建议",
+    "tags": [
+      "UI评审",
+      "设计走查",
+      "问题标注",
+      "优化建议",
+      "视觉",
+      "交互"
+    ],
+    "requires": "对比度检查脚本需要 Python 3",
+    "why": "119★ MIT｜中文；186 行；支持增量复评"
+  },
+  {
+    "repo": "op7418/Humanizer-zh",
+    "path": "SKILL.md",
+    "cat": "文案口播",
+    "title_zh": "中文去AI味润色",
+    "summary_zh": "编辑中文文章与评论里的空话套话，让文字自然，同时保留事实和作者声音",
+    "tags": [
+      "去AI味",
+      "润色",
+      "改写",
+      "文案",
+      "公众号",
+      "小红书"
+    ],
+    "requires": null,
+    "why": "19k★ MIT｜英文 Humanizer 的中文化重写版；408 行"
+  },
+  {
+    "repo": "alchaincyf/huashu-skills",
+    "path": "huashu-script-polish/SKILL.md",
+    "cat": "文案口播",
+    "title_zh": "口播脚本口语化",
+    "summary_zh": "把书面腔脚本改成能念出口的口语，去掉 AI 味，适合直接录制",
+    "tags": [
+      "口播",
+      "口语化",
+      "视频脚本",
+      "去书面腔",
+      "脚本审校",
+      "配音稿"
+    ],
+    "requires": null,
+    "why": "1.7k★ MIT｜花叔 huashu-skills 合集；72 行，无外部依赖"
+  },
+  {
+    "repo": "SpaceZephyr/creator-buddy",
+    "path": "video-Skills/space-video-script/SKILL.md",
+    "cat": "文案口播",
+    "title_zh": "去AI味口播脚本",
+    "summary_zh": "把AI腔改成真人口语，并把模糊想法写成精确到秒的分镜脚本",
+    "tags": [
+      "口播稿",
+      "分镜脚本",
+      "去AI味",
+      "视频脚本",
+      "口语化",
+      "短视频"
+    ],
+    "requires": null,
+    "why": "1.6k★ MIT(README声明)｜creator-buddy 套件；无外部依赖"
+  },
+  {
+    "repo": "imfangli/mediastorm-copywriter",
+    "path": "SKILL.md",
+    "cat": "文案口播",
+    "title_zh": "影视飓风式口播稿",
+    "summary_zh": "按影视飓风的口播结构，写开门见山的科技评测、科普和 vlog 口播稿",
+    "tags": [
+      "口播稿",
+      "影视飓风",
+      "视频脚本",
+      "解说词",
+      "科技评测",
+      "vlog"
+    ],
+    "requires": null,
+    "why": "103★ MIT｜基于 19 条影视飓风视频字幕的结构化分析；57 行，简短但具体"
+  },
+  {
+    "repo": "BigPengSays/bigpeng-hot-gzh",
+    "path": "SKILL.md",
+    "cat": "文案口播",
+    "title_zh": "公众号爆款选题标题",
+    "summary_zh": "用7个爆款选题公式生成公众号选题方向和多条候选标题",
+    "tags": [
+      "公众号",
+      "爆款标题",
+      "选题",
+      "标题公式",
+      "起标题",
+      "涨粉"
+    ],
+    "requires": null,
+    "why": "265★ MIT｜从 100 多篇爆款文章蒸馏出 7 个公式；103 行"
+  }
+]
